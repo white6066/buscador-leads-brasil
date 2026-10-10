@@ -3,7 +3,6 @@ import time
 
 MAKE_WEBHOOK_URL = "https://hook.us2.make.com/nf6of83eo0v5se6qtdprvt65wy695wc8"
 
-# Lista de CNPJs de empresas reais ativas nos setores alvo para testar o fluxo nacional
 LEADS_REAIS_NACIONAL = [
     {"cnpj": "07594910000184", "categoria": "Academia"},
     {"cnpj": "31339301000109", "categoria": "Estética"},
@@ -12,19 +11,23 @@ LEADS_REAIS_NACIONAL = [
 ]
 
 def buscar_e_enviar():
-    print("A iniciar consulta de empresas reais...")
+    print("A iniciar consulta de empresas reais com diagnóstico...")
     
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
 
     for item in LEADS_REAIS_NACIONAL:
         cnpj = item["cnpj"]
         categoria = item["categoria"]
         
-        # Consulta direta à BrasilAPI (API Pública e Gratuita Oficial)
         url = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
+        print(f"\nA consultar CNPJ: {cnpj}...")
         
         try:
             res = requests.get(url, headers=headers, timeout=15)
+            print(f"-> Código HTTP da API: {res.status_code}")
+            
             if res.status_code == 200:
                 dados = res.json()
                 
@@ -57,12 +60,16 @@ def buscar_e_enviar():
                 
                 # Envia para o Make.com
                 envio = requests.post(MAKE_WEBHOOK_URL, json=lead, timeout=10)
+                print(f"-> Código HTTP do Make.com: {envio.status_code}")
+                
                 if envio.status_code == 200:
-                    print(f"[SUCESSO] Lead real enviado: {fantasia} ({municipio}-{uf})")
+                    print(f"[SUCESSO] Lead enviado: {fantasia} ({municipio}-{uf})")
+                else:
+                    print(f"[AVISO] Make.com rejeitou: {envio.text}")
             else:
-                print(f"[ERRO API] Código {res.status_code} para CNPJ {cnpj}")
+                print(f"[ERRO API] Resposta: {res.text}")
         except Exception as e:
-            print(f"[FALHA] Erro de rede/conexão: {e}")
+            print(f"[FALHA] Exceção de rede: {e}")
             
         time.sleep(2)
 
