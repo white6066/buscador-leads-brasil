@@ -21,12 +21,40 @@ CNAES_ALVO = [
     "8630502",  # Medicina / Práticas Integrativas
 ]
 
-# Podes adicionar ou remover os estados (UFs) que quiseres atingir
-UFS_ALVO = ["MT", "SP", "RJ", "PR", "SC", "RS", "GO", "MS", "MG"]
+# Todos os estados do Brasil e o Distrito Federal usando as siglas oficiais
+UFS_ALVO = [
+    "AC",
+    "AL",
+    "AP",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MT",
+    "MS",
+    "MG",
+    "PA",
+    "PB",
+    "PR",
+    "PE",
+    "PI",
+    "RJ",
+    "RN",
+    "RS",
+    "RO",
+    "RR",
+    "SC",
+    "SP",
+    "SE",
+    "TO",
+]
 
 
 def obter_empresas_recentes():
-  print("A pesquisar automaticamente novas empresas em múltiplos estados...")
+  print("A pesquisar novas empresas em todo o território nacional...")
   empresas_coletadas = []
 
   # Define o período recente (empresas abertas nos últimos 60 dias)
@@ -37,7 +65,7 @@ def obter_empresas_recentes():
     for cnae in CNAES_ALVO:
       try:
         url = f"https://minhareceita.org/?cnae={cnae}&uf={uf}"
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=12)
 
         if response.status_code == 200:
           dados_json = response.json()
@@ -51,7 +79,7 @@ def obter_empresas_recentes():
                     data_abertura_str, "%Y-%m-%d"
                 ).date()
 
-                # Verifica se a empresa abriu recentemente
+                # Filtra apenas empresas recentes (últimos 60 dias)
                 if data_abertura >= limite_data:
                   cnae_fiscal = str(dados.get("cnae_fiscal", ""))
                   empresa = {
@@ -65,18 +93,15 @@ def obter_empresas_recentes():
                       "email": dados.get("email", "") or "",
                   }
 
-                  # Evita duplicados na mesma execução
+                  # Evita duplicados
                   if not any(
                       e["cnpj"] == empresa["cnpj"] for e in empresas_coletadas
                   ):
                     empresas_coletadas.append(empresa)
               except Exception:
                 pass
-      except Exception as e:
-        print(f"Erro ao consultar CNAE {cnae} em {uf}: {e}")
+      except Exception:
+        pass  # Ignora timeouts pontuais de estados específicos para manter o fluxo robusto
 
-  print(
-      f"Total de novas empresas recentes encontradas em todas as regiões:"
-      f" {len(empresas_coletadas)}"
-  )
+  print(f"Total de novas empresas nacionais recolhidas: {len(empresas_coletadas)}")
   return empresas_coletadas
