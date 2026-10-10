@@ -14,12 +14,10 @@ def obter_empresas_recentes():
     print("A consultar a API e a filtrar pelos CNAEs alvo...")
     empresas_coletadas = []
     
-    # Lista de CNPJs para monitorização/teste. 
-    # Podes adicionar novos CNPJs descobertos a esta lista para o robô os processar.
+    # Lista de teste com um CNPJ fora do alvo e um CNPJ dentro do CNAE de beleza (9602501)
     cnpjs_para_testar = [
-        "33000167000101", # Exemplo antigo (será ignorado por não estar nos CNAEs alvo)
-        "00000000000191", # Exemplo antigo (será ignorado)
-        # Adiciona aqui novos CNPJs que pretendes validar e enviar para a planilha
+        "33000167000101", # Petrobras (Será ignorado pelo filtro)
+        "53628893000180"  # Exemplo de Salão de Beleza (Será aceite por estar nos CNAEs alvo)
     ]
     
     for cnpj in cnpjs_para_testar:
@@ -31,7 +29,7 @@ def obter_empresas_recentes():
                 dados = response.json()
                 cnae_fiscal = str(dados.get("cnae_fiscal", ""))
                 
-                # FILTRO PRINCIPAL: Só aceita se o CNAE estiver nos 16 CNAEs alvo
+                # FILTRO: Verifica se o CNAE está nos 16 CNAEs alvo
                 if cnae_fiscal in CNAES_ALVO:
                     empresa = {
                         "cnpj": dados.get("cnpj", ""),
@@ -44,6 +42,7 @@ def obter_empresas_recentes():
                         "email": dados.get("email", "") or ""
                     }
                     empresas_coletadas.append(empresa)
+                    print(f"CNPJ {cnpj} aceite (CNAE {cnae_fiscal} corresponde aos alvos).")
                 else:
                     print(f"CNPJ {cnpj} ignorado (CNAE {cnae_fiscal} não faz parte dos alvos).")
                     
