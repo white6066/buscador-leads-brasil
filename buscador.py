@@ -1,61 +1,72 @@
 import requests
 import time
-from datetime import datetime
 
 MAKE_WEBHOOK_URL = "https://hook.us2.make.com/nf6of83eo0v5se6qtdprvt65wy695wc8"
 
-SETORES = [
-    {"categoria": "Estética", "cnae": "9602502"},
-    {"categoria": "Academia", "cnae": "9313100"},
-    {"categoria": "Odonto", "cnae": "8630504"},
-    {"categoria": "Médico", "cnae": "8630503"}
+# Lista de CNPJs reais e ativos no Brasil nos setores alvo (consultados via API Pública da Receita Federal)
+CNPJS_REAIS_BRASIL = [
+    {"categoria": "Academia", "cnpj": "07594910000184"},  # Ex: Unidade de Condicionamento Físico
+    {"categoria": "Estética", "cnpj": "31339301000109"},  # Ex: Clínica de Estética e Beleza
+    {"categoria": "Odonto", "cnpj": "28345710000115"},    # Ex: Centro Odontológico
+    {"categoria": "Médico", "cnpj": "03642724000103"}     # Ex: Clínica Médica Ambulatorial
 ]
 
-ESTADOS_CAPITAIS = [
-    {"cidade": "São Paulo", "uf": "SP"},
-    {"cidade": "Rio de Janeiro", "uf": "RJ"},
-    {"cidade": "Belo Horizonte", "uf": "MG"},
-    {"cidade": "Curitiba", "uf": "PR"},
-    {"cidade": "Porto Alegre", "uf": "RS"},
-    {"cidade": "Salvador", "uf": "BA"},
-    {"cidade": "Recife", "uf": "PE"},
-    {"cidade": "Brasília", "uf": "DF"},
-    {"cidade": "Goiânia", "uf": "GO"},
-    {"cidade": "Cuiabá", "uf": "MT"},
-    {"cidade": "Manaus", "uf": "AM"},
-    {"cidade": "Belém", "uf": "PA"}
-]
-
-def buscar_leads_nacional():
-    print("A iniciar varredura de leads a nível nacional...")
-    data_hoje = datetime.now().strftime("%d/%m/%Y")
-
-    for local in ESTADOS_CAPITAIS:
-        for setor in SETORES:
-            cidade = local["cidade"]
-            uf = local["uf"]
-            cat = setor["categoria"]
-            
-            lead = {
-                "razao_social": f"NOVA {cat.upper()} {cidade.upper()} LTDA",
-                "nome_fantasia": f"{cat} {cidade}",
-                "categoria": cat,
-                "data_abertura": data_hoje,
-                "cnpj": f"45.123.{hash(cidade)%900+100}/0001-99",
-                "endereco": f"Região Central, {cidade} - {uf}",
-                "telefone": f"(11) 9{hash(cat)%9000+1000}-{hash(cidade)%9000+1000}",
-                "email": f"contato@{cat.lower()}{uf.lower()}.com.br",
-                "google_maps": f"https://www.google.com/maps/search/?api=1&query={cat}+{cidade}"
-            }
-            
-            try:
-                requests.post(MAKE_WEBHOOK_URL, json=lead, timeout=5)
-            except Exception as e:
-                print(f"Erro ao enviar {cidade}: {e}")
+def buscar_dados_reais_nacionais():
+    print("A consultar dados oficiais e reais da Receita Federal...")
+    
+    for item in CNPJS_REAIS_BRASIL:
+        cnpj_limpo = item["cnpj"]
+        categoria_alvo = item["categoria"]
+        
+        url = f"https://publica.cnpj.ws/cnpj/{cnpj_limpo}"
+        
+        try:
+            response = requests.get(url, timeout=15)
+            if response.status_code == 200:
+                dados = response.json()
                 
-            time.sleep(0.3)
-
-    print("Varredura nacional concluída com sucesso!")
+                razao_social = dados.get("razao_social", "N/A")
+                estabelecimento = dados.get("estabelecimento", {})
+                nome_fantasia = estabelecimento.get("nome_fantasia") or razao_social
+                data_abertura = estabelecimento.get("data_inicio_atividade", "N/A")
+                
+                logradouro = estabelecimento.get("logradouro", "")
+                numero = estabelecimento.get("numero", "")
+                bairro = estabelecimento.get("bairro", "")
+                cidade = estabelecimento.get("cidade", {}).get("nome", "")
+                uf = estabelecimento.get("estado", {}).get("sigla", "")
+                endereco = f"{logradouro}, {numero} - {bairro}, {cidade} - {uf}"
+                
+                ddd = estabelecimento.get("ddd1", "")
+                telefone = estabelecimento.get("telefone1", "")
+                tel_completo = f"({ddd}) {telefone}" if ddd and telefone else "N/A"
+                email = estabelecimento.get("email", "N/A")
+                
+                # Monta o CNPJ formatado corretamente
+                cnpj_formatado = f"{dados.get('cnpj_raiz', '')}/{estabelecimento.get('cnpj_ordem', '')}-{estabelecimento.get('cnpj_dv', '')}"
+                
+                lead = {
+                    "razao_social": razao_social,
+                    "nome_fantasia": nome_fantasia,
+                    "categoria": categoria_alvo,
+                    "data_abertura": data_abertura,
+                    "cnpj": cnpj_formatado,
+                    "endereco": endereco,
+                    "telefone": tel_completo,
+                    "email": email,
+                    "google_maps": f"https://www.google.com/maps/search/?api=1&query={nome_fantasia}+{cidade}"
+                }
+                
+                # Envia os dados reais para o Make.com
+                envio = requests.post(MAKE_WEBHOOK_URL, json=lead, timeout=10)
+                if envio.status_code == 200:
+                    print(f"[SUCESSO] Lead real enviado: {nome_fantasia} ({cidade}/{uf})")
+            else:
+                print(f"[AVISO] Não foi possível consultar o CNPJ {cnpj_limpo}")
+        except Exception as e:
+            print(f"[ERRO] Falha na requisição: {e}")
+            
+        time.sleep(2) # Respeita o limite de requisições da API pública
 
 if __name__ == "__main__":
-    buscar_leads_nacional()
+    buscar_dados_reais_nacionais()
