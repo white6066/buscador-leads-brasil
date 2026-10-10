@@ -54,10 +54,7 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print(
-      "A pesquisar novas empresas e a validar campos de contacto (email e"
-      " morada)..."
-  )
+  print("A pesquisar novas empresas e a filtrar apenas as que têm contacto...")
   empresas_coletadas = []
 
   hoje = datetime.date.today()
@@ -82,6 +79,19 @@ def obter_empresas_recentes():
                 ).date()
 
                 if data_abertura >= limite_data:
+                  # Captura o telefone e o email
+                  telefone = dados.get("ddd_telefone_1", "") or ""
+                  email_empresa = (
+                      dados.get("email")
+                      or dados.get("email_contato")
+                      or dados.get("correio_eletronico")
+                      or ""
+                  )
+
+                  # FILTRO DE QUALIDADE: Se não tiver telefone, descarta a empresa imediatamente
+                  if not telefone:
+                    continue
+
                   cnae_fiscal = str(dados.get("cnae_fiscal", ""))
                   razao_social = dados.get("razao_social", "")
                   municipio = dados.get("municipio", "")
@@ -97,17 +107,9 @@ def obter_empresas_recentes():
                       f" {uf_emp} (CEP: {cep})"
                   ).strip(" ,-")
 
-                  # Link do Google Maps
+                  # Link do Google Maps (útil para ver a região da empresa)
                   query_maps = f"{razao_social} {municipio} {uf_emp}"
                   maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
-
-                  # Procura o e-mail em diferentes variações possíveis da API
-                  email_empresa = (
-                      dados.get("email")
-                      or dados.get("email_contato")
-                      or dados.get("correio_eletronico")
-                      or ""
-                  )
 
                   empresa = {
                       "cnpj": dados.get("cnpj", ""),
@@ -117,7 +119,7 @@ def obter_empresas_recentes():
                       "uf": uf_emp,
                       "municipio": municipio,
                       "endereco": endereco_completo,
-                      "telefone": dados.get("ddd_telefone_1", ""),
+                      "telefone": telefone,
                       "email": email_empresa,
                       "maps_link": maps_link,
                   }
@@ -132,6 +134,7 @@ def obter_empresas_recentes():
         pass
 
   print(
-      f"Total de novas empresas recolhidas com sucesso: {len(empresas_coletadas)}"
+      f"Total de empresas qualificadas (com telefone) encontradas:"
+      f" {len(empresas_coletadas)}"
   )
   return empresas_coletadas
