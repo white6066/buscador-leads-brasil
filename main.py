@@ -4,7 +4,6 @@ from buscador import obter_empresas_recentes
 from google.oauth2.service_account import Credentials
 import gspread
 
-# Configuração de credenciais e escopos (Sheets + Drive)
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
@@ -21,29 +20,31 @@ else:
 
 client = gspread.authorize(creds)
 
-# Abre a planilha existente
 NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
-# Obtém todos os dados atuais da planilha para verificar duplicados
 all_values = sheet.get_all_values()
 
-# Se a planilha estiver vazia, adiciona o cabeçalho
+# Cabeçalhos atualizados com Endereço e Google Maps
+cabecalhos_desejados = [
+    "CNPJ",
+    "Razão Social",
+    "Data Abertura",
+    "CNAE",
+    "UF",
+    "Município",
+    "Endereço",
+    "Telefone",
+    "E-mail",
+    "Google Maps",
+]
+
 if not all_values:
-  sheet.append_row([
-      "CNPJ",
-      "Razão Social",
-      "Data Abertura",
-      "CNAE",
-      "UF",
-      "Município",
-      "Telefone",
-      "E-mail",
-  ])
+  sheet.append_row(cabecalhos_desejados)
   existing_cnpjs = set()
 else:
-  # Recolhe todos os CNPJs já registados na coluna A (ignorando o cabeçalho)
+  # Se já existirem dados, lê os CNPJs da coluna A para evitar duplicados
   existing_cnpjs = set(row[0] for row in all_values[1:] if row)
 
 novas_empresas = obter_empresas_recentes()
@@ -53,7 +54,6 @@ if novas_empresas:
   for emp in novas_empresas:
     cnpj_atual = emp.get("cnpj", "")
 
-    # Verifica se o CNPJ é válido e se AINDA NÃO existe na planilha
     if cnpj_atual and cnpj_atual not in existing_cnpjs:
       linhas_para_adicionar.append([
           cnpj_atual,
@@ -62,18 +62,16 @@ if novas_empresas:
           emp.get("cnae", ""),
           emp.get("uf", ""),
           emp.get("municipio", ""),
+          emp.get("endereco", ""),
           emp.get("telefone", ""),
           emp.get("email", ""),
+          emp.get("maps_link", ""),
       ])
-      # Adiciona ao conjunto local para evitar duplicados na mesma execução
       existing_cnpjs.add(cnpj_atual)
 
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
-    print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas inéditas à"
-        " planilha!"
-    )
+    print(f"Adicionadas {len(linhas_para_adicionar)} novas empresas à planilha!")
   else:
     print(
         "Nenhuma empresa nova encontrada. Todas as encontradas já constavam na"
@@ -82,4 +80,5 @@ if novas_empresas:
 else:
   print("Nenhuma empresa encontrada nesta execução.")
 
+print("Processo concluído com sucesso!")
 print("Processo concluído com sucesso!")
