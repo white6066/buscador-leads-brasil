@@ -1,56 +1,76 @@
 import requests
 import time
+from datetime import datetime, timedelta
 
 MAKE_WEBHOOK_URL = "https://hook.us2.make.com/nf6of83eo0v5se6qtdprvt65wy695wc8"
 
-empresas_exemplo = [
-    {
-        "razao_social": "CENTRO DE ESTETICA BELEZA PURA LTDA",
-        "nome_fantasia": "Beleza Pura Estética",
-        "categoria": "Estética",
-        "data_abertura": "15/03/2021",
-        "cnpj": "14.256.789/0001-12",
-        "endereco": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
-        "telefone": "(11) 97777-8888",
-        "email": "contato@belezapura.com",
-        "google_maps": "https://www.google.com/maps/search/?api=1&query=Beleza+Pura+Estética+São+Paulo"
-    },
-    {
-        "razao_social": "ACADEMIA FORCA TOTAL FITNESS LTDA",
-        "nome_fantasia": "Força Total Fitness",
-        "categoria": "Academia",
-        "data_abertura": "10/08/2019",
-        "cnpj": "28.999.111/0001-45",
-        "endereco": "Rua das Palmeiras, 500 - Centro, Curitiba - PR",
-        "telefone": "(41) 98888-2222",
-        "email": "suporte@forcatotal.com",
-        "google_maps": "https://www.google.com/maps/search/?api=1&query=Força+Total+Curitiba"
-    },
-    {
-        "razao_social": "CLINICA ODONTOLOGICA SORRISO SAUDAVEL S/S",
-        "nome_fantasia": "Sorriso Saudável Odontologia",
-        "categoria": "Odonto",
-        "data_abertura": "22/11/2023",
-        "cnpj": "45.123.789/0001-90",
-        "endereco": "Av. Brasil, 1500 - Centro, Lucas do Rio Verde - MT",
-        "telefone": "(65) 99999-3333",
-        "email": "atendimento@sorrisosaudavel.com",
-        "google_maps": "https://www.google.com/maps/search/?api=1&query=Sorriso+Saudável+Lucas+do+Rio+Verde"
-    }
+# CNAEs Alvo
+# 9602-5/02: Estética / Beleza
+# 9313-1/00: Academias / Fitness
+# 8630-5/04: Odontologia
+# 8630-5/03: Consultórios Médicos
+SETORES_ALVO = [
+    {"cnae": "9602502", "categoria": "Estética"},
+    {"cnae": "9313100", "categoria": "Academia"},
+    {"cnae": "8630504", "categoria": "Odonto"},
+    {"cnae": "8630503", "categoria": "Médico"}
 ]
 
-print("A iniciar o envio de leads para o Make.com...")
-
-for empresa in empresas_exemplo:
-    try:
-        response = requests.post(MAKE_WEBHOOK_URL, json=empresa)
-        if response.status_code == 200:
-            print(f"[SUCESSO] Empresa enviada: {empresa['nome_fantasia']}")
-        else:
-            print(f"[ERRO] Falha ao enviar {empresa['nome_fantasia']}: {response.status_code}")
-    except Exception as e:
-        print(f"[EXCEÇÃO] Erro de ligação: {e}")
+def buscar_cnpjs_ultimas_24h():
+    # Calcula a data de ontem (últimas 24 horas)
+    hoje = datetime.now()
+    ontem = hoje - timedelta(days=1)
     
-    time.sleep(1)
+    data_inicio_filtro = ontem.strftime("%Y-%m-%d")
+    data_fim_filtro = hoje.strftime("%Y-%m-%d")
+    
+    print(f"--- A buscar CNPJs abertos entre {data_inicio_filtro} e {data_fim_filtro} ---")
 
-print("Processo concluído!")
+    for setor in SETORES_ALVO:
+        cnae = setor["cnae"]
+        categoria = setor["categoria"]
+        
+        print(f"\n[+] A pesquisar novos registos para: {categoria} (CNAE {cnae})...")
+        
+        payload = {
+            "cnae_fiscal": cnae,
+            "data_inicio_atividade_gte": data_inicio_filtro,
+            "data_inicio_atividade_lte": data_fim_filtro,
+            "limite": 50
+        }
+        
+        try:
+            response = requests.post("https://api.casadosdados.com.br/v2/public/cnpj/search", json=payload, timeout=15)
+            
+            if response.status_code == 200:
+                empresas = response.json().get("data", {}).get("cnpj", [])
+                print(f"   -> {len(empresas)} novas empresas encontradas nas últimas 24h!")
+                
+                for emp in empresas:
+                    lead = {
+                        "razao_social": emp.get("razao_social", "N/A"),
+                        "nome_fantasia": emp.get("nome_fantasia") or emp.get("razao_social"),
+                        "categoria": categoria,
+                        "data_abertura": emp.get("data_inicio_atividade", data_inicio_filtro),
+                        "cnpj": emp.get("cnpj", "N/A"),
+                        "endereco": f"{emp.get('logradouro', '')}, {emp.get('numero', '')} - {emp.get('bairro', '')}, {emp.get('municipio', '')} - {emp.get('uf', '')}",
+                        "telefone": emp.get("telefone1", "N/A"),
+                        "email": emp.get("email", "N/A"),
+                        "google_maps": f"https://www.google.com/maps/search/?api=1&query={emp.get('nome_fantasia', emp.get('razao_social'))}+{emp.get('municipio')}"
+                    }
+                    
+                    envio = requests.post(MAKE_WEBHOOK_URL, json=lead)
+                    if envio.status_code == 200:
+                        print(f"   [ENVIADO] {lead['nome_fantasia']} ({lead['cnpj']})")
+                    
+                    time.sleep(1)
+            else:
+                print(f"   [AVISO] Nenhuma nova empresa encontrada hoje para {categoria} ou limite atingido.")
+                
+        except Exception as e:
+            print(f"   [ERRO] Falha ao consultar setor {categoria}: {e}")
+            
+    print("\n--- Varredura das últimas 24 horas concluída! ---")
+
+if __name__ == "__main__":
+    buscar_cnpjs_ultimas_24h()
