@@ -41,16 +41,27 @@ if not sheet.get_all_values():
 
 novas_empresas = obter_empresas_recentes()
 
-for emp in novas_empresas:
-  sheet.append_row([
-      emp.get("cnpj", ""),
-      emp.get("razao_social", ""),
-      emp.get("data_abertura", ""),
-      emp.get("cnae", ""),
-      emp.get("uf", ""),
-      emp.get("municipio", ""),
-      emp.get("telefone", ""),
-      emp.get("email", ""),
-  ])
+if novas_empresas:
+  # Prepara todas as linhas numa lista para inserção em lote (evita o erro 429)
+  linhas_para_adicionar = []
+  for emp in novas_empresas:
+    linhas_para_adicionar.append([
+        emp.get("cnpj", ""),
+        emp.get("razao_social", ""),
+        emp.get("data_abertura", ""),
+        emp.get("cnae", ""),
+        emp.get("uf", ""),
+        emp.get("municipio", ""),
+        emp.get("telefone", ""),
+        emp.get("email", ""),
+    ])
+
+  sheet.append_rows(linhas_para_adicionar)
+  print(
+      f"Adicionadas {len(linhas_para_adicionar)} empresas com sucesso à"
+      " planilha!"
+  )
+else:
+  print("Nenhuma empresa nova encontrada nesta execução.")
 
 print("Processo concluído com sucesso!")
