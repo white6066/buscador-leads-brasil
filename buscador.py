@@ -2,7 +2,7 @@ import datetime
 import urllib.parse
 import requests
 
-# Os teus 16 CNAEs em formato de código numérico para a busca na API
+# Os teus 16 CNAEs alvo
 CNAES_ALVO = [
     "8630504",
     "8623300",
@@ -54,16 +54,16 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas com os códigos CNAE...")
+  print("A pesquisar novas empresas associadas aos CNAEs alvo...")
   empresas_coletadas = []
 
   hoje = datetime.date.today()
   limite_data = hoje - datetime.timedelta(days=60)
 
   for uf in UFS_ALVO:
-    for cnae in CNAES_ALVO:
+    for cnae_codigo in CNAES_ALVO:
       try:
-        url = f"https://minhareceita.org/?cnae={cnae}&uf={uf}"
+        url = f"https://minhareceita.org/?cnae={cnae_codigo}&uf={uf}"
         response = requests.get(url, timeout=12)
 
         if response.status_code == 200:
@@ -83,7 +83,6 @@ def obter_empresas_recentes():
                   if not telefone:
                     continue  # Descarta se não tiver telefone
 
-                  cnae_fiscal = str(dados.get("cnae_fiscal", ""))
                   razao_social = dados.get("razao_social", "")
                   municipio = dados.get("municipio", "")
                   uf_emp = dados.get("uf", "")
@@ -113,7 +112,7 @@ def obter_empresas_recentes():
                       "cnpj": dados.get("cnpj", ""),
                       "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
-                      "cnae": cnae_fiscal,  # Retorna o código exato da API
+                      "cnae": cnae_codigo,  # Atribui o código exato que motivou a busca
                       "uf": uf_emp,
                       "municipio": municipio,
                       "endereco": endereco_completo,
