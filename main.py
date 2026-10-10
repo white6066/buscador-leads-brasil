@@ -4,8 +4,11 @@ from buscador import obter_empresas_recentes
 from google.oauth2.service_account import Credentials
 import gspread
 
-# Configuração de credenciais via variáveis de ambiente do GitHub
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+# Adicionado o escopo do Drive para permitir encontrar a planilha pelo nome
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 service_account_info = os.environ.get("GOOGLE_CREDENTIALS")
 
 if service_account_info:
@@ -18,12 +21,10 @@ else:
 
 client = gspread.authorize(creds)
 
-# Abre a planilha existente
 NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
-# Se a planilha estiver vazia, adiciona o cabeçalho
 if not sheet.get_all_values():
   sheet.append_row([
       "CNPJ",
