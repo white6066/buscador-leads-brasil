@@ -26,17 +26,17 @@ sheet = spreadsheet.sheet1
 
 
 def limpar_cnpj(cnpj):
-  """Remove pontos, barras e traços, mantendo apenas os números."""
   return "".join(filter(str.isdigit, str(cnpj)))
 
 
 all_values = sheet.get_all_values()
 
+# Cabeçalho atualizado com "Segmento" no lugar de "CNAE"
 cabecalhos_desejados = [
     "CNPJ",
     "Razão Social",
     "Data Abertura",
-    "CNAE",
+    "Segmento",
     "UF",
     "Município",
     "Endereço",
@@ -49,7 +49,6 @@ if not all_values:
   sheet.append_row(cabecalhos_desejados)
   existing_cnpjs = set()
 else:
-  # Recolhe e limpa todos os CNPJs já registados na coluna A
   existing_cnpjs = set(
       limpar_cnpj(row[0]) for row in all_values[1:] if row and row[0]
   )
@@ -62,13 +61,12 @@ if novas_empresas:
     cnpj_raw = emp.get("cnpj", "")
     cnpj_limpo = limpar_cnpj(cnpj_raw)
 
-    # Verifica se o CNPJ limpo é válido e se AINDA NÃO existe na planilha
     if cnpj_limpo and cnpj_limpo not in existing_cnpjs:
       linhas_para_adicionar.append([
           cnpj_raw,
           emp.get("razao_social", ""),
           emp.get("data_abertura", ""),
-          emp.get("cnae", ""),
+          emp.get("cnae", ""),  # Aqui entra a descrição amigável
           emp.get("uf", ""),
           emp.get("municipio", ""),
           emp.get("endereco", ""),
@@ -76,14 +74,13 @@ if novas_empresas:
           emp.get("email", ""),
           emp.get("maps_link", ""),
       ])
-      # Adiciona ao conjunto para evitar duplicados na mesma execução
       existing_cnpjs.add(cnpj_limpo)
 
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas inéditas à"
-        " planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com descrições"
+        " à planilha!"
     )
   else:
     print(
