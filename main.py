@@ -26,8 +26,11 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
+# Obtém todos os dados atuais da planilha para verificar duplicados
+all_values = sheet.get_all_values()
+
 # Se a planilha estiver vazia, adiciona o cabeçalho
-if not sheet.get_all_values():
+if not all_values:
   sheet.append_row([
       "CNPJ",
       "Razão Social",
@@ -38,30 +41,45 @@ if not sheet.get_all_values():
       "Telefone",
       "E-mail",
   ])
+  existing_cnpjs = set()
+else:
+  # Recolhe todos os CNPJs já registados na coluna A (ignorando o cabeçalho)
+  existing_cnpjs = set(row[0] for row in all_values[1:] if row)
 
 novas_empresas = obter_empresas_recentes()
 
 if novas_empresas:
-  # Prepara todas as linhas numa lista para inserção em lote (evita o erro 429)
   linhas_para_adicionar = []
   for emp in novas_empresas:
-    linhas_para_adicionar.append([
-        emp.get("cnpj", ""),
-        emp.get("razao_social", ""),
-        emp.get("data_abertura", ""),
-        emp.get("cnae", ""),
-        emp.get("uf", ""),
-        emp.get("municipio", ""),
-        emp.get("telefone", ""),
-        emp.get("email", ""),
-    ])
+    cnpj_atual = emp.get("cnpj", "")
 
-  sheet.append_rows(linhas_para_adicionar)
-  print(
-      f"Adicionadas {len(linhas_para_adicionar)} empresas com sucesso à"
-      " planilha!"
-  )
+    # Verifica se o CNPJ é válido e se AINDA NÃO existe na planilha
+    if cnpj_atual and cnpj_atual not in existing_cnpjs:
+      linhas_para_adicionar.append([
+          cnpj_atual,
+          emp.get("razao_social", ""),
+          emp.get("data_abertura", ""),
+          emp.get("cnae", ""),
+          emp.get("uf", ""),
+          emp.get("municipio", ""),
+          emp.get("telefone", ""),
+          emp.get("email", ""),
+      ])
+      # Adiciona ao conjunto local para evitar duplicados na mesma execução
+      existing_cnpjs.add(cnpj_atual)
+
+  if linhas_para_adicionar:
+    sheet.append_rows(linhas_para_adicionar)
+    print(
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas inéditas à"
+        " planilha!"
+    )
+  else:
+    print(
+        "Nenhuma empresa nova encontrada. Todas as encontradas já constavam na"
+        " planilha."
+    )
 else:
-  print("Nenhuma empresa nova encontrada nesta execução.")
+  print("Nenhuma empresa encontrada nesta execução.")
 
 print("Processo concluído com sucesso!")
