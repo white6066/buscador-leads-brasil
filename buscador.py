@@ -1,37 +1,47 @@
 import datetime
+import requests
 
+# Os teus CNAEs alvo para referência e filtragem
+CNAES_ALVO = [
+    "8630504", "8623300", "3250706", "8640205",  # Saúde / Odonto / Diagnóstico
+    "9313100", "8591100", "8592901",             # Esportes / Condicionamento / Dança
+    "8230002", "8230001", "5620102", "7739003",  # Eventos / Festas / Buffet / Estruturas
+    "9602501", "9602502",                      # Beleza / Cabeleireiro / Estética
+    "8630501", "8690901", "8630502"              # Medicina / Práticas Integrativas
+]
 
 def obter_empresas_recentes():
-  hoje = datetime.date.today()
-  dois_dias_atras = hoje - datetime.timedelta(days=2)
-
-  print(
-      f"Buscando empresas criadas entre {dois_dias_atras} e {hoje} para os"
-      " segmentos alvo..."
-  )
-
-  # Dados de exemplo (simulando empresas recém-abertas encontradas nos CNAEs alvo)
-  empresas_coletadas = [
-      {
-          "cnpj": "12.345.678/0001-99",
-          "razao_social": "Clinica Exemplo de Saude LTDA",
-          "data_abertura": str(hoje - datetime.timedelta(days=1)),
-          "cnae": "8630504",
-          "uf": "SP",
-          "municipio": "Sao Paulo",
-          "telefone": "(11) 99999-8888",
-          "email": "contato@clinicaexemplo.com",
-      },
-      {
-          "cnpj": "98.765.432/0001-11",
-          "razao_social": "Espaco Beleza e Estetica LTDA",
-          "data_abertura": str(hoje - datetime.timedelta(days=1)),
-          "cnae": "9602501",
-          "uf": "RJ",
-          "municipio": "Rio de Janeiro",
-          "telefone": "(21) 98888-7777",
-          "email": "contato@belezaestetica.com",
-      },
-  ]
-
-  return empresas_coletadas
+    print("A iniciar a busca de empresas através da API pública...")
+    empresas_coletadas = []
+    
+    # Exemplo de consulta a um CNPJ ativo na BrasilAPI (podes adicionar mais CNPJs à lista para teste real)
+    # Nota: Para consultar por CNAE em escala sem custos de APIs comerciais, 
+    # podes expandir esta lista com CNPJs reais descobertos ou usar endpoints públicos abertos.
+    cnpjs_exemplo = ["33000167000101", "00000000000191"] 
+    
+    for cnpj in cnpjs_exemplo:
+        try:
+            url = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                dados = response.json()
+                
+                # Extrai os dados principais de forma segura
+                empresa = {
+                    "cnpj": dados.get("cnpj", ""),
+                    "razao_social": dados.get("razao_social", ""),
+                    "data_abertura": dados.get("data_inicio_atividade", ""),
+                    "cnae": str(dados.get("cnae_fiscal", "")),
+                    "uf": dados.get("uf", ""),
+                    "municipio": dados.get("municipio", ""),
+                    "telefone": dados.get("ddd_telefone_1", ""),
+                    "email": dados.get("email", "") or ""
+                }
+                
+                empresas_coletadas.append(empresa)
+        except Exception as e:
+            print(f"Erro ao consultar o CNPJ {cnpj}: {e}")
+            
+    print(f"Total de empresas recolhidas com sucesso: {len(empresas_coletadas)}")
+    return empresas_coletadas
