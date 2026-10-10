@@ -24,9 +24,14 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
+
+def limpar_cnpj(cnpj):
+  """Remove pontos, barras e traços, mantendo apenas os números."""
+  return "".join(filter(str.isdigit, str(cnpj)))
+
+
 all_values = sheet.get_all_values()
 
-# Cabeçalhos atualizados com Endereço e Google Maps
 cabecalhos_desejados = [
     "CNPJ",
     "Razão Social",
@@ -44,19 +49,23 @@ if not all_values:
   sheet.append_row(cabecalhos_desejados)
   existing_cnpjs = set()
 else:
-  # Se já existirem dados, lê os CNPJs da coluna A para evitar duplicados
-  existing_cnpjs = set(row[0] for row in all_values[1:] if row)
+  # Recolhe e limpa todos os CNPJs já registados na coluna A
+  existing_cnpjs = set(
+      limpar_cnpj(row[0]) for row in all_values[1:] if row and row[0]
+  )
 
 novas_empresas = obter_empresas_recentes()
 
 if novas_empresas:
   linhas_para_adicionar = []
   for emp in novas_empresas:
-    cnpj_atual = emp.get("cnpj", "")
+    cnpj_raw = emp.get("cnpj", "")
+    cnpj_limpo = limpar_cnpj(cnpj_raw)
 
-    if cnpj_atual and cnpj_atual not in existing_cnpjs:
+    # Verifica se o CNPJ limpo é válido e se AINDA NÃO existe na planilha
+    if cnpj_limpo and cnpj_limpo not in existing_cnpjs:
       linhas_para_adicionar.append([
-          cnpj_atual,
+          cnpj_raw,
           emp.get("razao_social", ""),
           emp.get("data_abertura", ""),
           emp.get("cnae", ""),
@@ -67,11 +76,15 @@ if novas_empresas:
           emp.get("email", ""),
           emp.get("maps_link", ""),
       ])
-      existing_cnpjs.add(cnpj_atual)
+      # Adiciona ao conjunto para evitar duplicados na mesma execução
+      existing_cnpjs.add(cnpj_limpo)
 
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
-    print(f"Adicionadas {len(linhas_para_adicionar)} novas empresas à planilha!")
+    print(
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas inéditas à"
+        " planilha!"
+    )
   else:
     print(
         "Nenhuma empresa nova encontrada. Todas as encontradas já constavam na"
@@ -80,5 +93,4 @@ if novas_empresas:
 else:
   print("Nenhuma empresa encontrada nesta execução.")
 
-print("Processo concluído com sucesso!")
 print("Processo concluído com sucesso!")
