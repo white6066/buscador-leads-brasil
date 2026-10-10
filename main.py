@@ -24,6 +24,26 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
+# Dicionário para traduzir o código do CNAE para a descrição amigável na planilha
+DICIONARIO_CNAES = {
+    "8630504": "Atividade Odontológica",
+    "8623300": "Atividade Médica Ambulatorial",
+    "3250706": "Fabricação de Aparelhos Ortopédicos/Médicos",
+    "8640205": "Serviços de Diagnóstico por Imagem",
+    "9313100": "Condicionamento Físico (Academia)",
+    "8591100": "Ensino de Esportes",
+    "8592901": "Ensino de Dança",
+    "8230002": "Casas de Festas e Eventos",
+    "8230001": "Organização de Feiras e Congressos",
+    "5620102": "Serviços de Bufê / Catering",
+    "7739003": "Aluguel de Estruturas para Eventos",
+    "9602501": "Cabeleireiros, Manicure e Pedicure",
+    "9602502": "Estética e Cuidados com a Beleza",
+    "8630501": "Atividade Médica com Cirurgia",
+    "8690901": "Práticas Integrativas em Saúde",
+    "8630502": "Atividade Médica com Exames",
+}
+
 
 def limpar_cnpj(cnpj):
   return "".join(filter(str.isdigit, str(cnpj)))
@@ -31,7 +51,7 @@ def limpar_cnpj(cnpj):
 
 all_values = sheet.get_all_values()
 
-# Cabeçalho atualizado com "Segmento" no lugar de "CNAE"
+# Cabeçalho com a coluna "Segmento"
 cabecalhos_desejados = [
     "CNPJ",
     "Razão Social",
@@ -62,11 +82,15 @@ if novas_empresas:
     cnpj_limpo = limpar_cnpj(cnpj_raw)
 
     if cnpj_limpo and cnpj_limpo not in existing_cnpjs:
+      # Traduz o código CNAE para a descrição escrita
+      cnae_codigo = str(emp.get("cnae", ""))
+      segmento_descritivo = DICIONARIO_CNAES.get(cnae_codigo, cnae_codigo)
+
       linhas_para_adicionar.append([
           cnpj_raw,
           emp.get("razao_social", ""),
           emp.get("data_abertura", ""),
-          emp.get("cnae", ""),  # Aqui entra a descrição amigável
+          segmento_descritivo,  # Aqui já vai escrito o significado
           emp.get("uf", ""),
           emp.get("municipio", ""),
           emp.get("endereco", ""),
@@ -79,8 +103,8 @@ if novas_empresas:
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com descrições"
-        " à planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com o"
+        " segmento descritivo à planilha!"
     )
   else:
     print(
