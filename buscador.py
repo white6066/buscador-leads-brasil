@@ -1,4 +1,5 @@
 import datetime
+import urllib.parse
 import requests
 
 # Os teus 16 CNAEs alvo
@@ -21,7 +22,6 @@ CNAES_ALVO = [
     "8630502",  # Medicina / Práticas Integrativas
 ]
 
-# Todos os estados do Brasil e o Distrito Federal usando as siglas oficiais
 UFS_ALVO = [
     "AC",
     "AL",
@@ -54,10 +54,9 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas em todo o território nacional...")
+  print("A pesquisar novas empresas com endereço, email e link do Maps...")
   empresas_coletadas = []
 
-  # Define o período recente (empresas abertas nos últimos 60 dias)
   hoje = datetime.date.today()
   limite_data = hoje - datetime.timedelta(days=60)
 
@@ -79,21 +78,39 @@ def obter_empresas_recentes():
                     data_abertura_str, "%Y-%m-%d"
                 ).date()
 
-                # Filtra apenas empresas recentes (últimos 60 dias)
                 if data_abertura >= limite_data:
                   cnae_fiscal = str(dados.get("cnae_fiscal", ""))
+                  razao_social = dados.get("razao_social", "")
+                  municipio = dados.get("municipio", "")
+                  uf_emp = dados.get("uf", "")
+
+                  # Montar endereço completo
+                  logradouro = dados.get("logradouro", "")
+                  numero = dados.get("numero", "")
+                  bairro = dados.get("bairro", "")
+                  cep = dados.get("cep", "")
+                  endereco_completo = (
+                      f"{logradouro}, {numero} - {bairro}, {municipio} -"
+                      f" {uf_emp} (CEP: {cep})"
+                  ).strip(" ,-")
+
+                  # Gerar link direto do Google Maps para facilitar a localização
+                  query_maps = f"{razao_social} {municipio} {uf_emp}"
+                  maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
+
                   empresa = {
                       "cnpj": dados.get("cnpj", ""),
-                      "razao_social": dados.get("razao_social", ""),
+                      "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
                       "cnae": cnae_fiscal,
-                      "uf": dados.get("uf", ""),
-                      "municipio": dados.get("municipio", ""),
+                      "uf": uf_emp,
+                      "municipio": municipio,
+                      "endereco": endereco_completo,
                       "telefone": dados.get("ddd_telefone_1", ""),
                       "email": dados.get("email", "") or "",
+                      "maps_link": maps_link,
                   }
 
-                  # Evita duplicados
                   if not any(
                       e["cnpj"] == empresa["cnpj"] for e in empresas_coletadas
                   ):
@@ -101,7 +118,10 @@ def obter_empresas_recentes():
               except Exception:
                 pass
       except Exception:
-        pass  # Ignora timeouts pontuais de estados específicos para manter o fluxo robusto
+        pass
 
-  print(f"Total de novas empresas nacionais recolhidas: {len(empresas_coletadas)}")
+  print(
+      f"Total de novas empresas recolhidas com dados completos:"
+      f" {len(empresas_coletadas)}"
+  )
   return empresas_coletadas
