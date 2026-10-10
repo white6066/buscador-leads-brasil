@@ -54,7 +54,10 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas com endereço, email e link do Maps...")
+  print(
+      "A pesquisar novas empresas e a validar campos de contacto (email e"
+      " morada)..."
+  )
   empresas_coletadas = []
 
   hoje = datetime.date.today()
@@ -84,7 +87,7 @@ def obter_empresas_recentes():
                   municipio = dados.get("municipio", "")
                   uf_emp = dados.get("uf", "")
 
-                  # Montar endereço completo
+                  # Endereço completo
                   logradouro = dados.get("logradouro", "")
                   numero = dados.get("numero", "")
                   bairro = dados.get("bairro", "")
@@ -94,9 +97,17 @@ def obter_empresas_recentes():
                       f" {uf_emp} (CEP: {cep})"
                   ).strip(" ,-")
 
-                  # Gerar link direto do Google Maps para facilitar a localização
+                  # Link do Google Maps
                   query_maps = f"{razao_social} {municipio} {uf_emp}"
                   maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
+
+                  # Procura o e-mail em diferentes variações possíveis da API
+                  email_empresa = (
+                      dados.get("email")
+                      or dados.get("email_contato")
+                      or dados.get("correio_eletronico")
+                      or ""
+                  )
 
                   empresa = {
                       "cnpj": dados.get("cnpj", ""),
@@ -107,7 +118,7 @@ def obter_empresas_recentes():
                       "municipio": municipio,
                       "endereco": endereco_completo,
                       "telefone": dados.get("ddd_telefone_1", ""),
-                      "email": dados.get("email", "") or "",
+                      "email": email_empresa,
                       "maps_link": maps_link,
                   }
 
@@ -121,7 +132,6 @@ def obter_empresas_recentes():
         pass
 
   print(
-      f"Total de novas empresas recolhidas com dados completos:"
-      f" {len(empresas_coletadas)}"
+      f"Total de novas empresas recolhidas com sucesso: {len(empresas_coletadas)}"
   )
   return empresas_coletadas
