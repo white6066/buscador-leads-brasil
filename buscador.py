@@ -2,25 +2,25 @@ import datetime
 import urllib.parse
 import requests
 
-# Os teus 16 CNAEs alvo
-CNAES_ALVO = [
-    "8630504",
-    "8623300",
-    "3250706",
-    "8640205",  # Saúde / Odonto / Diagnóstico
-    "9313100",
-    "8591100",
-    "8592901",  # Esportes / Condicionamento / Dança
-    "8230002",
-    "8230001",
-    "5620102",
-    "7739003",  # Eventos / Festas / Buffet / Estruturas
-    "9602501",
-    "9602502",  # Beleza / Cabeleireiro / Estética
-    "8630501",
-    "8690901",
-    "8630502",  # Medicina / Práticas Integrativas
-]
+# Os teus 16 CNAEs alvo com as respetivas descrições comerciais
+CNAES_MAP = {
+    "8630504": "Atividade Odontológica",
+    "8623300": "Atividade Médica Ambulatorial",
+    "3250706": "Fabricação de Aparelhos Ortopédicos/Médicos",
+    "8640205": "Serviços de Diagnóstico por Imagem",
+    "9313100": "Condicionamento Físico (Academia)",
+    "8591100": "Ensino de Esportes",
+    "8592901": "Ensino de Dança",
+    "8230002": "Casas de Festas e Eventos",
+    "8230001": "Organização de Feiras e Congressos",
+    "5620102": "Serviços de Bufê / Catering",
+    "7739003": "Aluguel de Estruturas para Eventos",
+    "9602501": "Cabeleireiros, Manicure e Pedicure",
+    "9602502": "Estética e Cuidados com a Beleza",
+    "8630501": "Atividade Médica com Cirurgia",
+    "8690901": "Práticas Integrativas em Saúde",
+    "8630502": "Atividade Médica com Exames",
+}
 
 UFS_ALVO = [
     "AC",
@@ -54,16 +54,16 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas e a filtrar apenas as que têm contacto...")
+  print("A pesquisar novas empresas com descrição dos CNAEs...")
   empresas_coletadas = []
 
   hoje = datetime.date.today()
   limite_data = hoje - datetime.timedelta(days=60)
 
   for uf in UFS_ALVO:
-    for cnae in CNAES_ALVO:
+    for cnae_codigo in CNAES_MAP.keys():
       try:
-        url = f"https://minhareceita.org/?cnae={cnae}&uf={uf}"
+        url = f"https://minhareceita.org/?cnae={cnae_codigo}&uf={uf}"
         response = requests.get(url, timeout=12)
 
         if response.status_code == 200:
@@ -79,18 +79,9 @@ def obter_empresas_recentes():
                 ).date()
 
                 if data_abertura >= limite_data:
-                  # Captura o telefone e o email
                   telefone = dados.get("ddd_telefone_1", "") or ""
-                  email_empresa = (
-                      dados.get("email")
-                      or dados.get("email_contato")
-                      or dados.get("correio_eletronico")
-                      or ""
-                  )
-
-                  # FILTRO DE QUALIDADE: Se não tiver telefone, descarta a empresa imediatamente
                   if not telefone:
-                    continue
+                    continue  # Descarta se não tiver telefone
 
                   cnae_fiscal = str(dados.get("cnae_fiscal", ""))
                   razao_social = dados.get("razao_social", "")
@@ -107,15 +98,27 @@ def obter_empresas_recentes():
                       f" {uf_emp} (CEP: {cep})"
                   ).strip(" ,-")
 
-                  # Link do Google Maps (útil para ver a região da empresa)
+                  # Link do Google Maps
                   query_maps = f"{razao_social} {municipio} {uf_emp}"
                   maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
+
+                  email_empresa = (
+                      dados.get("email")
+                      or dados.get("email_contato")
+                      or dados.get("correio_eletronico")
+                      or ""
+                  )
+
+                  # Pega a descrição amigável do dicionário
+                  cnae_descricao = CNAES_MAP.get(
+                      cnae_fiscal, "Outros Segmentos"
+                  )
 
                   empresa = {
                       "cnpj": dados.get("cnpj", ""),
                       "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
-                      "cnae": cnae_fiscal,
+                      "cnae": cnae_descricao,  # Agora guarda a descrição em vez do número
                       "uf": uf_emp,
                       "municipio": municipio,
                       "endereco": endereco_completo,
@@ -134,7 +137,7 @@ def obter_empresas_recentes():
         pass
 
   print(
-      f"Total de empresas qualificadas (com telefone) encontradas:"
+      f"Total de empresas qualificadas com descrições encontradas:"
       f" {len(empresas_coletadas)}"
   )
   return empresas_coletadas
