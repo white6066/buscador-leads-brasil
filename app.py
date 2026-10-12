@@ -22,7 +22,7 @@ def toggle_theme():
     else:
         st.session_state.theme = "Escuro"
 
-# Cores dinâmicas com base no tema selecionado
+# Cores dinâmicas completas baseadas no tema selecionado
 if st.session_state.theme == "Escuro":
     bg_app = "#0f172a"
     bg_card = "#1e293b"
@@ -35,6 +35,7 @@ if st.session_state.theme == "Escuro":
     btn_text = "#ffffff"
     input_bg = "#1e293b"
     input_text = "#ffffff"
+    expander_bg = "#1e293b"
 else:
     bg_app = "#f8fafc"
     bg_card = "#ffffff"
@@ -47,8 +48,9 @@ else:
     btn_text = "#0f172a"
     input_bg = "#ffffff"
     input_text = "#0f172a"
+    expander_bg = "#ffffff"
 
-# Estilização CSS completa (incluindo correção para textos dos selectbox)
+# Estilização CSS completa para harmonizar fontes, botões, tabelas e expansores
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -67,14 +69,14 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botão da barra lateral */
-    [data-testid="stSidebar"] button {{
+    /* Botões gerais e barra lateral */
+    [data-testid="stSidebar"] button, .stDownloadButton button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
     }}
-    [data-testid="stSidebar"] button:hover {{
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover {{
         border-color: #38bdf8 !important;
         color: #38bdf8 !important;
     }}
@@ -94,7 +96,7 @@ st.markdown(f"""
         border-radius: 8px !important;
     }}
 
-    /* Forçar cor branca nos selects e opções ativas */
+    /* Selectbox Geral */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
@@ -109,7 +111,12 @@ st.markdown(f"""
         background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.85rem !important; }}
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.4rem !important; font-weight: 800 !important; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"], 
+    div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {{ 
+        color: {text_color} !important; 
+        font-size: 1.4rem !important; 
+        font-weight: 800 !important; 
+    }}
 
     /* Banner Superior */
     .banner-box {{
@@ -119,6 +126,30 @@ st.markdown(f"""
     .banner-subtitle {{ color: {text_muted}; font-size: 0.9rem; }}
     
     .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
+
+    /* Correção do Expander e Conteúdo Interno */
+    div[data-testid="stExpander"] {{
+        background-color: {expander_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+    }}
+    div[data-testid="stExpander"] summary {{
+        background-color: {expander_bg} !important;
+        color: {text_color} !important;
+    }}
+    div[data-testid="stExpander"] summary span {{
+        color: {text_color} !important;
+        font-weight: 600 !important;
+    }}
+    div[data-testid="stExpander"] div[data-testid="stVerticalBlock"] {{
+        background-color: {expander_bg} !important;
+        color: {text_color} !important;
+    }}
+    
+    /* Textos da listagem principal e colunas */
+    p, span, div {{
+        color: {text_color};
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -229,7 +260,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -333,31 +364,4 @@ try:
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
-                    st.markdown(f"**Segmento:** {segmento}")
-                    st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
-                with c2:
-                    st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
-                    st.markdown(f"📸 [Abrir Perfil no Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
-                with c3:
-                    status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
-                    try:
-                        c_idx = status_list.index(current_status)
-                    except ValueError:
-                        c_idx = 0
-                    novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
-                    if novo_status != current_status:
-                        st.session_state.df_status.at[idx, "Status"] = novo_status
-                        st.rerun()
-                    if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
-                        st.success(f"LP gerada!")
-
-            st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
-
-        # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
-        st.divider()
-        col_p1, col_p2, col_p3 = st.columns([3, 2, 3])
-        with col_p2:
-            current_page = st.number_input(f"📄 Página (Total: {total_pages})", min_value=1, max_value=total_pages, value=min(st.session_state.get('page_num', 1), total_pages), step=1, key="page_num")
-
-except Exception as e:
-    st.error(f"Erro ao carregar o painel: {e}")
+                    st.markdown(f"
