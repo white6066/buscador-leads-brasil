@@ -10,7 +10,7 @@ from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP Premium & Harmonioso",
+    page_title="Novas Empresas - Gerador LP Padrão RM",
     page_icon="🚀",
     layout="wide"
 )
@@ -117,7 +117,7 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- OSINT AVANÇADO: NOME FANTASIA, SLOGAN E REDES ---
+# --- OSINT AVANÇADO: CAPTURA NOME FANTASIA, SLOGAN, REDES E LOGO ---
 def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
@@ -233,20 +233,18 @@ def get_realistic_niche_image(display_name, segmento, osint_images):
     else:
         return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
 
-# --- GERAÇÃO DA LANDING PAGE PREMIUM E ABRANGENTE ---
+# --- GERAÇÃO DA LANDING PAGE EXATAMENTE NO PADRÃO RM ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
     # 1. Varredura executada primeiro
     osint = advanced_branding_search(razao, cnpj, cidade, uf, segmento)
     
-    # 2. Paleta de cores refinada
+    # 2. Cores da marca ou padrão forest sofisticado
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
     
     if not primary_color:
-        h = hashlib.md5((razao + cnpj).encode()).hexdigest()
-        palettes = ["#173f32", "#1e3a8a", "#0f172a", "#113f48", "#2c3e50"]
-        primary_color = palettes[int(h, 16) % len(palettes)]
+        primary_color = "#173f32" # Verde floresta premium idêntico ao modelo RM
 
     formatted_cnpj = format_cnpj(cnpj)
     
@@ -255,9 +253,9 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
     display_name = osint["fantasia"]
-    custom_slogan = osint["slogan"] if osint["slogan"] else f"Compromisso, dedicação e excelência em {segmento} para nossos clientes e parceiros."
+    custom_slogan = osint["slogan"] if osint["slogan"] else f"Cuidado, responsabilidade e atenção em cada contato com nossos clientes e parceiros."
 
-    # Link dinâmico do Google Maps baseado no endereço e cidade
+    # Endereço e Google Maps Clicável
     full_address = endereco if endereco else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
@@ -276,176 +274,210 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     img_feature = get_realistic_niche_image(display_name, segmento, osint["images"])
 
     html_code = f"""<!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{display_name} | {segmento}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {{ --brand: {primary_color}; }}
-        body {{ font-family: 'DM Sans', sans-serif; color: #18241f; }}
-        h1, h2, h3, .display {{ font-family: 'Manrope', sans-serif; }}
-        .brand-bg {{ background-color: var(--brand); }}
-        .brand-text {{ color: var(--brand); }}
-        .lift {{ transition: transform .22s ease, box-shadow .22s ease; }}
-        .lift:hover {{ transform: translateY(-3px); box-shadow: 0 16px 32px rgba(0,0,0,.08); }}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="{primary_color}">
+  <title>{display_name} | {cidade} – {uf}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {{
+      --forest: {primary_color};
+      --forest-deep: #102f26;
+      --sage: #dce8df;
+      --lime: #c8dc9a;
+      --ink: #18241f;
+      --muted: #63716a;
+    }}
+    html {{ scroll-behavior: smooth; }}
+    body {{ font-family: "DM Sans", sans-serif; color: var(--ink); }}
+    h1, h2, h3, .display {{ font-family: "Manrope", sans-serif; }}
+    .forest {{ background: var(--forest); }}
+    .forest-text {{ color: var(--forest); }}
+    .hero-bg {{
+      background:
+        radial-gradient(ellipse at 80% 20%, rgba(200,220,154,.18), transparent 34%),
+        radial-gradient(ellipse at 10% 100%, rgba(220,232,223,.10), transparent 40%),
+        linear-gradient(130deg, var(--forest-deep), var(--forest) 65%, #285743);
+    }}
+    .hero-grid {{
+      background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom right, black, transparent 85%);
+    }}
+    .lift {{ transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }}
+    .lift:hover {{ transform: translateY(-4px); box-shadow: 0 18px 38px rgba(20,48,36,.10); border-color: #c4d4c8; }}
+  </style>
 </head>
 <body class="bg-[#f7f9f7] antialiased">
+  <div class="forest px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-white/90">
+    <span class="inline-flex items-center justify-center gap-2">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      {cidade.upper()} · {uf.upper()}
+    </span>
+  </div>
 
-    <!-- Top Notice Bar Abrangente -->
-    <div class="brand-bg text-white text-xs py-2.5 px-4 text-center font-semibold tracking-wide">
-        ✨ Soluções Profissionais em {segmento} · {cidade} / {uf}
+  <header class="sticky top-0 z-50 border-b border-slate-200/70 bg-white/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
+      <a href="#inicio" class="flex items-center gap-3 rounded-lg" aria-label="{display_name}, início">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl forest text-white font-bold text-lg">
+          {display_name[0].upper()}
+        </span>
+        <span class="min-w-0">
+          <span class="block display truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
+          <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Atendimento em {cidade} · {uf}</span>
+        </span>
+      </a>
+      <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex" aria-label="Navegação principal">
+        <a class="hover:forest-text transition" href="#sobre">Sobre</a>
+        <a class="hover:forest-text transition" href="#compromisso">Nosso compromisso</a>
+        <a class="hover:forest-text transition" href="#contato">Contato</a>
+      </nav>
+      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-3 text-sm font-bold text-white shadow-sm transition sm:px-5">
+        <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.6 0 .3 5.3.3 11.8c0 2.1.6 4.2 1.6 6L0 24l6.4-1.7a12 12 0 0 0 5.7 1.4h.1c6.5 0 11.8-5.3 11.8-11.8 0-3.2-1.2-6.1-3.5-8.4ZM12.1 21.7a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.8 1 1-3.7-.2-.4a9.7 9.7 0 1 1 8.4 4.7Zm5.4-7.3c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2l-.9 1.1c-.2.2-.4.2-.7.1a8 8 0 0 1-2.4-1.5 9 9 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.6l-.9-2.1c-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.8s1.2 3.2 1.4 3.4c.2.2 2.4 3.7 5.9 5.1.8.3 1.4.5 1.9.6.8.3 1.5.2 2.1.1.7-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3Z"/></svg>
+        <span class="hidden sm:inline">Falar pelo WhatsApp</span><span class="sm:hidden">WhatsApp</span>
+      </a>
     </div>
+  </header>
 
-    <!-- Header Harmonioso -->
-    <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-            <a href="#inicio" class="flex items-center gap-3 rounded-lg focus:outline-none">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg">
-                    {display_name[0].upper()}
-                </span>
-                <span>
-                    <span class="block display text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
-                    <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Excelência e Qualidade</span>
-                </span>
+  <main>
+    <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white">
+      <div class="hero-grid absolute inset-0 -z-10"></div>
+      <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 sm:py-24 lg:grid-cols-[1.08fr_.92fr] lg:px-8 lg:py-28">
+        <div class="max-w-2xl">
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90">
+            <span class="h-2 w-2 rounded-full bg-[#c8dc9a]"></span>
+            REFERÊNCIA EM {segmento.upper()}
+          </div>
+          <h1 class="display max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
+          <p class="mt-6 max-w-xl text-base leading-8 text-white/75 sm:text-lg">"{custom_slogan}"</p>
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+            <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#c8dc9a] px-6 py-4 text-sm font-extrabold text-[#173f32] shadow-lg transition hover:bg-[#d8e8b4]">
+              Conversar com a equipe <span aria-hidden="true">↗</span>
             </a>
-            <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
-                <a href="#sobre" class="hover:text-emerald-700 transition">Sobre</a>
-                <a href="#compromisso" class="hover:text-emerald-700 transition">Nosso compromisso</a>
-                <a href="#contato" class="hover:text-emerald-700 transition">Contato</a>
-            </nav>
-            {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-3 text-sm font-bold text-white shadow-sm transition sm:px-5">💬 WhatsApp</a>' if clean_tel else ''}
+            <a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/25 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Conhecer a empresa</a>
+          </div>
         </div>
-    </header>
-
-    <main>
-        <!-- Hero Section Moderna -->
-        <section id="inicio" class="relative overflow-hidden text-white brand-bg py-20 lg:py-28">
-            <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
-                <div class="max-w-2xl">
-                    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90">
-                        <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
-                        REFERÊNCIA EM {segmento.upper()}
-                    </div>
-                    <h1 class="display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
-                    <p class="mt-6 text-base leading-8 text-white/80 sm:text-lg">"{custom_slogan}"</p>
-                    {f'<div class="mt-9 flex flex-wrap gap-4"><a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-4 text-sm font-extrabold shadow-lg transition hover:bg-slate-100">Falar com a equipe ↗</a><a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Conhecer a empresa</a></div>' if clean_tel else ''}
-                </div>
-                <div class="relative mx-auto w-full max-w-xl">
-                    <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-sm">
-                        <img src="{img_feature}" alt="{display_name} - Atendimento Profissional" class="h-64 w-full rounded-2xl object-cover sm:h-80 lg:h-[380px]" loading="eager">
-                    </div>
-                </div>
+        <div class="relative mx-auto w-full max-w-xl">
+          <div class="absolute -inset-4 rounded-[2rem] border border-white/10"></div>
+          <div class="relative overflow-hidden rounded-[1.6rem] border border-white/15 bg-white/10 p-3 shadow-2xl backdrop-blur-sm">
+            <img src="{img_feature}" alt="{display_name}" class="h-64 w-full rounded-[1.15rem] object-cover sm:h-80 lg:h-[390px]" loading="eager">
+            <div class="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-[#102f26]/90 p-5 backdrop-blur-md sm:bottom-8 sm:left-8 sm:right-8">
+              <p class="text-xs font-bold uppercase tracking-[.2em] text-[#c8dc9a]">{display_name}</p>
+              <p class="mt-2 display text-lg font-bold text-white sm:text-xl">Atendimento profissional e comunicação clara.</p>
+              <p class="mt-1 text-sm text-white/70">{cidade}, {uf}</p>
             </div>
-        </section>
-
-        <!-- 1º OS PILARES (Sempre antes do Sobre) -->
-        <section id="compromisso" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
-            <div class="mx-auto max-w-7xl px-5 lg:px-8">
-                <div class="mx-auto mb-12 max-w-2xl text-center">
-                    <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Nosso compromisso</p>
-                    <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Uma relação construída com confiança.</h2>
-                    <p class="mt-4 leading-7 text-slate-600">Acreditamos que uma boa experiência começa com clareza, disponibilidade e respeito às necessidades de cada cliente.</p>
-                </div>
-                <div class="grid gap-6 md:grid-cols-3">
-                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">✓</div>
-                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento atencioso</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Escuta e comunicação objetiva para entender sua solicitação e orientar os próximos passos com total dedicação.</p>
-                    </article>
-                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">⚡</div>
-                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Comunicação direta</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Um canal de contato simples para tirar dúvidas e solicitar informações sem complicação, ágil e eficiente.</p>
-                    </article>
-                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">🛡️</div>
-                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Responsabilidade</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Compromisso com informações claras e uma relação profissional transparente em cada etapa de atuação.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2º SOBRE A EMPRESA (Com foto realista por último) -->
-        <section id="sobre" class="py-16 sm:py-24">
-            <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
-                <div class="relative">
-                    <img src="{img_feature}" alt="Estrutura Profissional" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
-                    <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Localização</p>
-                        <p class="display mt-1 font-extrabold brand-text">{cidade} · {uf}</p>
-                    </div>
-                </div>
-                <div class="pt-4 lg:pt-0">
-                    <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Sobre a empresa</p>
-                    <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
-                    <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura foi planejada para oferecer excelência, agilidade e suporte completo aos nossos parceiros.</p>
-                    <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade ou esclarecer dúvidas, fale diretamente com a equipe pelos nossos canais de atendimento.</p>
-                    {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow">Conversar pelo WhatsApp ↗</a>' if clean_tel else ''}
-                </div>
-            </div>
-        </section>
-
-        <!-- Seção de Contato com Endereço Clicável para o Google Maps -->
-        <section id="contato" class="bg-[#eaf0eb] py-16 sm:py-20">
-            <div class="mx-auto max-w-7xl px-5 lg:px-8">
-                <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
-                    <div class="grid lg:grid-cols-[.85fr_1.15fr]">
-                        <div class="brand-bg p-8 text-white sm:p-10 lg:p-12">
-                            <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Vamos conversar?</p>
-                            <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos a um contato de distância.</h2>
-                            <p class="mt-4 leading-7 text-white/80">Use o WhatsApp para solicitar informações e conversar diretamente com a empresa.</p>
-                            {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100 shadow">Chamar no WhatsApp ↗</a>' if clean_tel else ''}
-                        </div>
-                        <div class="p-8 sm:p-10 lg:p-12">
-                            <h3 class="display text-xl font-extrabold text-slate-900">Informações de contato</h3>
-                            <div class="mt-6 space-y-5">
-                                <div class="flex gap-4">
-                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📍</span>
-                                    <div>
-                                        <p class="text-sm font-bold text-slate-900">Endereço</p>
-                                        <p class="mt-1 text-sm leading-6 text-slate-600">{full_address}</p>
-                                        <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold brand-text hover:underline">
-                                            Ver localização no Google Maps ↗
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📞</span>
-                                    <div><p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p><p class="mt-1 text-sm text-slate-600">{active_tel if active_tel else 'Não informado'}</p></div>
-                                </div>
-                                <div class="flex gap-4">
-                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">🏛️</span>
-                                    <div><p class="text-sm font-bold text-slate-900">Dados Oficiais</p><p class="mt-1 text-sm text-slate-600">Razão Social: {razao}</p><p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj}</p>{social_links_html}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Rodapé Sóbrio e Profissional -->
-    <footer class="bg-[#10271f] px-5 py-8 text-white/70">
-        <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
-            <div>
-                <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
-                <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
-            </div>
-            <div class="text-xs sm:text-right">
-                <p>CNPJ: {formatted_cnpj}</p>
-                <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
-            </div>
+          </div>
         </div>
-    </footer>
-    <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+      </div>
+    </section>
+
+    <!-- 1º OS PILARES (Sempre antes do Sobre) -->
+    <section id="compromisso" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="mx-auto mb-11 max-w-2xl text-center">
+          <p class="text-xs font-extrabold uppercase tracking-[.2em] forest-text">Nosso compromisso</p>
+          <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Uma relação construída com confiança.</h2>
+          <p class="mt-4 leading-7 text-slate-600">Acreditamos que uma boa experiência começa com clareza, disponibilidade e respeito às necessidades de cada cliente.</p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#e5eee7] forest-text font-bold text-xl">✓</div>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento atencioso</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Escuta e comunicação objetiva para entender sua solicitação e orientar os próximos passos com dedicação.</p>
+          </article>
+          <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#e5eee7] forest-text font-bold text-xl">⚡</div>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Comunicação direta</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Um canal de contato simples para tirar dúvidas e solicitar informações sem complicação.</p>
+          </article>
+          <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#e5eee7] forest-text font-bold text-xl">🛡️</div>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Responsabilidade</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Compromisso com informações claras e uma relação profissional transparente em cada etapa.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2º SOBRE A EMPRESA (Com imagem realista por último) -->
+    <section id="sobre" class="py-16 sm:py-24">
+      <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
+        <div class="relative">
+          <img src="{img_feature}" alt="{display_name}" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
+          <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Atuação local</p>
+            <p class="display mt-1 font-extrabold forest-text">{cidade} · {uf}</p>
+          </div>
+        </div>
+        <div class="pt-4 lg:pt-0">
+          <p class="text-xs font-extrabold uppercase tracking-[.2em] forest-text">Sobre a empresa</p>
+          <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
+          <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura foi planejada para oferecer excelência e suporte completo.</p>
+          <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade, entender os serviços oferecidos ou esclarecer dúvidas, fale diretamente pelo WhatsApp.</p>
+          <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl forest px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#102f26] shadow">Entrar em contato <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção de Contato com Endereço Interativo para o Google Maps -->
+    <section id="contato" class="bg-[#eaf0eb] py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
+          <div class="grid lg:grid-cols-[.85fr_1.15fr]">
+            <div class="forest p-8 text-white sm:p-10 lg:p-12">
+              <p class="text-xs font-extrabold uppercase tracking-[.2em] text-[#c8dc9a]">Vamos conversar?</p>
+              <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos a um contato de distância.</h2>
+              <p class="mt-4 leading-7 text-white/75">Use o WhatsApp para solicitar informações e conversar diretamente com a empresa.</p>
+              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#c8dc9a] px-6 py-3.5 text-sm font-extrabold text-[#173f32] transition hover:bg-[#d8e8b4] shadow">Chamar no WhatsApp <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="p-8 sm:p-10 lg:p-12">
+              <h3 class="display text-xl font-extrabold text-slate-900">Informações de contato</h3>
+              <div class="mt-6 space-y-5">
+                <div class="flex gap-4">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e5eee7] forest-text">📍</span>
+                  <div>
+                    <p class="text-sm font-bold text-slate-900">Endereço</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-600">{full_address}</p>
+                    <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold forest-text underline decoration-[#c8dc9a] underline-offset-4 hover:opacity-75">
+                      Ver localização no Google Maps ↗
+                    </a>
+                  </div>
+                </div>
+                <div class="flex gap-4">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e5eee7] forest-text">📞</span>
+                  <div><p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p><p class="mt-1 text-sm text-slate-600">{active_tel if active_tel else 'Não informado'}</p></div>
+                </div>
+                <div class="flex gap-4">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e5eee7] forest-text">🏛️</span>
+                  <div><p class="text-sm font-bold text-slate-900">Dados Oficiais</p><p class="mt-1 text-sm text-slate-600">Razão Social: {razao}</p><p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj}</p>{social_links_html}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#102f26] px-5 py-8 text-white/70">
+    <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
+      <div>
+        <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
+        <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
+      </div>
+      <div class="text-xs sm:text-right">
+        <p>CNPJ: {formatted_cnpj}</p>
+        <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>"""
     return html_code
@@ -546,8 +578,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP Premium & Harmonioso</div>
-            <div class="banner-subtitle">Landing pages modernas, textos abrangentes, endereço interativo com link direto para o Google Maps e imagens realistas por último.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Padrão RM</div>
+            <div class="banner-subtitle">Landing pages modernas, idênticas ao layout RM Reprodução Bovina, com atalhos, navegação suave e imagens realistas por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -657,12 +689,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Busca & Gerar LP Premium", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Realizando varredura inteligente e gerando Landing Page premium e harmoniosa..."):
+                if st.button("🌐 Executar Busca & Gerar LP Padrão RM", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Realizando varredura inteligente e gerando Landing Page no padrão RM..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page premium gerada com sucesso!")
+                        st.success("Landing Page gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
