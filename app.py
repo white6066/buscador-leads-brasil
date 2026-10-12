@@ -212,29 +212,33 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": extra_activities[:3]
     }
 
-# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL REALISTA E PROPORCIONAL ---
-def generate_ai_contextual_image(segmento, razao):
+# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL REALISTA E PROPORCIONAL COM SUPORTE A CUSTOMIZAÇÃO ---
+def generate_ai_contextual_image(segmento, razao, custom_prompt_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
-    if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
-        prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
-    elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
-        prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k"
-    elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
-        prompt = "modern high-end medical clinic interior, clean professional healthcare environment, advanced medical equipment, bright welcoming lighting, photorealistic, 4k"
-    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'comercio']):
-        prompt = "high-end modern supermarket interior, beautifully organized shelves with grocery products, bright clean aisles, commercial retail photography, 4k"
-    elif any(x in seg_lower for x in ['cafe', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
-        prompt = "modern agricultural business office and sustainable agribusiness landscape, professional corporate environment, high resolution, photorealistic"
-    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
-        prompt = "sophisticated modern executive corporate office, meeting room with glass walls, professional business atmosphere, architectural photography, 4k"
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa']):
-        prompt = "luxury modern aesthetic beauty spa interior, elegant relaxing design, minimalist lighting, high-end wellness center, photorealistic, 4k"
+    if custom_prompt_instruction and len(custom_prompt_instruction.strip()) > 3:
+        # Se o usuário digitou uma instrução customizada para mudar a foto, transformamos em prompt em inglês para a IA de imagem
+        prompt = f"professional commercial photography of {custom_prompt_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
-        prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
+        if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
+            prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
+        elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
+            prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k"
+        elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
+            prompt = "modern high-end medical clinic interior, clean professional healthcare environment, advanced medical equipment, bright welcoming lighting, photorealistic, 4k"
+        elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'comercio']):
+            prompt = "high-end modern supermarket interior, beautifully organized shelves with grocery products, bright clean aisles, commercial retail photography, 4k"
+        elif any(x in seg_lower for x in ['cafe', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
+            prompt = "modern agricultural business office and sustainable agribusiness landscape, professional corporate environment, high resolution, photorealistic"
+        elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
+            prompt = "sophisticated modern executive corporate office, meeting room with glass walls, professional business atmosphere, architectural photography, 4k"
+        elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa']):
+            prompt = "luxury modern aesthetic beauty spa interior, elegant relaxing design, minimalist lighting, high-end wellness center, photorealistic, 4k"
+        else:
+            prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao).encode()).hexdigest(), 16) % 10000
+    seed = int(hashlib.md5((segmento + razao + custom_prompt_instruction).encode()).hexdigest(), 16) % 10000
     ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
     return ai_image_url
 
@@ -262,7 +266,7 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         return palettes[h % len(palettes)], "Paleta Exclusiva"
 
 # --- GERADOR DA LP MASTERPIECE ---
-def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
+def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, custom_instruction=""):
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
@@ -312,7 +316,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature = generate_ai_contextual_image(segmento, razao)
+    img_feature = generate_ai_contextual_image(segmento, razao, custom_instruction)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -548,7 +552,6 @@ def load_data_from_sheet():
                 if "-" in clean_date_str:
                     parts = clean_date_str.split("-")
                     if len(parts) == 3 and len(parts[0]) == 4:
-                        # Formato YYYY-MM-DD convertido para DD/MM/YYYY
                         data_abert = f"{parts[2]}/{parts[1]}/{parts[0]}"
                         parsed_dt_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
                 elif "/" in clean_date_str:
@@ -630,7 +633,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com filtro avançado por data de abertura (DD/MM/AAAA), formatação oficial de documentos e alta conversão.</div>
+            <div class="banner-subtitle">Sistema inteligente com personalização de imagem por IA, formatação oficial de documentos e alta conversão.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -746,12 +749,24 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar IA & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Gerando Landing Page com dados formatados e design profissional..."):
-                        lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
+                # Campo de instrução personalizada ao lado do botão de gerar LP
+                col_btn_gen, col_inst_txt = st.columns([1.3, 2.7])
+                with col_inst_txt:
+                    custom_instruction = st.text_input(
+                        "O que mudar na LP (ex: trocar foto para carros novos)", 
+                        placeholder="Ex: diversos carros novos ou seminovos", 
+                        key=f"cust_inst_{idx}",
+                        label_visibility="collapsed"
+                    )
+                with col_btn_gen:
+                    btn_gerar_clicado = st.button("🌐 Executar IA & Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True)
+
+                if btn_gerar_clicado:
+                    with st.spinner("Gerando Landing Page personalizada com IA..."):
+                        lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, custom_instruction)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page Masterpiece gerada com sucesso!")
+                        st.success("Landing Page personalizada gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
