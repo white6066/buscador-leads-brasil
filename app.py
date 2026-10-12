@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados totalmente resiliente direto da planilha
+# Carregamento de dados limpo e direto da planilha
 @st.cache_data(ttl=30)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -28,7 +28,6 @@ def load_data_from_sheet():
     rows = []
     for r in reader:
         if r and len(r) >= 5:
-            # Aceitar todas as linhas que contenham dados válidos na primeira coluna
             val0 = str(r[0]).strip()
             if val0 == "" or "página" in val0.lower():
                 continue
@@ -95,10 +94,10 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com correspondência flexível (case-insensitive e strip)
+    # Aplicar Filtros com segurança
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Segment5"] if "Segment5" in df_filtered else df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
+        df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
     if cidade_selecionada != "Todos":
@@ -106,7 +105,7 @@ try:
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # Métricas atualizadas em tempo real
+    # Métricas
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total de Leads Exibidos", len(df_filtered))
     col2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
@@ -187,4 +186,13 @@ try:
                     )
                     
                     if novo_status != current_status:
-                        st.session_state.df_status.at[idx, "Status"] = novo_
+                        st.session_state.df_status.at[idx, "Status"] = novo_status
+                        st.rerun()
+                        
+                    if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
+                        st.success(f"LP gerada para {razao}!")
+
+            st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
+
+except Exception as e:
+    st.error(f"Erro ao carregar o painel: {e}")
