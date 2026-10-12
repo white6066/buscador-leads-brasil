@@ -4,14 +4,14 @@ import requests
 import io
 import csv
 
-# 1. Configuração da página e Layout Moderno
+# 1. Configuração da página e Layout Moderno Compacto
 st.set_page_config(
     page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-# Estilização CSS personalizada para legibilidade máxima e contraste perfeito
+# Estilização CSS personalizada para compactar espaçamentos na barra lateral
 st.markdown("""
 <style>
     /* Estilo geral de fundo */
@@ -19,10 +19,12 @@ st.markdown("""
         background-color: #f8fafc;
     }
     
-    /* Barra lateral escura com texto 100% branco e visível */
+    /* Barra lateral escura compactada */
     [data-testid="stSidebar"] {
         background-color: #0f172a;
         color: #ffffff !important;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
     }
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] .stMarkdown,
@@ -30,6 +32,15 @@ st.markdown("""
     [data-testid="stSidebar"] span {
         color: #f8fafc !important;
         font-weight: 500 !important;
+    }
+
+    /* Reduzir margens e espaçamentos entre widgets na barra lateral */
+    [data-testid="stSidebar"] div.stSelectbox {
+        margin-bottom: -10px !important;
+    }
+    [data-testid="stSidebar"] hr {
+        margin: 10px 0px !important;
+        border-color: #334155 !important;
     }
     
     /* Cor dos títulos e textos principais do painel */
@@ -41,39 +52,39 @@ st.markdown("""
     div[data-testid="metric-container"] {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
-        padding: 16px 20px;
+        padding: 12px 16px;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     div[data-testid="metric-container"] label {
         color: #475569 !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
+        font-size: 0.9rem !important;
     }
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
         color: #0f172a !important;
-        font-size: 1.8rem !important;
+        font-size: 1.6rem !important;
         font-weight: 800 !important;
     }
 
     /* Banner Principal */
     .banner-box {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 28px 36px;
+        padding: 20px 28px;
         border-radius: 16px;
         color: white;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     .banner-title {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         color: #ffffff !important;
     }
     .banner-subtitle {
         color: #cbd5e1;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
     /* Rótulos dos filtros principais do corpo da página */
@@ -143,13 +154,13 @@ try:
 
     current_df = st.session_state.df_status
 
-    # --- BARRA LATERAL ESTILO CORPORATIVO ---
+    # --- BARRA LATERAL COMPACTA ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
-        st.markdown("<p style='color: #cbd5e1; font-size: 0.85rem;'>Painel de Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #cbd5e1; font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
         st.divider()
         
-        st.markdown("#### 🎯 Filtros de Prospecção")
+        st.markdown("#### 🎯 Filtros")
         
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
@@ -167,7 +178,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("💡 **Dica:** Utilize os expanders na tabela principal para gerenciar cada lead individualmente.")
+        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Dica: Use os expanders para gerenciar cada lead.</p>", unsafe_allow_html=True)
 
     # --- BANNER PRINCIPAL DO TOPO ---
     st.markdown("""
@@ -191,8 +202,8 @@ try:
     # --- CARTÕES DE MÉTRICAS MODERNOS ---
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total de Leads Exibidos", len(df_filtered), "100% visível")
-    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]), "Aguardando contato")
-    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]), "Propostas prontas")
+    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]), "Aguardando")
+    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]), "Prontas")
     m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]), "Conversões")
 
     st.divider()
