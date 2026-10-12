@@ -3,7 +3,6 @@ import pandas as pd
 requests = __import__('requests')
 io = __import__('io')
 csv = __import__('csv')
-datetime = __import__('datetime').datetime
 
 # 1. Configuração da página
 st.set_page_config(
@@ -40,10 +39,15 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna (Tamanho Normal 100%)
+# Estilização CSS Moderna com Fontes Reduzidas (-0.5)
 st.markdown(f"""
 <style>
-    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
+    .stApp {{ background-color: {bg_app}; color: {text_color}; font-size: 0.9rem !important; }}
+    
+    /* Reduzir globalmente o tamanho das fontes e textos em -0.5 */
+    html, body, [class*="st-"] {{
+        font-size: 0.92rem !important;
+    }}
     
     /* Integrar cabeçalho superior do Streamlit com o tema */
     [data-testid="stHeader"] {{
@@ -64,6 +68,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{ 
         color: {text_color} !important; 
         font-weight: 500 !important; 
+        font-size: 0.9rem !important;
     }}
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
@@ -76,6 +81,7 @@ st.markdown(f"""
         border-radius: 10px !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
+        font-size: 0.88rem !important;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
         background-color: {btn_bg} !important;
@@ -100,6 +106,7 @@ st.markdown(f"""
         background-color: {input_bg} !important;
         color: {input_text} !important;
         border: 1px solid {border_color} !important;
+        font-size: 0.9rem !important;
     }}
     
     div[data-baseweb="input"] {{
@@ -118,6 +125,7 @@ st.markdown(f"""
     }}
     div[data-baseweb="select"] span {{
         color: {input_text} !important;
+        font-size: 0.9rem !important;
     }}
     
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
@@ -130,6 +138,7 @@ st.markdown(f"""
     li[data-baseweb="option"], div[role="option"] {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
+        font-size: 0.9rem !important;
     }}
     li[data-baseweb="option"]:hover, div[role="option"]:hover {{
         background-color: #0ea5e9 !important;
@@ -143,32 +152,32 @@ st.markdown(f"""
     div[data-testid="metric-container"] {{
         background-color: {bg_card}; 
         border: 1px solid {border_color}; 
-        padding: 16px 20px; 
+        padding: 14px 18px; 
         border-radius: 14px; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }}
-    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.85rem !important; }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"], 
     div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {{ 
         color: {text_color} !important; 
-        font-size: 1.6rem !important; 
+        font-size: 1.35rem !important; 
         font-weight: 800 !important; 
     }}
 
     /* Banner Superior Estilizado */
     .banner-box {{
         background-color: {bg_card}; 
-        padding: 24px 32px; 
+        padding: 20px 28px; 
         border-radius: 16px; 
         color: {text_color}; 
         margin-bottom: 20px; 
         border: 1px solid {border_color}; 
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     }}
-    .banner-title {{ font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; color: {text_color} !important; }}
-    .banner-subtitle {{ color: {text_muted}; font-size: 0.95rem; line-height: 1.4; }}
+    .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
+    .banner-subtitle {{ color: {text_muted}; font-size: 0.85rem; line-height: 1.4; }}
     
-    .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
+    .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; font-size: 0.9rem !important; }}
 
     /* Expander e Conteúdo Interno */
     div[data-testid="stExpander"] {{
@@ -181,10 +190,12 @@ st.markdown(f"""
         background-color: {expander_bg} !important;
         color: {text_color} !important;
         border-radius: 12px !important;
+        font-size: 0.9rem !important;
     }}
     div[data-testid="stExpander"] summary span {{
         color: {text_color} !important;
         font-weight: 600 !important;
+        font-size: 0.9rem !important;
     }}
     div[data-testid="stExpander"] div[data-testid="stVerticalBlock"] {{
         background-color: {expander_bg} !important;
@@ -193,6 +204,7 @@ st.markdown(f"""
     
     p, span, div {{
         color: {text_color};
+        font-size: 0.9rem !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -223,17 +235,14 @@ def load_data_from_sheet():
         data_abert = raw_date
         if raw_date:
             try:
-                # Remove partes de hora se existirem
                 clean_date_str = raw_date.split("T")[0].split(" ")[0]
                 if "-" in clean_date_str:
                     parts = clean_date_str.split("-")
                     if len(parts) == 3 and len(parts[0]) == 4:
-                        # Formato YYYY-MM-DD -> DD/MM/YYYY
                         data_abert = f"{parts[2]}/{parts[1]}/{parts[0]}"
                 elif "/" in clean_date_str:
                     parts = clean_date_str.split("/")
                     if len(parts) == 3 and len(parts[2]) == 2:
-                        # Formato DD/MM/YY -> DD/MM/20YY
                         data_abert = f"{parts[0]}/{parts[1]}/20{parts[2]}"
             except Exception:
                 data_abert = raw_date
