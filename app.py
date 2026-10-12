@@ -94,11 +94,26 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+# Funções de Formatação Inteligente (CNPJ, Telefone/Celular e CEP)
 def format_cnpj(cnpj_str):
     nums = "".join(filter(str.isdigit, str(cnpj_str)))
     if len(nums) == 14:
         return f"{nums[:2]}.{nums[2:5]}.{nums[5:8]}/{nums[8:12]}-{nums[12:]}"
     return cnpj_str
+
+def format_phone(phone_str):
+    nums = "".join(filter(str.isdigit, str(phone_str)))
+    if len(nums) == 11:
+        return f"({nums[:2]}) {nums[2]} {nums[3:7]}-{nums[7:]}"
+    elif len(nums) == 10:
+        return f"({nums[:2]}) {nums[2:6]}-{nums[6:]}"
+    return phone_str
+
+def format_cep(cep_str):
+    nums = "".join(filter(str.isdigit, str(cep_str)))
+    if len(nums) == 8:
+        return f"{nums[:5]}-{nums[5:]}"
+    return cep_str
 
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -258,10 +273,10 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
         whats_link = f"https://wa.me/{clean_tel}"
-        display_phone_text = active_tel
+        display_phone_text = format_phone(active_tel)
     else:
         whats_link = "https://wa.me/"
-        display_phone_text = "Fale conosco pelo WhatsApp"
+        display_phone_text = "WhatsApp indisponível"
 
     display_name = osint["fantasia"]
     
@@ -276,13 +291,20 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
 
     activities_html = "".join([f'<li class="flex items-center gap-2 text-sm text-slate-700"><span class="brand-text font-bold">✓</span> {act}</li>' for act in extra_acts])
 
-    full_address = endereco if endereco else f"{cidade} - {uf}"
+    # Formatação de CEP e Endereço
+    formatted_address = endereco
+    cep_match = re.search(r'\b\d{8}\b', endereco)
+    if cep_match:
+        raw_cep = cep_match.group(0)
+        formatted_address = endereco.replace(raw_cep, f"CEP: {format_cep(raw_cep)}")
+
+    full_address = formatted_address if formatted_address else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
 
     social_links_html = ""
     if osint["instagram"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
     else:
         social_links_html += f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Não informado</span></p>'
 
@@ -410,7 +432,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Seção Sobre Sem Botões Repetidos de WhatsApp -->
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
@@ -431,7 +452,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Seção de Contato com Botão de Redirecionamento Direto no Número -->
+    <!-- Seção de Contato com Dados Formatados e Botão de WhatsApp Personalizado ao Lado -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -443,7 +464,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
             </div>
             <div class="p-8 sm:p-10 lg:p-12">
               <h3 class="display text-xl font-extrabold text-slate-900">Informações Cadastrais & Contato</h3>
-              <div class="mt-6 space-y-5">
+              <div class="mt-6 space-y-6">
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📍</span>
                   <div>
@@ -454,14 +475,16 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
                     </a>
                   </div>
                 </div>
-                <div class="flex gap-4">
+                <div class="flex gap-4 items-center">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📞</span>
                   <div>
                     <p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p>
-                    <!-- Botão de clique direto no número redirecionando para o WhatsApp -->
-                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-2 rounded-xl brand-bg px-4 py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90">
-                      <span>{display_phone_text}</span> ↗
-                    </a>
+                    <div class="mt-1.5 flex flex-wrap items-center gap-3">
+                      <span class="text-sm font-bold text-slate-800">{display_phone_text}</span>
+                      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg brand-bg px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
+                        <span>Clique aqui para iniciar contato ↗</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
                 <div class="flex gap-4">
@@ -595,7 +618,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com layout otimizado, sem repetições e botões de redirecionamento dinâmicos.</div>
+            <div class="banner-subtitle">Sistema inteligente com formatação oficial de documentos (CNPJ, Telefones, CEP) e botões de contato dinâmicos.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -669,7 +692,7 @@ try:
 
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             r_cols[0].markdown(f"🏢 **{razao}**")
-            r_cols[1].markdown(f"`{cnpj}`")
+            r_cols[1].markdown(f"`{format_cnpj(cnpj)}`")
             r_cols[2].markdown(f"{data_abert}")
             r_cols[3].markdown(f"{uf}")
             r_cols[4].markdown(f"{cidade}")
@@ -693,7 +716,7 @@ try:
                     st.markdown(f"**Segmento:** {segmento}")
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
-                    st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
+                    st.markdown(f"**Telefone:** {format_phone(tel) if tel else 'Não informado'}")
                     st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_busca}+{cidade_busca}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
@@ -706,7 +729,7 @@ try:
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
                 if st.button("🌐 Executar IA & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Gerando Landing Page limpa e profissional..."):
+                    with st.spinner("Gerando Landing Page com dados formatados e design profissional..."):
                         lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
