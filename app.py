@@ -39,9 +39,14 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna e Consistente
+# Estilização CSS Moderna com Zoom Nativo a 80%
 st.markdown(f"""
 <style>
+    /* Reduzir a escala geral da página para 80% */
+    html, body, [data-testid="stAppViewContainer"] {{
+        zoom: 80%;
+    }}
+
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     /* Integrar cabeçalho superior do Streamlit com o tema */
