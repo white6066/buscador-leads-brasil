@@ -6,7 +6,7 @@ import csv
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Central de Leads & Novas Empresas",
+    page_title="Novas Empresas - Acompanhamento",
     page_icon="🚀",
     layout="wide"
 )
@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa (incluindo integração do cabeçalho superior)
+# Estilização CSS completa
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -272,7 +272,7 @@ try:
     # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Central de Leads & Novas Empresas</div>
+            <div class="banner-title">🚀 Novas Empresas - Acompanhamento</div>
             <div class="banner-subtitle">Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.</div>
         </div>
     """, unsafe_allow_html=True)
@@ -313,7 +313,7 @@ try:
             df_filtered["Cidade"].str.lower().str.contains(ql)
         ]
 
-    st.subheader("📋 Lista de Empresas Extraídas")
+    st.subheader("📋 Lista de Empresas Localizadas na busca")
 
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
