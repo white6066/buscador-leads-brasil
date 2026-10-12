@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados flexível e direto da planilha ao vivo
+# Carregamento de dados com mapeamento exato de colunas
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -27,15 +27,15 @@ def load_data_from_sheet():
     reader = csv.reader(io.StringIO(response.text))
     rows = []
     for r in reader:
-        if r and len(r) >= 5:  # Garantir que a linha tem dados mínimos essenciais
+        if r and len(r) >= 5:
             val0 = str(r[0]).strip().lower()
-            # Ignorar apenas linhas de título óbvias
             if "página" in val0 or "título" in val0 or val0 == "":
                 continue
             rows.append(r)
             
     processed = []
     for r in rows:
+        # Mapeamento correto com base na estrutura real da sua planilha
         cnpj = r[0] if len(r) > 0 else ""
         razao = r[1] if len(r) > 1 else "Empresa"
         data_abert = r[2] if len(r) > 2 else ""
@@ -66,11 +66,10 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Inicializar estado na sessão para persistir as alterações de status feitas no app
+    # Sincronização de status na sessão
     if "df_status" not in st.session_state:
         st.session_state.df_status = df.copy()
     else:
-        # Se a planilha for atualizada, manter o dataframe sincronizado preservando os status alterados
         if len(st.session_state.df_status) == len(df):
             df["Status"] = st.session_state.df_status["Status"]
         else:
@@ -96,16 +95,16 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros
+    # Aplicar Filtros com limpeza de espaços nas strings
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
+        df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["UF"] == uf_selecionada]
-    if cidade_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["Cidade"] == cidade_selecionada]
+        df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
+    if cidade_selecionada != "Todas":
+        df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Status"] == status_selecionado]
+        df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
     # Métricas
     col1, col2, col3, col4 = st.columns(4)
@@ -116,7 +115,7 @@ try:
 
     st.divider()
 
-    # Exibição detalhada de cada lead da planilha
+    # Exibição detalhada de cada lead
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
