@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados seguro e sem exclusões acidentales
+# Carregamento de dados limpo, estável e direto
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -28,9 +28,9 @@ def load_data_from_sheet():
     rows = []
     for r in reader:
         if r and len(r) > 0:
-            val0 = str(r[0]).strip().lower()
-            # Ignorar apenas linhas de página em branco
-            if val0 == "" or "página1" in val0:
+            val0 = str(r[0]).strip()
+            # Ignorar apenas linhas estritamente vazias
+            if val0 == "":
                 continue
             rows.append(r)
             
@@ -46,8 +46,8 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
-        # Descartar estritamente a linha de cabeçalho nominal se ela aparecer nos dados
-        if cnpj.lower() == "cnpj" or razao.lower() == "razão social":
+        # Ignorar dinamicamente a linha de cabeçalho nominal caso ela exista
+        if cnpj.lower() == "cnpj" or "razão social" in razao.lower() or "página" in cnpj.lower():
             continue
             
         maps_url = ""
@@ -73,7 +73,7 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização e persistência de status na sessão
+    # Sincronização de status na sessão mantendo a estabilidade
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -99,7 +99,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com correspondência flexível e segura
+    # Aplicar Filtros com correspondência segura
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
