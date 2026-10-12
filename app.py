@@ -222,7 +222,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
-    if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar']):
+    if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar', 'varios carros']):
         prompt = f"professional commercial photography of {explicit_image_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
@@ -316,7 +316,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     latest_img_instruction = ""
     for inst in instructions_list:
         inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar']):
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar', 'varios carros']):
             latest_img_instruction = inst
 
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
@@ -810,8 +810,12 @@ try:
                     st.session_state[hist_key] = []
                 
                 input_key = f"cust_inst_{idx}"
-                if input_key not in st.session_state:
+                if f"clear_{input_key}" not in st.session_state:
+                    st.session_state[f"clear_{input_key}"] = False
+
+                if st.session_state[f"clear_{input_key}"]:
                     st.session_state[input_key] = ""
+                    st.session_state[f"clear_{input_key}"] = False
 
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
@@ -839,7 +843,7 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                            st.session_state[input_key] = ""
+                            st.session_state[f"clear_{input_key}"] = True
                         with st.spinner("Aplicando alterações cumulativas..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
