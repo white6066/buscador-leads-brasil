@@ -35,7 +35,7 @@ input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
-dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
+dropdown_text = "#f3f4f6" if is_dark else "#f3f4f6"
 
 st.markdown(f"""
 <style>
@@ -140,7 +140,6 @@ def smart_osint_search(razao, cnpj, cidade, uf):
             if res.status_code == 200:
                 from bs4 import BeautifulSoup
                 soup = BeautifulSoup(res.text, 'html.parser')
-                
                 page_text = soup.get_text()
                 
                 if not found_fantasia:
@@ -192,8 +191,10 @@ def smart_osint_search(razao, cnpj, cidade, uf):
     }
 
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
+    # 1. Varredura OSINT executada primeiro
     osint = smart_osint_search(razao, cnpj, cidade, uf)
     
+    # 2. Definição de cores da marca
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
@@ -214,17 +215,20 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     else:
         instagram_html = f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram Oficial:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Campo Reservado (Adicionar Futuramente)</span></p>'
 
+    # 3. SELEÇÃO DE IMAGENS PROFISSIONAIS DE ALTA QUALIDADE POR NICHO (Por último)
     seg_lower = (segmento + " " + razao).lower()
     if any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
-        img_feature = "https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=1000&q=80"
-    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
-        img_feature = "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1000&q=80"
-    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult']):
-        img_feature = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1000&q=80"
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont']):
-        img_feature = "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=1000&q=80"
+        img_feature = "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80" # Supermercado limpo e organizado
+    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'plant']):
+        img_feature = "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80" # Agronegócio / Campo sustentável
+    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito']):
+        img_feature = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80" # Jurídico / Escritório Executivo
+    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
+        img_feature = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80" # Clínica / Estética moderna
+    elif any(x in seg_lower for x in ['vestu', 'roupa', 'loja', 'calcado']):
+        img_feature = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" # Loja moderna de varejo
     else:
-        img_feature = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80"
+        img_feature = "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80" # Ambiente corporativo premium
 
     headline = f"Excelência em {segmento}"
     display_name = osint["fantasia"]
@@ -266,6 +270,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
+    <!-- 1º OS PILARES (Sempre antes do Sobre) -->
     <section class="py-16 px-4 bg-slate-50 border-b border-slate-200">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-12">
@@ -292,6 +297,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
+    <!-- 2º SOBRE A EMPRESA (Com imagem contextual profissional gerada por último) -->
     <section class="py-16 px-4 bg-white">
         <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -307,7 +313,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 </div>
             </div>
             <div>
-                <img src="{img_feature}" alt="Segmento Profissional" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
+                <img src="{img_feature}" alt="Ambiente Profissional" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
             </div>
         </div>
     </section>
@@ -421,7 +427,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com OSINT Avançado</div>
-            <div class="banner-subtitle">Localiza automaticamente o Nome Fantasia, logotipos, cores oficiais, redes sociais e gera a página com imagens contextuais por último.</div>
+            <div class="banner-subtitle">Busca inteligente realizada primeiro, com imagens contextuais de alta qualidade e alinhadas ao nicho inseridas por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -532,7 +538,7 @@ try:
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
                 if st.button("🌐 Executar Busca Inteligente & Gerar LP", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Buscando Nome Fantasia, cores da logo, redes sociais e gerando página..."):
+                    with st.spinner("Buscando Nome Fantasia, cores da logo, redes sociais e gerando página com imagens profissionais..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
