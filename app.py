@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados limpo e direto da planilha
+# Carregamento de dados simplificado e 100% resiliente direto da planilha
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,8 +29,9 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) >= 5:
             val0 = str(r[0]).strip().lower()
-            # Ignorar apenas linhas vazias ou rótulos explícitos de sistema
-            if val0 == "" or "página1" in val0:
+            val1 = str(r[1]).strip().lower()
+            # Ignorar apenas linhas que sejam claramente títulos de cabeçalho da planilha
+            if "página" in val0 or "razão social" in val1 or "cnpj" in val1:
                 continue
             rows.append(r)
             
@@ -144,7 +145,7 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Expansível contendo os detalhes completos do lead
+            # Linha Expansível com os detalhes completos do lead
             with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
