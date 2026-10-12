@@ -29,8 +29,8 @@ bg_app = "#090d16" if is_dark else "#f1f5f9"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
-border_color = "#1f2937" if is_dark else "#e2e8f0"
-hr_color = "#1f2937" if is_dark else "#e2e8f0"
+border_color = "#1f2937" if is_dark else "#cbd5e1"
+hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
 input_bg = "#111827" if is_dark else "#ffffff"
@@ -39,10 +39,10 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Fontes Reduzidas (-0.5)
+# Estilização CSS Moderna com Borda Perfeita nos Selectboxes
 st.markdown(f"""
 <style>
-    .stApp {{ background-color: {bg_app}; color: {text_color}; font-size: 0.9rem !important; }}
+    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     /* Reduzir globalmente o tamanho das fontes e textos em -0.5 */
     html, body, [class*="st-"] {{
@@ -78,8 +78,8 @@ st.markdown(f"""
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
         font-size: 0.88rem !important;
     }}
@@ -112,16 +112,17 @@ st.markdown(f"""
     div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }}
 
-    /* Selectbox Geral e Caixas de Filtro */
+    /* Selectbox Geral e Caixas de Filtro com Arredondamento Perfeito */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
     }}
     div[data-baseweb="select"] span {{
         color: {input_text} !important;
@@ -132,8 +133,8 @@ st.markdown(f"""
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }}
     li[data-baseweb="option"], div[role="option"] {{
         background-color: {dropdown_bg} !important;
@@ -153,7 +154,7 @@ st.markdown(f"""
         background-color: {bg_card}; 
         border: 1px solid {border_color}; 
         padding: 14px 18px; 
-        border-radius: 14px; 
+        border-radius: 12px; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
@@ -168,7 +169,7 @@ st.markdown(f"""
     .banner-box {{
         background-color: {bg_card}; 
         padding: 20px 28px; 
-        border-radius: 16px; 
+        border-radius: 14px; 
         color: {text_color}; 
         margin-bottom: 20px; 
         border: 1px solid {border_color}; 
