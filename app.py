@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados em tempo real direto da planilha
+# Carregamento de dados limpo e direto da planilha
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,9 +29,8 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) >= 5:
             val0 = str(r[0]).strip().lower()
-            val1 = str(r[1]).strip().lower()
-            # Ignorar linhas de cabeçalho ou títulos da planilha
-            if "página" in val0 or "título" in val0 or val0 == "" or "razão social" in val1 or "cnpj" in val1:
+            # Ignorar apenas linhas vazias ou rótulos explícitos de sistema
+            if val0 == "" or "página1" in val0:
                 continue
             rows.append(r)
             
@@ -116,23 +115,22 @@ try:
 
     st.divider()
 
-    # Título limpo e profissional
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
+        st.info("Nenhum lead encontrado com os filtros selecionados.")
     else:
-        # Cabeçalho da Tabela perfeitamente alinhado com as colunas dos registros
-        h_cols = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
-        h_cols[0].markdown("**Razão Social**")
-        h_cols[1].markdown("**CNPJ**")
-        h_cols[2].markdown("**Abertura**")
-        h_cols[3].markdown("**UF**")
-        h_cols[4].markdown("**Cidade**")
-        h_cols[5].markdown("**Ações Rápidas**")
-        h_cols[6].markdown("**Status**")
+        # Cabeçalho da Tabela Estilo Planilha Corporativa
+        cols_header = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
+        cols_header[0].markdown("**Razão Social**")
+        cols_header[1].markdown("**CNPJ**")
+        cols_header[2].markdown("**Abertura**")
+        cols_header[3].markdown("**UF**")
+        cols_header[4].markdown("**Cidade**")
+        cols_header[5].markdown("**Ações Rápidas**")
+        cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 5px 0px 10px 0px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 2px 0px 8px 0px;'>", unsafe_allow_html=True)
 
         for idx, row in df_filtered.iterrows():
             razao = row["Razao Social"]
@@ -146,31 +144,31 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Resumida com Expansor alinhado às proporções do cabeçalho
-            with st.expander(f"🏢 **{razao}**"):
+            # Linha Expansível contendo os detalhes completos do lead
+            with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
                 with c1:
-                    st.markdown(f"**Razão Social Completa:** {razao}")
-                    st.markdown(f"**Segmento / Nicho:** {segmento}")
+                    st.markdown(f"**Razão Social:** {razao}")
+                    st.markdown(f"**Segmento:** {segmento}")
                     st.markdown(f"**CNPJ:** {cnpj}")
                     st.markdown(f"**Data de Abertura:** {data_abert}")
-                    st.markdown(f"**Endereço Completo:** {endereco if endereco else 'Não informado'}")
+                    st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                     
                 with c2:
                     tel_display = tel if tel != "" else "Não informado"
-                    st.markdown(f"**Telefone/WhatsApp:** {tel_display}")
+                    st.markdown(f"**Telefone:** {tel_display}")
                     
                     if tel:
                         clean_tel = "".join(filter(str.isdigit, str(tel)))
-                        st.markdown(f"💬 [Abrir Conversa no WhatsApp]({f'https://wa.me/55{clean_tel}'})")
+                        st.markdown(f"💬 [Abrir Conversa no WhatsApp](https://wa.me/55{clean_tel})")
                     
                     if maps_link:
-                        st.markdown(f"🗺️ [Ver Localização no Google Maps]({maps_link})")
+                        st.markdown(f"🗺️ [Ver no Google Maps]({maps_link})")
                         
                     nome_busca = str(razao).replace(' ', '+')
                     cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
-                    st.markdown(f"🔍 [Pesquisar Empresa no Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
+                    st.markdown(f"🔍 [Pesquisar no Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
                     st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
 
                 with c3:
@@ -193,9 +191,9 @@ try:
                         st.rerun()
                         
                     if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
-                        st.success(f"LP gerada com sucesso para {razao}!")
+                        st.success(f"LP gerada para {razao}!")
 
-            st.markdown("<hr style='margin: 2px 0px 5px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
