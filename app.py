@@ -4,14 +4,14 @@ import requests
 import io
 import csv
 
-# 1. Configuração da página e Layout Moderno Rápido
+# 1. Configuração da página e Layout Moderno Compacto
 st.set_page_config(
     page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-# Estilização CSS otimizada
+# Estilização CSS otimizada para alinhamento e espaçamento reduzido
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
@@ -22,16 +22,16 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6 { color: #0f172a !important; }
 
     div[data-testid="metric-container"] {
-        background-color: #ffffff; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background-color: #ffffff; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    div[data-testid="metric-container"] label { color: #475569 !important; font-weight: 700 !important; font-size: 0.9rem !important; }
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #0f172a !important; font-size: 1.6rem !important; font-weight: 800 !important; }
+    div[data-testid="metric-container"] label { color: #475569 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #0f172a !important; font-size: 1.4rem !important; font-weight: 800 !important; }
 
     .banner-box {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px 28px; border-radius: 16px; color: white; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px 24px; border-radius: 14px; color: white; margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    .banner-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff !important; }
-    .banner-subtitle { color: #cbd5e1; font-size: 0.9rem; }
+    .banner-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; color: #ffffff !important; }
+    .banner-subtitle { color: #cbd5e1; font-size: 0.85rem; }
     .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #1e293b !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -118,7 +118,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Use os expanders para gerenciar cada lead.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Detalhes' para gerenciar cada lead.</p>", unsafe_allow_html=True)
 
     # --- BANNER ---
     st.markdown("""
@@ -134,7 +134,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -169,8 +169,8 @@ try:
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        # --- PAGINAÇÃO DE ALTA PERFORMANCE (20 por página) ---
-        items_per_page = 20
+        # --- PAGINAÇÃO (25 itens por página) ---
+        items_per_page = 25
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
         
@@ -182,7 +182,7 @@ try:
         end_idx = start_idx + items_per_page
         df_paginated = df_filtered.iloc[start_idx:end_idx]
 
-        # Cabeçalho
+        # Cabeçalho Perfeitamente Alinhado com as colunas abaixo
         cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
         cols_header[1].markdown("**CNPJ**")
@@ -192,7 +192,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 4px 0px 10px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #cbd5e1;'>", unsafe_allow_html=True)
 
         for idx, row in df_paginated.iterrows():
             razao = row["Razao Social"]
@@ -206,55 +206,57 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
-                c1, c2, c3 = st.columns([2, 2, 1.5])
-                
-                with c1:
-                    st.markdown(f"**Razão Social:** {razao}")
-                    st.markdown(f"**Segmento:** {segmento}")
-                    st.markdown(f"**CNPJ:** {cnpj}")
-                    st.markdown(f"**Data de Abertura:** {data_abert}")
-                    st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
-                    
-                with c2:
-                    tel_display = tel if tel != "" else "Não informado"
-                    st.markdown(f"**Telefone:** {tel_display}")
-                    
-                    if tel:
-                        clean_tel = "".join(filter(str.isdigit, str(tel)))
-                        st.markdown(f"💬 [WhatsApp](https://wa.me/55{clean_tel})")
-                    
-                    if maps_link:
-                        st.markdown(f"🗺️ [Google Maps]({maps_link})")
-                        
-                    nome_busca = str(razao).replace(' ', '+')
-                    cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
-                    st.markdown(f"🔍 [Pesquisar Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
-                    st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
+            # Linha Principal em colunas alinhadas perfeitamente com o cabeçalho
+            r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
+            
+            with r_cols[0]:
+                st.markdown(f"🏢 **{razao}**")
+            with r_cols[1]:
+                st.markdown(f"`{cnpj}`")
+            with r_cols[2]:
+                st.markdown(f"{data_abert}")
+            with r_cols[3]:
+                st.markdown(f"{uf}")
+            with r_cols[4]:
+                st.markdown(f"{cidade}")
+            with r_cols[5]:
+                # Links de Ações Rápidas compactos
+                action_str = []
+                if tel:
+                    clean_tel = "".join(filter(str.isdigit, str(tel)))
+                    action_str.append(f"[💬](https://wa.me/55{clean_tel})")
+                if maps_link:
+                    action_str.append(f"[🗺️]({maps_link})")
+                nome_busca = str(razao).replace(' ', '+')
+                cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
+                action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
+                st.markdown(" ".join(action_str) if action_str else "-")
+            with r_cols[6]:
+                st.markdown(f"🟢 `{current_status}`")
 
+            # Expander compacto discreto para detalhes e alteração de status por linha
+            with st.expander(f"⚙️ Gerenciar: {razao}"):
+                c1, c2, c3 = st.columns([2, 2, 1.5])
+                with c1:
+                    st.markdown(f"**Segmento:** {segmento}")
+                    st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
+                with c2:
+                    st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
+                    st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 with c3:
-                    st.markdown("### Gestão")
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
                     try:
                         c_idx = status_list.index(current_status)
                     except ValueError:
                         c_idx = 0
-                        
-                    novo_status = st.selectbox(
-                        "Status:",
-                        status_list,
-                        index=c_idx,
-                        key=f"status_exp_{idx}"
-                    )
-                    
+                    novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
                     if novo_status != current_status:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
-                        
                     if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
-                        st.success(f"LP gerada para {razao}!")
+                        st.success(f"LP gerada!")
 
-            st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 1px 0px 3px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
