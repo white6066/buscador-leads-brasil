@@ -48,7 +48,7 @@ else:
     input_bg = "#ffffff"
     input_text = "#0f172a"
 
-# Estilização CSS completa
+# Estilização CSS completa (incluindo correção para textos dos selectbox)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -92,6 +92,16 @@ st.markdown(f"""
         background-color: {input_bg} !important;
         border-color: {border_color} !important;
         border-radius: 8px !important;
+    }}
+
+    /* Forçar cor branca nos selects e opções ativas */
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border-color: {border_color} !important;
+    }}
+    div[data-baseweb="select"] span {{
+        color: {input_text} !important;
     }}
 
     /* Cartões de Métricas */
@@ -187,14 +197,12 @@ try:
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
 
-        # Filtrar UFs com base no segmento selecionado
         df_temp_uf = current_df.copy()
         if seg_selecionado != "Todos":
             df_temp_uf = df_temp_uf[df_temp_uf["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
         ufs = ["Todos"] + sorted(list(df_temp_uf["UF"].dropna().unique().astype(str)))
         uf_selecionada = st.selectbox("Estado (UF):", ufs)
 
-        # Filtrar Cidades com base no segmento e UF selecionados
         df_temp_cidade = df_temp_uf.copy()
         if uf_selecionada != "Todos":
             df_temp_cidade = df_temp_cidade[df_temp_cidade["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
