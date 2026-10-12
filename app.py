@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados limpo e sem descartar registos úteis
+# Carregamento de dados blindado contra linhas de cabeçalho
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,8 +29,10 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) > 0:
             val0 = str(r[0]).strip().lower()
-            # Ignorar apenas linhas estritamente vazias de cabeçalho do sistema
-            if val0 == "" or val0 == "página1":
+            val1 = str(r[1]).strip().lower() if len(r) > 1 else ""
+            
+            # Filtro rigoroso para descartar o cabeçalho nominal e linhas vazias
+            if val0 == "" or "página" in val0 or "razão social" in val1 or "cnpj" in val1 or val0 == "cnpj":
                 continue
             rows.append(r)
             
@@ -101,7 +103,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
