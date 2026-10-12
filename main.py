@@ -24,30 +24,72 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
-# Dicionário atualizado com a tradução do novo CNAE de cosméticos/estética
+# Dicionário de tradução para todos os CNAEs alvo
 DICIONARIO_CNAES = {
-    "8630504": "Atividade Odontológica",
-    "8623300": "Atividade Médica Ambulatorial",
-    "3250706": "Fabricação de Aparelhos Ortopédicos/Médicos",
-    "8640205": "Serviços de Diagnóstico por Imagem",
-    "9313100": "Condicionamento Físico (Academia)",
-    "8591100": "Ensino de Esportes",
+    "4511101": "Comércio Varejista de Automóveis Novos",
+    "4511102": "Comércio Varejista de Automóveis Usados",
+    "4520001": "Manutenção e Reparação Mecânica de Veículos",
+    "4530703": "Comércio Varejista de Peças para Veículos",
+    "4637199": "Comércio Atacadista de Produtos Alimentícios",
+    "4642701": "Comércio Atacadista de Vestuário e Acessórios",
+    "4711302": "Supermercados",
+    "4771701": "Comércio Varejista de Produtos Farmacêuticos",
+    "4781400": "Comércio Varejista de Artigos do Vestuário",
+    "6420300": "Holding de Instituições Financeiras",
+    "6462000": "Holdings de Instituições Não-Financeiras",
+    "6511101": "Seguro de Vida",
+    "6612600": "Corretoras de Títulos e Câmbio",
+    "6622300": "Corretores e Agentes de Seguros e Planos de Saúde",
+    "6810201": "Compra e Venda de Imóveis Próprios",
+    "6810202": "Aluguel de Imóveis Próprios",
+    "6821801": "Corretagem na Compra e Venda de Imóveis",
+    "6821802": "Administração de Imóveis por Contrato",
+    "6822600": "Gestão e Administração da Propriedade Imobiliária",
+    "6911701": "Serviços Advocatícios",
+    "6920601": "Atividades de Contabilidade",
+    "7020400": "Consultoria em Gestão Empresarial",
+    "7111100": "Serviços de Arquitetura",
+    "7112000": "Serviços de Engenharia",
+    "7311400": "Agências de Publicidade",
+    "7319002": "Promoção de Vendas",
+    "7319003": "Marketing Direto",
+    "7410202": "Design de Interiores",
+    "7420001": "Atividades de Produção de Fotografias",
+    "7500100": "Atividades Veterinárias",
+    "7711000": "Locação de Automóveis sem Condutor",
+    "7810800": "Seleção e Agenciamento de Mão-de-Obra",
+    "7911200": "Agências de Viagens",
+    "8011101": "Atividades de Vigilância e Segurança Privada",
+    "8121400": "Limpeza em Prédios e Domicílios",
+    "8130300": "Atividades Paisagísticas",
+    "8211000": "Serviços Combinados de Escritório",
+    "8230001": "Organização de Feiras, Congressos e Festas",
+    "8511000": "Educação Infantil - Creche",
+    "8512100": "Educação Infantil - Pré-escola",
+    "8513900": "Ensino Fundamental",
+    "8520100": "Ensino Médio",
+    "8531700": "Educação Superior - Graduação",
     "8592901": "Ensino de Dança",
-    "8230002": "Casas de Festas e Eventos",
-    "8230001": "Organização de Feiras e Congressos",
-    "5620102": "Serviços de Bufê / Catering",
-    "7739003": "Aluguel de Estruturas para Eventos",
+    "8592902": "Ensino de Artes Cênicas",
+    "8593700": "Ensino de Idiomas",
+    "8599603": "Cursos de Pilotagem",
+    "8599604": "Treinamento em Informática",
+    "8610101": "Atividades de Atendimento Hospitalar",
+    "8630503": "Atividade Médica Ambulatorial Restrita a Consultas",
+    "8630504": "Atividade Odontológica",
+    "8640202": "Laboratórios de Análises Clínicas",
+    "8650002": "Atividades de Nutrição",
+    "8650003": "Atividades de Psicologia e Psicanálise",
+    "8650004": "Atividades de Fisioterapia",
+    "8650006": "Atividades de Fonoaudiologia",
+    "8711501": "Clínicas e Residências Geriátricas",
+    "8800600": "Serviços de Assistência Social sem Alojamento",
+    "9511800": "Reparação e Manutenção de Computadores",
+    "9512600": "Reparação de Equipamentos de Comunicação",
     "9602501": "Cabeleireiros, Manicure e Pedicure",
     "9602502": "Estética e Cuidados com a Beleza",
-    "8630501": "Atividade Médica com Cirurgia",
-    "8690901": "Práticas Integrativas em Saúde",
-    "8630502": "Atividade Médica com Exames",
-    "8690904": "Atividades de Podologia",
-    "9609299": "Outras Atividades de Serviços Pessoais",
-    "8650003": "Atividades de Psicologia e Psicanálise",
-    "8630503": "Atividade Médica Ambulatorial Restrita a Consultas",
-    "8650005": "Atividades de Terapia Ocupacional",
-    "4772500": "Comércio Varejista de Cosméticos e Perfumaria",
+    "9609201": "Serviços de Cabeleireiro e Tratamentos de Beleza",
+    "9609208": "Higiene e Embelezamento de Animais Domésticos",
 }
 
 
@@ -107,7 +149,8 @@ if novas_empresas:
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas à planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas de alta"
+        " relevância à planilha!"
     )
   else:
     print(
