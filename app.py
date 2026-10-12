@@ -94,7 +94,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros
+    # Aplicar Filtros com segurança absoluta
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
@@ -118,7 +118,7 @@ try:
     st.subheader("📋 Lista de Empresas Extraídas (Estilo Planilha com Detalhes)")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados.")
+        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
     else:
         # Cabeçalho da Tabela Compacta
         h_cols = st.columns([2.5, 1.2, 0.9, 0.5, 0.9, 1.0, 1.2])
@@ -159,7 +159,6 @@ try:
                     tel_display = tel if tel != "" else "Não informado"
                     st.markdown(f"**Telefone/WhatsApp:** {tel_display}")
                     
-                    # Links diretos de ícones
                     if tel:
                         clean_tel = "".join(filter(str.isdigit, str(tel)))
                         st.markdown(f"💬 [Abrir Conversa no WhatsApp]({f'https://wa.me/55{clean_tel}'})")
