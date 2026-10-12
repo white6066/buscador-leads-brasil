@@ -1,9 +1,8 @@
+import asyncio
 import datetime
-import time
 import urllib.parse
-import requests
+import aiohttp
 
-# Lista completa com todos os 64 CNAEs alvo
 CNAES_ALVO = [
     "4511101",
     "4511102",
@@ -102,22 +101,15 @@ UFS_ALVO = [
 ]
 
 
-def obter_empresas_recentes():
-  print("A iniciar busca nacional por Estado e CNAE...")
-  empresas_coletadas = []
-
-  hoje = datetime.date.today()
-  limite_data = hoje - datetime.timedelta(days=60)
-
-  for uf in UFS_ALVO:
-    for cnae_codigo in CNAES_ALVO:
-      try:
-        url = f"https://minhareceita.org/?uf={uf}&cnae={cnae_codigo}"
-        response = requests.get(url, timeout=10)
-
-        if response.status_code == 200:
-          dados_json = response.json()
+async def buscar_uf_cnae(session, uf, cnae_codigo, limite_data, sem):
+  url = f"https://minhareceita.org/?uf={uf}&cnae={cnae_codigo}"
+  async with sem:
+    try:
+      async with session.get(url, timeout=15) as response:
+        if response.status == 200:
+          dados_json = await response.json()
           lista_empresas = dados_json.get("data", [])
+          resultados = []
 
           for dados in lista_empresas:
             data_abertura_str = dados.get("data_inicio_atividade", "")
@@ -156,7 +148,7 @@ def obter_empresas_recentes():
                       or ""
                   )
 
-                  empresa = {
+                  resultados.append({
                       "cnpj": dados.get("cnpj", ""),
                       "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
@@ -167,19 +159,48 @@ def obter_empresas_recentes():
                       "telefone": telefone,
                       "email": email_empresa,
                       "maps_link": maps_link,
-                  }
-
-                  if not any(
-                      e["cnpj"] == empresa["cnpj"] for e in empresas_coletadas
-                  ):
-                    empresas_coletadas.append(empresa)
+                  })
               except Exception:
                 pass
-        time.sleep(0.02)  # Pausa breve para estabilidade da API
-      except Exception:
-        pass
+          return resultados
+    except Exception:
+      pass
+    return []
 
+
+async def main_async():
   print(
-      f"Total de empresas recolhidas com sucesso: {len(empresas_coletadas)}"
+      "A iniciar busca nacional em paralelo (alta performance para 64 CNAEs e"
+      " 27 UFs)..."
   )
-  return empresas_coletadas
+  hoje = datetime.date.today()
+  limite_data = hoje - datetime.timedelta(days=60)
+
+  # Limita o número de pedidos simultâneos para proteger a estabilidade
+  sem = asyncio.Semaphore(25)
+
+  async with aiohttp.ClientSession() as session:
+    tarefas = []
+    for uf in UFS_ALVO:
+      for cnae_codigo in CNAES_ALVO:
+        tarefas.append(buscar_uf_cnae(session, uf, cnae_codigo, limite_data, sem))
+
+    respostas = await asyncio.gather(*tarefas)
+
+    empresas_coletadas = []
+    cnpjs_vistos = set()
+    for lista in respostas:
+      for emp in lista:
+        if emp["cnpj"] not in cnpjs_vistos:
+          cnpjs_vistos.add(emp["cnpj"])
+          empresas_coletadas.append(emp)
+
+    print(
+        f"Total de empresas únicas recolhidas com sucesso:"
+        f" {len(empresas_coletadas)}"
+    )
+    return empresas_coletadas
+
+
+def obter_empresas_recentes():
+  return asyncio.run(main_async())
