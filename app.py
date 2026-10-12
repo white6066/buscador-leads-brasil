@@ -12,9 +12,9 @@ st.set_page_config(
 )
 
 st.title("🚀 Central de Leads & Novas Empresas")
-st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
+st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados com sincronização perfeita
+# Carregamento de dados limpo e sem descartar registos úteis
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,7 +29,8 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) > 0:
             val0 = str(r[0]).strip().lower()
-            if val0 == "" or "página" in val0:
+            # Ignorar apenas linhas estritamente vazias de cabeçalho do sistema
+            if val0 == "" or val0 == "página1":
                 continue
             rows.append(r)
             
@@ -68,6 +69,7 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
+    # Sincronização e persistência de status na sessão
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -85,7 +87,7 @@ try:
     uf_selecionada = st.sidebar.selectbox("Estado (UF):", ufs)
 
     if uf_selecionada != "Todos":
-        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"] == uf_selecionada]["Cidade"].dropna().unique().astype(str)))
+        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]["Cidade"].dropna().unique().astype(str)))
     else:
         cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().unique().astype(str)))
     cidade_selecionada = st.sidebar.selectbox("Cidade:", cidades)
@@ -93,13 +95,13 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros
+    # Aplicar Filtros com correspondência flexível e segura
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todos":
+    if cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -116,7 +118,7 @@ try:
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados.")
+        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
     else:
         # Cabeçalho da Tabela Estilo Planilha Corporativa
         cols_header = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
