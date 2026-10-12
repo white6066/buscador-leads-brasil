@@ -11,13 +11,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS para unificar o tom do banner com o tema escuro
+# Estilização CSS para unificar o fundo principal e eliminar blocos brancos
 st.markdown("""
 <style>
-    .stApp { background-color: #f8fafc; }
+    /* Fundo principal unificado em tom escuro corporativo */
+    .stApp { background-color: #0f172a; color: #f8fafc; }
     
-    /* Barra lateral totalmente legível */
-    [data-testid="stSidebar"] { background-color: #0f172a; color: #ffffff !important; padding-top: 1rem; }
+    /* Barra lateral */
+    [data-testid="stSidebar"] { background-color: #0f172a; color: #ffffff !important; padding-top: 1rem; border-right: 1px solid #1e293b; }
     [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span { 
         color: #f8fafc !important; 
         font-weight: 500 !important; 
@@ -25,21 +26,23 @@ st.markdown("""
     [data-testid="stSidebar"] div.stSelectbox { margin-bottom: -10px !important; }
     [data-testid="stSidebar"] hr { margin: 10px 0px !important; border-color: #334155 !important; }
     
-    h1, h2, h3, h4, h5, h6 { color: #0f172a !important; }
+    h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
 
+    /* Cartões de Métricas */
     div[data-testid="metric-container"] {
-        background-color: #ffffff; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background-color: #1e293b; border: 1px solid #334155; padding: 10px 14px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    div[data-testid="metric-container"] label { color: #475569 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #0f172a !important; font-size: 1.4rem !important; font-weight: 800 !important; }
+    div[data-testid="metric-container"] label { color: #94a3b8 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #ffffff !important; font-size: 1.4rem !important; font-weight: 800 !important; }
 
-    /* Banner com o mesmo tom da barra lateral */
+    /* Banner Superior */
     .banner-box {
-        background-color: #0f172a; padding: 18px 26px; border-radius: 14px; color: white; margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background-color: #1e293b; padding: 18px 26px; border-radius: 14px; color: white; margin-bottom: 12px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
     .banner-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; color: #ffffff !important; }
     .banner-subtitle { color: #94a3b8; font-size: 0.85rem; }
-    .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #1e293b !important; }
+    
+    .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #f8fafc !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -191,7 +194,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #cbd5e1;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #334155;'>", unsafe_allow_html=True)
 
         start_idx = (st.session_state.get('page_num', 1) - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
@@ -265,7 +268,7 @@ try:
                     if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada!")
 
-            st.markdown("<hr style='margin: 1px 0px 3px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 1px 0px 3px 0px; border-color: #1e293b;'>", unsafe_allow_html=True)
 
         # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
         st.divider()
