@@ -14,8 +14,8 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados simplificado e 100% resiliente direto da planilha
-@st.cache_data(ttl=60)
+# Carregamento de dados totalmente resiliente direto da planilha
+@st.cache_data(ttl=30)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -28,10 +28,9 @@ def load_data_from_sheet():
     rows = []
     for r in reader:
         if r and len(r) >= 5:
-            val0 = str(r[0]).strip().lower()
-            val1 = str(r[1]).strip().lower()
-            # Ignorar apenas linhas que sejam claramente títulos de cabeçalho da planilha
-            if "página" in val0 or "razão social" in val1 or "cnpj" in val1:
+            # Aceitar todas as linhas que contenham dados válidos na primeira coluna
+            val0 = str(r[0]).strip()
+            if val0 == "" or "página" in val0.lower():
                 continue
             rows.append(r)
             
@@ -67,7 +66,7 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização de status na sessão
+    # Sincronização de status na sessão mantendo o estado persistente
     if "df_status" not in st.session_state:
         st.session_state.df_status = df.copy()
     else:
@@ -96,18 +95,18 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros
+    # Aplicar Filtros com correspondência flexível (case-insensitive e strip)
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
+        df_filtered = df_filtered[df_filtered["Segment5"] if "Segment5" in df_filtered else df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["UF"] == uf_selecionada]
+        df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
     if cidade_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["Cidade"] == cidade_selecionada]
+        df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Status"] == status_selecionado]
+        df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # Métricas
+    # Métricas atualizadas em tempo real
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total de Leads Exibidos", len(df_filtered))
     col2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
@@ -119,7 +118,7 @@ try:
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados.")
+        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
     else:
         # Cabeçalho da Tabela Estilo Planilha Corporativa
         cols_header = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
@@ -188,13 +187,4 @@ try:
                     )
                     
                     if novo_status != current_status:
-                        st.session_state.df_status.at[idx, "Status"] = novo_status
-                        st.rerun()
-                        
-                    if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
-                        st.success(f"LP gerada para {razao}!")
-
-            st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
-
-except Exception as e:
-    st.error(f"Erro ao carregar o painel: {e}")
+                        st.session_state.df_status.at[idx, "Status"] = novo_
