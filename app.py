@@ -364,4 +364,13 @@ try:
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
-                    st.markdown(f"
+                    st.markdown(f""<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
+
+        # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
+        st.divider()
+        col_p1, col_p2, col_p3 = st.columns([3, 2, 3])
+        with col_p2:
+            current_page = st.number_input(f"📄 Página (Total: {total_pages})", min_value=1, max_value=total_pages, value=min(st.session_state.get('page_num', 1), total_pages), step=1, key="page_num")
+
+except Exception as e:
+    st.error(f"Erro ao carregar o painel: {e}")
