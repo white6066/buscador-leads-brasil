@@ -13,11 +13,10 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados via exportação CSV direta com cabeçalho de navegador
+# 1. Carregamento de dados usando o link oficial publicado na Web
 @st.cache_data(ttl=300)
 def load_data():
-    sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8trGxHCJXo"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
+    url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRfRtLoR2wvrELschL2RmD_OELrqNZb1FNdqdQPtpVrywBPpPGyU36LkCChZvrLlxl7ch6LQYqh/pub?gid=0&single=true&output=csv"
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
