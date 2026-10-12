@@ -11,14 +11,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS para unificar o fundo e garantir clareza visual
+# Estilização CSS para corrigir o contraste do topo, unificar fundos e margens
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
+    
+    /* Barra lateral totalmente legível */
     [data-testid="stSidebar"] { background-color: #0f172a; color: #ffffff !important; padding-top: 1rem; }
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p { color: #f8fafc !important; font-weight: 500 !important; }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span { 
+        color: #f8fafc !important; 
+        font-weight: 500 !important; 
+    }
     [data-testid="stSidebar"] div.stSelectbox { margin-bottom: -10px !important; }
     [data-testid="stSidebar"] hr { margin: 10px 0px !important; border-color: #334155 !important; }
+    
     h1, h2, h3, h4, h5, h6 { color: #0f172a !important; }
 
     div[data-testid="metric-container"] {
@@ -128,7 +134,7 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- FILTRAGEM ROBUSTA E INDEPENDENTE ---
+    # --- FILTRAGEM ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
@@ -169,20 +175,12 @@ try:
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        # --- PAGINAÇÃO (25 itens por página) ---
+        # Configuração da paginação (25 por página)
         items_per_page = 25
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
-        
-        c_p1, c_p2, c_p3 = st.columns([2, 4, 2])
-        with c_p2:
-            page_num = st.number_input(f"Página (Total de registos: {total_items})", min_value=1, max_value=total_pages, value=1, step=1)
-        
-        start_idx = (page_num - 1) * items_per_page
-        end_idx = start_idx + items_per_page
-        df_paginated = df_filtered.iloc[start_idx:end_idx]
 
-        # Cabeçalho Perfeitamente Alinhado com as colunas abaixo
+        # Cabeçalho da Tabela
         cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
         cols_header[1].markdown("**CNPJ**")
@@ -193,6 +191,12 @@ try:
         cols_header[6].markdown("**Status**")
         
         st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #cbd5e1;'>", unsafe_allow_html=True)
+
+        # Paginação aplicada aos dados antes da renderização das linhas
+        start_idx = (st.session_state.get('page_num', 1) - 1) * items_per_page
+        start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
+        end_idx = start_idx + items_per_page
+        df_paginated = df_filtered.iloc[start_idx:end_idx]
 
         for idx, row in df_paginated.iterrows():
             razao = row["Razao Social"]
@@ -206,7 +210,6 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Principal em colunas alinhadas com os 4 ícones exatos: Telefone, Maps, Pesquisa, Instagram
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             
             with r_cols[0]:
@@ -221,32 +224,26 @@ try:
                 st.markdown(f"{cidade}")
             with r_cols[5]:
                 action_str = []
-                # 1. Telefone / WhatsApp
                 if tel:
                     clean_tel = "".join(filter(str.isdigit, str(tel)))
                     action_str.append(f"[📞](https://wa.me/55{clean_tel})")
                 else:
                     action_str.append("📞")
                 
-                # 2. Google Maps
                 if maps_link:
                     action_str.append(f"[📍]({maps_link})")
                 else:
                     action_str.append("📍")
                 
-                # 3. Pesquisa Google
                 nome_busca = str(razao).replace(' ', '+')
                 cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
                 action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
-                
-                # 4. Instagram
                 action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 
                 st.markdown("  ".join(action_str))
             with r_cols[6]:
                 st.markdown(f"🟢 `{current_status}`")
 
-            # Expander compacto discreto para gestão do lead
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
@@ -269,6 +266,12 @@ try:
                         st.success(f"LP gerada!")
 
             st.markdown("<hr style='margin: 1px 0px 3px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
+
+        # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
+        st.divider()
+        col_p1, col_p2, col_p3 = st.columns([3, 2, 3])
+        with col_p2:
+            current_page = st.number_input(f"📄 Página (Total: {total_pages})", min_value=1, max_value=total_pages, value=min(st.session_state.get('page_num', 1), total_pages), step=1, key="page_num")
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
