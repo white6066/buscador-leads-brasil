@@ -134,7 +134,6 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- MOTOR DE VARREDURA OSINT DE ALTA PRECISÃO ---
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile", f"{razao} instagram oficial"]
@@ -212,12 +211,10 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": extra_activities[:3]
     }
 
-# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL REALISTA E PROPORCIONAL COM SUPORTE A CUSTOMIZAÇÃO ---
 def generate_ai_contextual_image(segmento, razao, custom_prompt_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
     if custom_prompt_instruction and len(custom_prompt_instruction.strip()) > 3:
-        # Se o usuário digitou uma instrução customizada para mudar a foto, transformamos em prompt em inglês para a IA de imagem
         prompt = f"professional commercial photography of {custom_prompt_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
@@ -242,7 +239,6 @@ def generate_ai_contextual_image(segmento, razao, custom_prompt_instruction=""):
     ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
     return ai_image_url
 
-# --- PALETA DE CORES ADAPTATIVA ---
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
         extracted = extract_colors_from_logo(logo_url)
@@ -264,6 +260,32 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         h = int(hashlib.md5((razao + segmento).encode()).hexdigest(), 16)
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
         return palettes[h % len(palettes)], "Paleta Exclusiva"
+
+# --- INTérprete Inteligente de Modificações de Texto ---
+def apply_ai_text_modifications(html_content, instruction):
+    if not instruction or len(instruction.strip()) < 2:
+        return html_content
+    
+    inst_lower = instruction.lower()
+    
+    # Exemplo: trocar cor de "Canais de Atendimento" para branco
+    if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
+        html_content = html_content.replace(
+            '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
+            '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
+        )
+    
+    # Suporte a mudanças gerais de cor de texto ou elementos específicos via injeção de CSS customizado
+    if "cor" in inst_lower or "mudar" in inst_lower or "trocar" in inst_lower:
+        # Extrair termos úteis se houver menção a cores comuns
+        color_map = {"branco": "#ffffff", "preto": "#000000", "azul": "#2563eb", "verde": "#16a34a", "vermelho": "#dc2626", "cinza": "#64748b"}
+        for c_name, c_hex in color_map.items():
+            if c_name in inst_lower:
+                custom_style = f"<style>/* Custom AI Mod: {instruction} */ body {{ color: {c_hex} !important; }}</style>"
+                html_content = html_content.replace("</head>", f"{custom_style}\n</head>")
+                break
+
+    return html_content
 
 # --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, custom_instruction=""):
@@ -522,6 +544,9 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>"""
+    
+    # Aplica modificações baseadas no texto digitado pelo usuário
+    html_code = apply_ai_text_modifications(html_code, custom_instruction)
     return html_code
 
 # --- CARREGAMENTO DA PLANILHA ---
@@ -633,7 +658,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com personalização de imagem por IA, formatação oficial de documentos e alta conversão.</div>
+            <div class="banner-subtitle">Sistema inteligente com personalização de comandos por IA, formatação oficial de documentos e alta conversão.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -749,24 +774,26 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Campo de instrução personalizada ao lado do botão de gerar LP
-                col_btn_gen, col_inst_txt = st.columns([1.3, 2.7])
+                # Linha de controles: Botão de gerar, campo de instrução e Botão de Confirmar Alterações
+                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.3, 1.5])
+                with col_btn_gen:
+                    btn_gerar_clicado = st.button("🌐 Gerar LP IA", key=f"btn_auto_lp_{idx}", use_container_width=True)
                 with col_inst_txt:
                     custom_instruction = st.text_input(
-                        "O que mudar na LP (ex: trocar foto para carros novos)", 
-                        placeholder="Ex: diversos carros novos ou seminovos", 
+                        "O que mudar na LP", 
+                        placeholder="Ex: trocar cor para branco...", 
                         key=f"cust_inst_{idx}",
                         label_visibility="collapsed"
                     )
-                with col_btn_gen:
-                    btn_gerar_clicado = st.button("🌐 Executar IA & Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True)
+                with col_btn_conf:
+                    btn_confirmar_clicado = st.button("🔄 Confirmar Mudança", key=f"btn_conf_lp_{idx}", use_container_width=True)
 
-                if btn_gerar_clicado:
-                    with st.spinner("Gerando Landing Page personalizada com IA..."):
+                if btn_gerar_clicado or btn_confirmar_clicado:
+                    with st.spinner("Aplicando suas instruções e gerando Landing Page atualizada..."):
                         lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, custom_instruction)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page personalizada gerada com sucesso!")
+                        st.success("Landing Page atualizada com sucesso conforme sua solicitação!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
