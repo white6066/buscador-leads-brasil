@@ -211,17 +211,12 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": extra_activities[:3]
     }
 
-def generate_ai_contextual_image(segmento, razao, instructions_list):
+def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
-    latest_img_prompt = ""
-    for inst in instructions_list:
-        inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar']):
-            latest_img_prompt = inst
-
-    if latest_img_prompt and len(latest_img_prompt.strip()) > 3:
-        prompt = f"professional commercial photography of {latest_img_prompt}, photorealistic, 4k resolution, high quality business display"
+    # SÓ muda a imagem se houver comando explícito de foto/imagem
+    if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar']):
+        prompt = f"professional commercial photography of {explicit_image_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
             prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
@@ -241,7 +236,7 @@ def generate_ai_contextual_image(segmento, razao, instructions_list):
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + latest_img_prompt).encode()).hexdigest(), 16) % 10000
+    seed = int(hashlib.md5((segmento + razao + explicit_image_instruction).encode()).hexdigest(), 16) % 10000
     ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
     return ai_image_url
 
@@ -275,14 +270,15 @@ def apply_accumulated_modifications(html_content, instructions_list):
     color_map = {
         "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
         "preto": "#000000", "branco": "#ffffff", "cinza": "#64748b",
-        "laranja": "#ea580c", "roxo": "#7c3aed", "rosa": "#db2777"
+        "laranja": "#ea580c", "roxo": "#7c3aed", "rosa": "#db2777",
+        "bege": "#d4b996", "dourado": "#d97706", "amarelo": "#ca8a04"
     }
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
         # 1. Mudança da cor principal (variável --primary)
-        if "cor principal" in inst_lower or "cor do tema" in inst_lower or "mudar cor" in inst_lower or "trocar cor" in inst_lower:
+        if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor", "cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
@@ -292,10 +288,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
         if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
             html_content = html_content.replace(
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
-                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
-            )
-            html_content = html_content.replace(
-                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-slate-700">Canais de Atendimento</p>',
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
             )
 
@@ -316,6 +308,13 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
 # --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
+    # Verifica se a última instrução pedia especificamente troca de imagem
+    latest_img_instruction = ""
+    for inst in instructions_list:
+        inst_l = inst.lower()
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar']):
+            latest_img_instruction = inst
+
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
@@ -365,7 +364,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature = generate_ai_contextual_image(segmento, razao, instructions_list)
+    img_feature = generate_ai_contextual_image(segmento, razao, latest_img_instruction)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -800,7 +799,7 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Formulário para garantir que o input de texto limpe após a confirmação
+                # Gerenciamento de input de texto e formulário limpador
                 form_key = f"form_mod_{idx}"
                 with st.form(key=form_key):
                     col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.0, 2.7, 1.3])
@@ -809,7 +808,7 @@ try:
                     with col_inst_txt:
                         new_instruction = st.text_input(
                             "O que mudar na LP", 
-                            placeholder="Ex: trocar cor principal para vermelho", 
+                            placeholder="Ex: trocar cor principal para bege", 
                             key=f"cust_inst_{idx}",
                             label_visibility="collapsed"
                         )
