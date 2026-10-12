@@ -2,7 +2,7 @@ import datetime
 import urllib.parse
 import requests
 
-# Os teus 16 CNAEs alvo
+# Lista completa de CNAEs alvo atualizada com os novos códigos
 CNAES_ALVO = [
     "8630504",
     "8623300",
@@ -20,6 +20,11 @@ CNAES_ALVO = [
     "8630501",
     "8690901",
     "8630502",  # Medicina / Práticas Integrativas
+    "8690904",  # Atividades de Podologia
+    "9609299",  # Outras Atividades de Serviços Pessoais
+    "8650003",  # Atividades de Psicologia e Psicanálise
+    "8630503",  # Atividade Médica Ambulatorial Restrita a Consultas
+    "8650005",  # Atividades de Terapia Ocupacional
 ]
 
 UFS_ALVO = [
@@ -54,7 +59,10 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas associadas aos CNAEs alvo...")
+  print(
+      "A pesquisar novas empresas associadas a todos os CNAEs alvo (incluindo"
+      " novos de saúde)..."
+  )
   empresas_coletadas = []
 
   hoje = datetime.date.today()
@@ -112,7 +120,7 @@ def obter_empresas_recentes():
                       "cnpj": dados.get("cnpj", ""),
                       "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
-                      "cnae": cnae_codigo,  # Atribui o código exato que motivou a busca
+                      "cnae": cnae_codigo,
                       "uf": uf_emp,
                       "municipio": municipio,
                       "endereco": endereco_completo,
