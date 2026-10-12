@@ -97,6 +97,14 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+def fix_encoding(text):
+    if not text:
+        return ""
+    try:
+        return str(text).encode('latin1').decode('utf-8')
+    except Exception:
+        return str(text)
+
 def format_cnpj(cnpj_str):
     nums = "".join(filter(str.isdigit, str(cnpj_str)))
     if len(nums) == 14:
@@ -201,14 +209,14 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
             
     commercial_name = found_fantasia if found_fantasia else razao
     return {
-        "fantasia": commercial_name,
+        "fantasia": fix_encoding(commercial_name),
         "logo": found_logo,
         "instagram": found_instagram,
         "email": found_email,
         "phone": found_phone,
         "site": found_site,
-        "slogan": found_slogan,
-        "extra_activities": extra_activities[:3]
+        "slogan": fix_encoding(found_slogan) if found_slogan else None,
+        "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
 def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
@@ -277,26 +285,22 @@ def apply_accumulated_modifications(html_content, instructions_list):
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        # 1. Mudança da cor principal
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor", "cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
                     break
 
-        # 2. Mudança de elementos específicos (ex: Canais de Atendimento)
         if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
             html_content = html_content.replace(
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
             )
 
-        # 3. Mudanças gerais de cores da fonte / texto
         for c_name, c_hex in color_map.items():
             if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
                 css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
 
-    # Aplica cor principal personalizada no CSS e atualiza o rodapé (.footer-bg) para acompanhar a mesma cor
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
         html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
@@ -591,7 +595,7 @@ def load_data_from_sheet():
     for r in rows:
         while len(r) < 10: r.append("")
         cnpj = str(r[0]).strip()
-        razao = str(r[1]).strip() if str(r[1]).strip() != "" else "Empresa"
+        razao = fix_encoding(str(r[1]).strip()) if str(r[1]).strip() != "" else "Empresa"
         
         raw_date = str(r[2]).strip()
         data_abert = raw_date
@@ -614,9 +618,9 @@ def load_data_from_sheet():
                         parsed_dt_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
             except Exception: data_abert = raw_date
 
-        segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
+        segmento = fix_encoding(str(r[3]).strip()) if str(r[3]).strip() != "" else "N/A"
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
-        cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
+        cidade = fix_encoding(str(r[5]).strip().upper()) if str(r[5]).strip() != "" else "N/A"
         
         if cnpj.lower() == "cnpj" or "razão social" in razao.lower(): continue
             
@@ -628,8 +632,8 @@ def load_data_from_sheet():
             cleaned = item.strip()
             if cleaned.isdigit() and 8 <= len(cleaned) <= 12: telefone = cleaned; break
                 
-        addr_parts = [p.strip() for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
-        endereco = ", ".join(addr_parts) if addr_parts else str(r[6]).strip()
+        addr_parts = [fix_encoding(p.strip()) for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
+        endereco = ", ".join(addr_parts) if addr_parts else fix_encoding(str(r[6]).strip())
         
         processed.append([cnpj, razao, data_abert, parsed_dt_str, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
         
@@ -799,7 +803,6 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Gerenciamento com larguras proporcionais (Gerer LP um pouco maior e botões de ação iguais)
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.3, 2.5, 1.2])
                 
                 hist_key = f"instructions_history_{idx}"
@@ -836,7 +839,7 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                            st.session_state[input_key] = ""  # Limpa a caixa de texto após confirmar
+                            st.session_state[input_key] = ""
                         with st.spinner("Aplicando alterações cumulativas..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
