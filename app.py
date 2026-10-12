@@ -877,7 +877,7 @@ try:
                 """
                 components.html(paste_component_html, height=110)
 
-                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.8, 1.2])
+                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
                 
                 hist_key = f"instructions_history_{idx}"
                 if hist_key not in st.session_state:
@@ -914,6 +914,10 @@ try:
                             st.rerun()
 
                 with col_inst_txt:
+                    # Inicialização correta da chave no session_state antes de criar o widget
+                    if input_key not in st.session_state:
+                        st.session_state[input_key] = ""
+                        
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         placeholder="Ex: na imagem 1 quero carros vermelhos, na imagem 2 quero escritório moderno", 
