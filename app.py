@@ -24,7 +24,6 @@ def toggle_theme():
 
 is_dark = st.session_state.theme == "Escuro"
 
-# Cores refinadas para perfeito contraste em ambos os temas
 bg_app = "#090d16" if is_dark else "#f1f5f9"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
@@ -33,7 +32,7 @@ border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
-input_bg = "#1f2937" if is_dark else "#ffffff"
+input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
@@ -549,6 +548,7 @@ def load_data_from_sheet():
                 if "-" in clean_date_str:
                     parts = clean_date_str.split("-")
                     if len(parts) == 3 and len(parts[0]) == 4:
+                        # Formato YYYY-MM-DD convertido para DD/MM/YYYY
                         data_abert = f"{parts[2]}/{parts[1]}/{parts[0]}"
                         parsed_dt_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
                 elif "/" in clean_date_str:
@@ -556,6 +556,9 @@ def load_data_from_sheet():
                     if len(parts) == 3 and len(parts[2]) == 2:
                         data_abert = f"{parts[0]}/{parts[1]}/20{parts[2]}"
                         parsed_dt_str = f"20{parts[2]}-{parts[1]}-{parts[0]}"
+                    elif len(parts) == 3 and len(parts[2]) == 4:
+                        data_abert = f"{parts[0]}/{parts[1]}/{parts[2]}"
+                        parsed_dt_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
             except Exception: data_abert = raw_date
 
         segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
@@ -606,8 +609,8 @@ try:
         st.divider()
         st.markdown("#### 🎯 Filtros por Período")
         
-        filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None)
-        filtro_data_fim = st.date_input("Data Abertura (Fim):", value=None)
+        filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None, format="DD/MM/YYYY")
+        filtro_data_fim = st.date_input("Data Abertura (Fim):", value=None, format="DD/MM/YYYY")
 
         st.divider()
         st.markdown("#### 🎯 Filtros Gerais")
@@ -627,7 +630,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com filtro avançado por data de abertura, formatação oficial de documentos e alta conversão.</div>
+            <div class="banner-subtitle">Sistema inteligente com filtro avançado por data de abertura (DD/MM/AAAA), formatação oficial de documentos e alta conversão.</div>
         </div>
     """, unsafe_allow_html=True)
 
