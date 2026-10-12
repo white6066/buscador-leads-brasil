@@ -24,7 +24,7 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
-# Dicionário completo com os significados descritivos de todos os CNAEs alvo
+# Dicionário atualizado com a tradução do novo CNAE de cosméticos/estética
 DICIONARIO_CNAES = {
     "8630504": "Atividade Odontológica",
     "8623300": "Atividade Médica Ambulatorial",
@@ -47,6 +47,7 @@ DICIONARIO_CNAES = {
     "8650003": "Atividades de Psicologia e Psicanálise",
     "8630503": "Atividade Médica Ambulatorial Restrita a Consultas",
     "8650005": "Atividades de Terapia Ocupacional",
+    "4772500": "Comércio Varejista de Cosméticos e Perfumaria",
 }
 
 
@@ -106,8 +107,7 @@ if novas_empresas:
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com os"
-        " segmentos atualizados à planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas à planilha!"
     )
   else:
     print(
