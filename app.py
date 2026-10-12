@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa
+# Estilização CSS completa com correção absoluta para botões
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -58,17 +58,23 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botões gerais, barra lateral e paginação */
-    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button {{
+    /* Botões gerais, barra lateral, expander e paginação */
+    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }}
-    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover {{
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
+        background-color: {btn_bg} !important;
         border-color: #38bdf8 !important;
         color: #38bdf8 !important;
+    }}
+    [data-testid="stSidebar"] button:focus, .stDownloadButton button:focus, div[data-testid="stExpander"] button:focus, div.row-widget.stButton button:focus, button:focus {{
+        background-color: {btn_bg} !important;
+        color: {btn_text} !important;
+        border-color: #38bdf8 !important;
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
