@@ -31,7 +31,8 @@ if st.session_state.theme == "Escuro":
     text_muted = "#94a3b8"
     border_color = "#334155"
     hr_color = "#334155"
-    input_bg = "#1e293b"
+    btn_bg = "#1e293b"
+    btn_text = "#ffffff"
 else:
     bg_app = "#f8fafc"
     bg_card = "#ffffff"
@@ -40,9 +41,10 @@ else:
     text_muted = "#475569"
     border_color = "#e2e8f0"
     hr_color = "#cbd5e1"
-    input_bg = "#ffffff"
+    btn_bg = "#f1f5f9"
+    btn_text = "#0f172a"
 
-# Estilização CSS dinâmica e moderna
+# Estilização CSS dinâmica e moderna (incluindo correção do botão da barra lateral)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -60,6 +62,18 @@ st.markdown(f"""
     }}
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
+    
+    /* Remover fundo branco nativo dos botões na barra lateral */
+    [data-testid="stSidebar"] button {{
+        background-color: {btn_bg} !important;
+        color: {btn_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
+    [data-testid="stSidebar"] button:hover {{
+        border-color: #38bdf8 !important;
+        color: #38bdf8 !important;
+    }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
 
@@ -145,7 +159,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        # Botão de alternância de Tema moderno
+        # Botão de alternância de Tema integrado
         theme_btn_label = "☀️ Modo Claro" if st.session_state.theme == "Escuro" else "🌙 Modo Escuro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
@@ -186,7 +200,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
