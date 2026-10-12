@@ -11,21 +11,30 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS personalizada para injetar o visual corporativo moderno
+# Estilização CSS personalizada para legibilidade máxima e contraste perfeito
 st.markdown("""
 <style>
-    /* Estilo geral de fundo e fontes */
+    /* Estilo geral de fundo */
     .stApp {
         background-color: #f8fafc;
     }
     
-    /* Barra lateral escura */
+    /* Barra lateral escura com texto 100% branco e visível */
     [data-testid="stSidebar"] {
-        background-color: #1e293b;
-        color: #ffffff;
+        background-color: #0f172a;
+        color: #ffffff !important;
     }
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
-        color: #e2e8f0 !important;
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span {
+        color: #f8fafc !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Cor dos títulos e textos principais do painel */
+    h1, h2, h3, h4, h5, h6 {
+        color: #0f172a !important;
     }
 
     /* Cartões de Métricas Estilizados */
@@ -37,15 +46,17 @@ st.markdown("""
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     div[data-testid="metric-container"] label {
-        color: #64748b !important;
-        font-weight: 600;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
     }
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
         color: #0f172a !important;
         font-size: 1.8rem !important;
+        font-weight: 800 !important;
     }
 
-    /* Cabeçalho de banners e títulos */
+    /* Banner Principal */
     .banner-box {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         padding: 28px 36px;
@@ -58,21 +69,22 @@ st.markdown("""
         font-size: 1.8rem;
         font-weight: 700;
         margin-bottom: 6px;
+        color: #ffffff !important;
     }
     .banner-subtitle {
-        color: #94a3b8;
+        color: #cbd5e1;
         font-size: 0.95rem;
     }
 
-    /* Ajuste de inputs e filtros */
+    /* Rótulos dos filtros principais do corpo da página */
     .stSelectbox label, .stTextInput label {
-        font-weight: 600 !important;
-        color: #334155 !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Carregamento de dados com cache de alta performance
+# Carregamento de dados com cache de alta performance
 @st.cache_data(ttl=300, show_spinner="A carregar painel corporativo...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -134,7 +146,7 @@ try:
     # --- BARRA LATERAL ESTILO CORPORATIVO ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
-        st.markdown("<p style='color: #94a3b8; font-size: 0.85rem;'>Painel de Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #cbd5e1; font-size: 0.85rem;'>Painel de Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
         st.divider()
         
         st.markdown("#### 🎯 Filtros de Prospecção")
@@ -155,7 +167,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.info("💡 **Dica:** Utilize os expanders na tabela principal para gerenciar cada lead individualmente.")
+        st.markdown("💡 **Dica:** Utilize os expanders na tabela principal para gerenciar cada lead individualmente.")
 
     # --- BANNER PRINCIPAL DO TOPO ---
     st.markdown("""
@@ -171,7 +183,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -229,9 +241,6 @@ try:
             tel = row["Telefone"]
             maps_link = row["Maps"]
             current_status = row["Status"]
-
-            # Cor do badge baseada no status
-            badge_color = "#f59e0b" if current_status == "Pendente" else ("#3b82f6" if current_status == "Em Análise" else "#10b981")
 
             with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
