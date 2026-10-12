@@ -39,7 +39,7 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Arredondamento Suave (4px)
+# Estilização CSS Moderna com Selectbox Unificado e Sem Borda Interna
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -116,7 +116,7 @@ st.markdown(f"""
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }}
 
-    /* Selectbox Geral e Caixas de Filtro com Arredondamento Suave (4px) */
+    /* Selectbox Geral e Caixas de Filtro com Unificação Perfeita */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
@@ -127,6 +127,11 @@ st.markdown(f"""
     div[data-baseweb="select"] span {{
         color: {input_text} !important;
         font-size: 0.9rem !important;
+    }}
+    /* Remover bordas ou divisões internas do botão da seta */
+    div[data-baseweb="select"] div[role="button"] {{
+        border-left: none !important;
+        box-shadow: none !important;
     }}
     
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
