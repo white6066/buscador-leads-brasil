@@ -188,13 +188,13 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- APLICAR FILTROS ---
+    # --- APLICAR FILTROS DE FORMA ROBUSTA ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todos":
+    if cidade_selecionada != "Todas" and cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
