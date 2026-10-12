@@ -31,7 +31,7 @@ text_color = "#f8fafc" if is_dark else "#0f172a"
 text_muted = "#94a3b8" if is_dark else "#475569"
 border_color = "#334155" if is_dark else "#cbd5e1"
 hr_color = "#334155" if is_dark else "#cbd5e1"
-btn_bg = "#1e293b" if is_dark else "#f1f5f9"
+btn_bg = "#1e293b" if is_dark else "#ffffff"
 btn_text = "#ffffff" if is_dark else "#0f172a"
 input_bg = "#1e293b" if is_dark else "#ffffff"
 input_text = "#ffffff" if is_dark else "#0f172a"
@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa
+# Estilização CSS completa com harmonização dos botões de paginação
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -58,12 +58,13 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botões gerais e barra lateral */
+    /* Botões gerais, barra lateral e paginação */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover {{
         border-color: #38bdf8 !important;
@@ -307,7 +308,6 @@ try:
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
         
-        # Garantir que a página atual não ultrapasse o total
         if st.session_state.page_num > total_pages:
             st.session_state.page_num = total_pages
 
@@ -395,7 +395,7 @@ try:
 
             st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
-        # --- PAGINAÇÃO COMPACTA COM BOTÕES ---
+        # --- PAGINAÇÃO COM BOTÕES HARMONIZADOS ---
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
         
