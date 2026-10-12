@@ -13,7 +13,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados em tempo real direto da planilha pública em CSV
+# Carregamento de dados em tempo real direto da planilha com tratamento de cabeçalho
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -25,7 +25,13 @@ def load_data_from_sheet():
     
     df = pd.read_csv(io.StringIO(response.text), header=None)
     
-    # Garantir que existam colunas suficientes para os dados da planilha
+    # Remover linha de cabeçalho ou título inicial (ex: '# Página1') se existir
+    if not df.empty:
+        primeiro_valor = str(df.iloc[0, 0])
+        if "Página" in primeiro_valor or not primeiro_valor.isdigit() or len(primeiro_valor) != 14:
+            df = df.iloc[1:].reset_index(drop=True)
+            
+    # Garantir colunas suficientes
     while df.shape[1] < 10:
         df[df.shape[1]] = ""
         
@@ -49,7 +55,7 @@ try:
     col_tel = 7
     col_maps = 9
 
-    # 2. Barra Lateral - Filtros Dinâmicos baseados na planilha
+    # 2. Barra Lateral - Filtros Dinâmicos
     st.sidebar.header("🎯 Filtros de Prospecção")
 
     segmentos = ["Todos"] + sorted(list(df[col_seg].dropna().unique().astype(str)))
