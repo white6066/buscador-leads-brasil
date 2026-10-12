@@ -117,7 +117,6 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- VARREDURA OSINT INTELIGENTE (CAPTURA DE NOME FANTASIA, LOGO, INSTAGRAM E CONTATO) ---
 def smart_osint_search(razao, cnpj, cidade, uf):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
@@ -144,7 +143,6 @@ def smart_osint_search(razao, cnpj, cidade, uf):
                 
                 page_text = soup.get_text()
                 
-                # Tentar identificar Nome Fantasia se mencionado em fontes públicas
                 if not found_fantasia:
                     fantasia_match = re.search(r'(?:Nome Fantasia|fantasia)[:\s]+([A-ZÁ-Ú0-9\s]{3,30})', page_text, re.IGNORECASE)
                     if fantasia_match:
@@ -183,7 +181,6 @@ def smart_osint_search(razao, cnpj, cidade, uf):
         except Exception:
             continue
             
-    # Se não achar um nome fantasia específico, usa a Razão Social limpa
     commercial_name = found_fantasia if found_fantasia else razao
     
     return {
@@ -194,13 +191,9 @@ def smart_osint_search(razao, cnpj, cidade, uf):
         "phone": found_phone
     }
 
-# --- GERAÇÃO DA LANDING PAGE COM OS DADOS ENRIQUECIDOS ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    
-    # 1. Executar busca inteligente primeiro
     osint = smart_osint_search(razao, cnpj, cidade, uf)
     
-    # 2. Obter cores da logo ou gerar tom dinâmico baseado no CNPJ
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
@@ -212,18 +205,15 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 
     formatted_cnpj = format_cnpj(cnpj)
     
-    # 3. Tratamento de contato
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
-    # 4. Bloco Dinâmico do Instagram
     if osint["instagram"]:
         instagram_html = f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
     else:
         instagram_html = f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram Oficial:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Campo Reservado (Adicionar Futuramente)</span></p>'
 
-    # 5. Imagem contextual por último
     seg_lower = (segmento + " " + razao).lower()
     if any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
         img_feature = "https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=1000&q=80"
@@ -254,12 +244,10 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
-    <!-- Top Notice Bar -->
     <div class="brand-bg text-white text-xs py-2 px-4 text-center font-semibold">
         📍 {cidade} - {uf} | Atendimento Especializado em {segmento}
     </div>
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="font-black text-lg md:text-xl tracking-tight text-slate-900 uppercase flex items-center gap-3">
@@ -270,7 +258,6 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="relative text-white py-24 px-4 brand-bg">
         <div class="max-w-4xl mx-auto text-center">
             <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{headline}</h1>
@@ -279,7 +266,6 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
-    <!-- 1º OS PILARES -->
     <section class="py-16 px-4 bg-slate-50 border-b border-slate-200">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-12">
@@ -306,7 +292,6 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
-    <!-- 2º SOBRE A EMPRESA -->
     <section class="py-16 px-4 bg-white">
         <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -327,7 +312,6 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
-    <!-- Rodapé Coeso -->
     <footer class="brand-bg text-white py-8 text-center text-xs border-t border-slate-800">
         <div class="max-w-4xl mx-auto px-4">
             <p class="font-bold text-sm mb-2">{display_name}</p>
@@ -341,7 +325,6 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 </html>"""
     return html_code
 
-# --- CARREGAMENTO DA PLANILHA ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -461,7 +444,7 @@ try:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
     with col_export:
         csv_export = df_filtered.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv", text_label_visibility="collapsed")
+        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv")
 
     if search_query:
         ql = search_query.lower()
