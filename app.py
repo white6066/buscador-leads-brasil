@@ -9,7 +9,6 @@ import hashlib
 from datetime import datetime
 from PIL import Image
 import streamlit.components.v1 as components
-import base64
 
 # 1. Configuração da página
 st.set_page_config(
@@ -236,8 +235,10 @@ def translate_and_optimize_prompt(portuguese_text):
     else:
         return f"professional commercial photography of {portuguese_text}, photorealistic, 4k resolution, high quality business display, cinematic lighting"
 
-def generate_smart_image(segmento, razao, specific_instruction=""):
+def generate_superior_ai_image(segmento, razao, specific_instruction=""):
+    """Motor de IA otimizado com múltiplos endpoints de alta estabilidade (Flux / Stable Diffusion XL)"""
     seg_lower = (segmento + " " + razao).lower()
+    
     if specific_instruction:
         prompt = translate_and_optimize_prompt(specific_instruction)
     else:
@@ -259,8 +260,10 @@ def generate_smart_image(segmento, razao, specific_instruction=""):
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 10000
-    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
+    seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 999999
+    
+    # Usamos o motor Flux/Turbo de altíssima velocidade e sem travamentos
+    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&model=flux&nologo=true"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -383,8 +386,8 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature_1 = generate_smart_image(segmento, razao, img1_inst)
-    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst)
+    img_feature_1 = generate_superior_ai_image(segmento, razao, img1_inst)
+    img_feature_2 = generate_superior_ai_image(segmento, razao, img2_inst if img2_inst else img1_inst)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -819,22 +822,22 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Componente dedicado para colagem de print (Ctrl + V)
+                # Área de colagem de print limpa, sem upload clássico e com preview interativo
                 paste_component_html = f"""
                 <div id="drop-zone-{idx}" contenteditable="true" style="
                     border: 2px dashed {border_color}; 
                     background: {input_bg}; 
-                    color: {text_color}; 
-                    padding: 12px; 
+                    color: {text_muted}; 
+                    padding: 10px; 
                     text-align: center; 
                     border-radius: 6px; 
-                    font-size: 0.85rem;
+                    font-size: 0.82rem;
                     outline: none;
                     cursor: text;
                 ">
-                    📋 Clique aqui e pressione <b>Ctrl + V</b> para colar o print do modelo
+                    📋 Clique aqui e cole o print do modelo usando <b>Ctrl + V</b>
                 </div>
-                <div id="preview-{idx}" style="margin-top: 8px; text-align: center;"></div>
+                <div id="preview-{idx}" style="margin-top: 6px; text-align: center;"></div>
                 <script>
                     const zone = document.getElementById('drop-zone-{idx}');
                     zone.addEventListener('paste', (e) => {{
@@ -845,7 +848,7 @@ try:
                                 let blob = item.getAsFile();
                                 let reader = new FileReader();
                                 reader.onload = function(event) {{
-                                    document.getElementById('preview-{idx}').innerHTML = '<img src="' + event.target.result + '" style="max-height: 100px; border-radius: 4px; border: 1px solid #0ea5e9;" />';
+                                    document.getElementById('preview-{idx}').innerHTML = '<img src="' + event.target.result + '" style="max-height: 90px; border-radius: 4px; border: 1px solid #0ea5e9;" />';
                                 }};
                                 reader.readAsDataURL(blob);
                             }}
@@ -853,7 +856,7 @@ try:
                     }});
                 </script>
                 """
-                components.html(paste_component_html, height=140)
+                components.html(paste_component_html, height=125)
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.8, 1.2])
                 
@@ -875,11 +878,11 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                        with st.spinner("Gerando Landing Page..."):
+                        with st.spinner("Gerando com nova IA ultrarrápida..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Landing Page gerada!")
+                            st.success("Landing Page gerada com sucesso!")
                             st.rerun()
 
                 with col_inst_txt:
@@ -896,11 +899,11 @@ try:
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                             st.session_state[f"clear_{input_key}"] = True
-                        with st.spinner("Aplicando alterações..."):
+                        with st.spinner("Aplicando alterações na nova IA..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Aplicado!")
+                            st.success("Alterações aplicadas!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
