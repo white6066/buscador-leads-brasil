@@ -6,6 +6,7 @@ import csv
 import urllib.parse
 import re
 import hashlib
+from datetime import datetime
 from PIL import Image
 
 # 1. Configuração da página
@@ -69,17 +70,13 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    input[type="text"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
+    input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
 
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
     
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
-    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
-    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
-
     div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
@@ -94,7 +91,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# Funções de Formatação Inteligente (CNPJ, Telefone/Celular e CEP)
+# Funções de Formatação Inteligente
 def format_cnpj(cnpj_str):
     nums = "".join(filter(str.isdigit, str(cnpj_str)))
     if len(nums) == 14:
@@ -291,7 +288,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
 
     activities_html = "".join([f'<li class="flex items-center gap-2 text-sm text-slate-700"><span class="brand-text font-bold">✓</span> {act}</li>' for act in extra_acts])
 
-    # Formatação de CEP e Endereço
     formatted_address = endereco
     cep_match = re.search(r'\b\d{8}\b', endereco)
     if cep_match:
@@ -367,7 +363,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
         <a class="hover:brand-text transition" href="#contato">Contato</a>
       </nav>
-      <!-- Botão Superior Harmonizado com a Cor da LP e Ícone do WhatsApp -->
       <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2.5 rounded-xl brand-bg px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90">
         <svg class="h-5 w-5 fill-current text-white" viewBox="0 0 24 24">
           <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
@@ -452,7 +447,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Seção de Contato com Dados Formatados e Botão de WhatsApp Personalizado ao Lado -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -542,6 +536,7 @@ def load_data_from_sheet():
         
         raw_date = str(r[2]).strip()
         data_abert = raw_date
+        parsed_dt_str = ""
         if raw_date:
             try:
                 clean_date_str = raw_date.split("T")[0].split(" ")[0]
@@ -549,10 +544,12 @@ def load_data_from_sheet():
                     parts = clean_date_str.split("-")
                     if len(parts) == 3 and len(parts[0]) == 4:
                         data_abert = f"{parts[2]}/{parts[1]}/{parts[0]}"
+                        parsed_dt_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
                 elif "/" in clean_date_str:
                     parts = clean_date_str.split("/")
                     if len(parts) == 3 and len(parts[2]) == 2:
                         data_abert = f"{parts[0]}/{parts[1]}/20{parts[2]}"
+                        parsed_dt_str = f"20{parts[2]}-{parts[1]}-{parts[0]}"
             except Exception: data_abert = raw_date
 
         segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
@@ -572,9 +569,9 @@ def load_data_from_sheet():
         addr_parts = [p.strip() for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
         endereco = ", ".join(addr_parts) if addr_parts else str(r[6]).strip()
         
-        processed.append([cnpj, razao, data_abert, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
+        processed.append([cnpj, razao, data_abert, parsed_dt_str, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
         
-    cols = ["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps", "Status"]
+    cols = ["CNPJ", "Razao Social", "Data Abertura", "DataAberturaParsed", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps", "Status"]
     return pd.DataFrame(processed, columns=cols)
 
 try:
@@ -601,7 +598,13 @@ try:
             st.rerun()
 
         st.divider()
-        st.markdown("#### 🎯 Filtros")
+        st.markdown("#### 🎯 Filtros por Período")
+        
+        filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None)
+        filtro_data_fim = st.date_input("Data Abertura (Fim):", value=None)
+
+        st.divider()
+        st.markdown("#### 🎯 Filtros Gerais")
         
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().astype(str).str.strip().unique()))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
@@ -618,11 +621,16 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com formatação oficial de documentos (CNPJ, Telefones, CEP) e botões de contato dinâmicos.</div>
+            <div class="banner-subtitle">Sistema inteligente com filtro avançado por data de abertura, formatação oficial de documentos e alta conversão.</div>
         </div>
     """, unsafe_allow_html=True)
 
     df_filtered = current_df.copy()
+    if filtro_data_inicio:
+        df_filtered = df_filtered[df_filtered["DataAberturaParsed"] >= filtro_data_inicio.strftime("%Y-%m-%d")]
+    if filtro_data_fim:
+        df_filtered = df_filtered[df_filtered["DataAberturaParsed"] <= filtro_data_fim.strftime("%Y-%m-%d")]
+
     if seg_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
     if uf_selecionada != "Todos": df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada]
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
@@ -640,7 +648,7 @@ try:
     with col_search:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
     with col_export:
-        csv_export = df_filtered.to_csv(index=False).encode('utf-8')
+        csv_export = df_filtered.drop(columns=["DataAberturaParsed"]).to_csv(index=False).encode('utf-8')
         st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv")
 
     if search_query:
