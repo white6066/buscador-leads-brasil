@@ -30,7 +30,7 @@ text_muted = "#9ca3af" if is_dark else "#64748b"
 border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
-btn_text = "#f3f4f6" if is_dark else "#0f172a"
+btn_text = "#f3f4f6" if is_dark else "#f3f4f6"
 input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
@@ -94,7 +94,12 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- EXTRATOR DE CORES DO LOGO ---
+def format_cnpj(cnpj_str):
+    nums = "".join(filter(str.isdigit, str(cnpj_str)))
+    if len(nums) == 14:
+        return f"{nums[:2]}.{nums[2:5]}.{nums[5:8]}/{nums[8:12]}-{nums[12:]}"
+    return cnpj_str
+
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
@@ -112,19 +117,18 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- BUSCA OSINT PROFUNDA (INSTAGRAM, CONTATO E LOGO) ---
 def deep_osint_search(razao, cnpj, cidade, uf):
     headers = {"User-Agent": "Mozilla/5.0"}
     queries = [
         f"{razao} {cidade} {uf} instagram",
-        f"{razao} {cnpj} cnpj biz",
-        f"{razao} telefone contato"
+        f"{razao} nome fantasia",
+        f"CNPJ {cnpj} biz"
     ]
     
-    snippets = []
     found_logo = None
     found_instagram = None
     found_email = None
+    found_fantasia = razao
     
     for q in queries:
         try:
@@ -136,11 +140,9 @@ def deep_osint_search(razao, cnpj, cidade, uf):
                     img = data["Image"]
                     found_logo = img if img.startswith("http") else f"https://duckduckgo.com{img}"
                 
-                # Varrer textos em busca de Instagram real
                 for rel in data.get("RelatedTopics", []):
                     txt = rel.get("Text", "")
                     if txt:
-                        snippets.append(txt)
                         if not found_instagram and "instagram.com/" in txt.lower():
                             ig_match = re.search(r'https?://(?:www\.)?instagram\.com/[a-zA-Z0-9_.]+', txt)
                             if ig_match:
@@ -153,32 +155,29 @@ def deep_osint_search(razao, cnpj, cidade, uf):
             continue
             
     return {
-        "snippets": snippets,
         "logo": found_logo,
         "instagram": found_instagram,
-        "email": found_email
+        "email": found_email,
+        "fantasia": found_fantasia
     }
 
-# --- GERADOR DE LANDING PAGE OTIMIZADA COM DESIGN UNIFORME ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj):
     osint = deep_osint_search(razao, cnpj, cidade, uf)
+    formatted_cnpj = format_cnpj(cnpj)
     
-    # Obter cor primária exata (do logo ou matemática baseada no CNPJ)
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
     
     if not primary_color:
         h = hashlib.md5((razao + cnpj).encode()).hexdigest()
-        hue = int(h[0:4], 16) % 360
         primary_color = f"#{int(h[4:6], 16) % 150:02x}{int(h[6:8], 16) % 180:02x}{int(h[8:10], 16) % 200:02x}"
-        if primary_color == "#000000": primary_color = "#2563eb"
+        if primary_color == "#000000": primary_color = "#1e3a8a"
 
-    # Seleção de imagens visuais profissionais baseadas no segmento para enriquecer a LP
     seg_lower = segmento.lower()
-    if any(x in seg_lower for x in ['vestu', 'roupa', 'comercio', 'loja', 'distribui', 'atacad']):
+    if any(x in seg_lower for x in ['vestu', 'roupa', 'comercio', 'loja', 'distribui', 'atacad', 'automov']):
         img_feature = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80"
-        headline = f"Soluções Especializadas em {segmento}"
+        headline = f"Excelência em {segmento}"
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult']):
         img_feature = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1000&q=80"
         headline = f"Segurança e Assessoria de Alto Padrão"
@@ -187,9 +186,8 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, da
         headline = f"Bem-Estar e Atendimento Exclusivo"
     else:
         img_feature = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80"
-        headline = f"Excelência e Qualidade em {segmento}"
+        headline = f"Qualidade e Soluções em {segmento}"
 
-    # Telefone de contato (Usa o da Receita Federal caso não venha outro da web)
     active_tel = tel if tel else ""
     clean_tel = "".join(filter(str.isdigit, str(active_tel)))
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
@@ -209,7 +207,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, da
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
-    <!-- Top Notice Bar (Mesma cor da marca) -->
+    <!-- Top Notice Bar (Sem CNPJ) -->
     <div class="brand-bg text-white text-xs py-2 px-4 text-center font-semibold">
         📍 {cidade} - {uf} | Atendimento Especializado em {segmento}
     </div>
@@ -228,36 +226,14 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, da
     <!-- Hero Section -->
     <section class="relative text-white py-24 px-4 brand-bg">
         <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4 backdrop-blur-sm">CNPJ: {cnpj}</span>
             <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{headline}</h1>
             <p class="text-base md:text-lg text-slate-100 mb-8 max-w-2xl mx-auto leading-relaxed">A <b>{razao}</b> atua com rigor técnico, agilidade e compromisso para garantir os melhores resultados aos nossos clientes em {cidade} e região.</p>
             {f'<div class="flex justify-center"><a href="{whats_link}" target="_blank" class="bg-white text-slate-900 hover:bg-slate-100 text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">🚀 Entrar em Contato Agora</a></div>' if clean_tel else ''}
         </div>
     </section>
 
-    <!-- Seção Institucional com Imagem Profissional -->
-    <section class="py-16 px-4 bg-white">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Sobre a Nossa Empresa</h2>
-                <div class="w-16 h-1 brand-bg mb-6 rounded"></div>
-                <p class="text-slate-600 leading-relaxed text-base mb-4">Constituída em oficial em <b>{data_abert}</b>, a <b>{razao}</b> destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para oferecer excelência.</p>
-                
-                <div class="space-y-3 mt-6">
-                    <p class="text-sm text-slate-700 flex items-center gap-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
-                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📞 Contato:</b> {active_tel}</p>' if active_tel else ''}
-                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>✉️ E-mail:</b> {osint["email"]}</p>' if osint["email"] else ''}
-                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>' if osint["instagram"] else ''}
-                </div>
-            </div>
-            <div>
-                <img src="{img_feature}" alt="Estrutura Profissional" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
-            </div>
-        </div>
-    </section>
-
-    <!-- Diferenciais -->
-    <section class="py-16 px-4 bg-slate-50 border-t border-slate-200">
+    <!-- 1º OS PILARES (Exigência: Sempre antes do Sobre) -->
+    <section class="py-16 px-4 bg-slate-50 border-b border-slate-200">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-12">
                 <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Nossos Pilares</h2>
@@ -283,11 +259,32 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, da
         </div>
     </section>
 
-    <!-- Rodapé (Mesma cor exata do topo, sem contraste invertido) -->
+    <!-- 2º SOBRE A EMPRESA (Após os Pilares) -->
+    <section class="py-16 px-4 bg-white">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Sobre a Nossa Empresa</h2>
+                <div class="w-16 h-1 brand-bg mb-6 rounded"></div>
+                <p class="text-slate-600 leading-relaxed text-base mb-4">Constituída oficialmente em <b>{data_abert}</b>, a <b>{razao}</b> destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para oferecer excelência.</p>
+                
+                <div class="space-y-3 mt-6">
+                    <p class="text-sm text-slate-700 flex items-center gap-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
+                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📞 Contato:</b> {active_tel}</p>' if active_tel else ''}
+                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>✉️ E-mail:</b> {osint["email"]}</p>' if osint["email"] else ''}
+                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>' if osint["instagram"] else ''}
+                </div>
+            </div>
+            <div>
+                <img src="{img_feature}" alt="Estrutura Profissional" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
+            </div>
+        </div>
+    </section>
+
+    <!-- Rodapé Coeso (Mesma cor do topo com CNPJ formatado) -->
     <footer class="brand-bg text-white py-8 text-center text-xs border-t border-slate-800">
         <div class="max-w-4xl mx-auto px-4">
             <p class="font-bold text-sm mb-2">{razao}</p>
-            <p class="text-white/80 mb-4">CNPJ: {cnpj} | {cidade}/{uf}</p>
+            <p class="text-white/80 mb-2">CNPJ: {formatted_cnpj} | {cidade}/{uf}</p>
             <p class="text-white/60">&copy; 2026 Todos os direitos reservados.</p>
         </div>
     </footer>
@@ -365,7 +362,6 @@ try:
     if "page_num" not in st.session_state:
         st.session_state.page_num = 1
 
-    # --- BARRA LATERAL ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
@@ -391,22 +387,19 @@ try:
         status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
 
-    # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP Profissional & Coeso</div>
-            <div class="banner-subtitle">Busca perfis reais de Instagram, valida contactos e gera páginas com design uniforme do topo ao rodapé.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP Profissional</div>
+            <div class="banner-subtitle">Páginas limpas, com pilares antes do sobre, CNPJ formatado no rodapé e busca integrada.</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # --- FILTRAGEM ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
     if uf_selecionada != "Todos": df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada]
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # --- MÉTRICAS ---
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total Exibidos", len(df_filtered))
     m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
@@ -508,7 +501,7 @@ try:
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
                 if st.button("🌐 Gerar Landing Page Exclusiva", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Varrendo dados, validando Instagram e criando design coeso..."):
+                    with st.spinner("Gerando Landing Page otimizada e estruturada..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
@@ -530,7 +523,6 @@ try:
 
             st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
-        # --- PAGINAÇÃO ---
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
         with p_col1:
