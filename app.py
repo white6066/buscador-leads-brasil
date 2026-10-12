@@ -247,22 +247,18 @@ def determine_adaptive_palette(razao, segmento, logo_url):
         return "#0f766e", "Verde Teal (Saúde & Bem-Estar)"
     elif any(w in seg_lower for w in ['financeiro', 'contab', 'direito', 'advoc', 'consult']):
         return "#1e3a8a", "Azul Executivo (Confiança & Seriedade)"
-    elif w in seg_lower for w in ['agro', 'rural', 'bovino', 'fazenda', 'cafe']:
+    elif any(w in seg_lower for w in ['agro', 'rural', 'bovino', 'fazenda', 'cafe']):
         return "#173f32", "Verde Floresta (Agro & Sustentabilidade)"
     elif any(w in seg_lower for w in ['constru', 'engenhar', 'imobi', 'obra']):
         return "#c2410c", "Laranja Terra (Construção & Força)"
     else:
-        # Paleta dinâmica baseada no hash do nome para garantir singularidade
         h = int(hashlib.md5((razao + segmento).encode()).hexdigest(), 16)
         dynamic_palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
         return dynamic_palettes[h % len(dynamic_palettes)], "Dinâmica Exclusiva"
 
 # --- IA GERADORA DA LANDING PAGE ADAPTATIVA ---
 def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # 1. Inteligência de varredura executada
     osint = intelligent_company_scraper(razao, cnpj, cidade, uf, segmento)
-    
-    # 2. Definição da paleta de cores inteligente
     primary_color, palette_source = determine_adaptive_palette(razao, segmento, osint["logo"])
     
     formatted_cnpj = format_cnpj(cnpj)
@@ -281,18 +277,15 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
 
     display_name = osint["fantasia"]
     
-    # Copywriting inteligente adaptativo
     if osint["slogan"]:
         custom_slogan = osint["slogan"]
     else:
         custom_slogan = f"Soluções especializadas em {segmento} com foco em excelência, inovação e compromisso com você."
 
-    # Endereço e Google Maps Clicável
     full_address = endereco if endereco else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
 
-    # Redes Sociais Integradas
     social_links_html = ""
     if osint["instagram"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="text-emerald-700 underline font-semibold">Aceder ao Perfil</a></p>'
@@ -302,7 +295,6 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="text-emerald-700 underline font-semibold">{osint["site"]}</a></p>'
 
-    # 3. Imagem contextualmente realista gerada por último
     img_feature = get_contextual_image(display_name, segmento, osint["images"])
 
     html_code = f"""<!DOCTYPE html>
@@ -390,7 +382,6 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
       </div>
     </section>
 
-    <!-- Pilares Adaptativos -->
     <section id="compromisso" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="mx-auto mb-12 max-w-2xl text-center">
@@ -418,7 +409,6 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
       </div>
     </section>
 
-    <!-- Sobre a Empresa -->
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
@@ -438,7 +428,6 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
       </div>
     </section>
 
-    <!-- Contato e Google Maps Interativo -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
