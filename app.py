@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados com sincronização perfeita e sem perda de linhas
+# Carregamento de dados com sincronização perfeita
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,7 +29,6 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) > 0:
             val0 = str(r[0]).strip().lower()
-            # Ignorar apenas linhas de título de planilha vazias ou o cabeçalho explícito
             if val0 == "" or "página" in val0:
                 continue
             rows.append(r)
@@ -69,7 +68,6 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização de status na sessão robusta para evitar desalinhamento de tamanho
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -95,7 +93,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros de forma totalmente flexível
+    # Aplicar Filtros
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
@@ -118,7 +116,7 @@ try:
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
+        st.info("Nenhum lead encontrado com os filtros selecionados.")
     else:
         # Cabeçalho da Tabela Estilo Planilha Corporativa
         cols_header = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
@@ -144,7 +142,6 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Expansível com os detalhes completos do lead
             with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
@@ -192,11 +189,6 @@ try:
                         
                     if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada para {razao}!")
-
-            st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
-
-except Exception as e:
-    st.error(f"Erro ao carregar o painel: {e}")
 
             st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
 
