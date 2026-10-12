@@ -50,8 +50,8 @@ else:
     input_text = "#0f172a"
     header_bg = "#f8fafc"
 
-# Template CSS seguro usando .format() para evitar conflitos de chaves
-css_template = """
+# Estilização CSS limpa e segura injetada diretamente
+st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
@@ -117,14 +117,7 @@ css_template = """
     
     .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
 </style>
-"""
-
-st.markdown(css_template.format(
-    bg_app=bg_app, bg_card=bg_card, bg_sidebar=bg_sidebar,
-    text_color=text_color, text_muted=text_muted, border_color=border_color,
-    hr_color=hr_color, btn_bg=btn_bg, btn_text=btn_text,
-    input_bg=input_bg, input_text=input_text, header_bg=header_bg
-), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Carregamento de dados com cache
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
