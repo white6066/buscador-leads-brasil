@@ -117,14 +117,14 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- BUSCA OSINT PROFUNDA E INTELIGENTE (SITE OFICIAL, FANTASIA, TELEFONE E IMAGENS) ---
-def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
+# --- OSINT AVANÇADO: CAPTURA NOME FANTASIA, SLOGAN, REDES E LOGO ---
+def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
     queries = [
         f"{razao} {cidade} {uf}",
         f"CNPJ {cnpj} biz",
-        f"{razao} instagram site"
+        f"{razao} slogan frase"
     ]
     
     found_logo = None
@@ -133,6 +133,7 @@ def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
     found_phone = None
     found_fantasia = None
     found_site = None
+    found_slogan = None
     found_images = []
     
     for q in queries:
@@ -149,11 +150,11 @@ def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
                 if not found_site:
                     for a in soup.find_all('a', class_='result__url'):
                         href = a.get('href', '')
-                        if href and 'http' in href and 'duckduckgo' not in href and 'instagram' not in href and 'facebook' not in href:
+                        if href and 'http' in href and 'duckduckgo' not in href and 'instagram' not in href:
                             found_site = href
                             break
 
-                # Capturar Nome Fantasia
+                # Capturar Nome Fantasia inteligente
                 if not found_fantasia:
                     fantasia_match = re.search(r'(?:Nome Fantasia|fantasia|conhecida como)[:\s]+([A-ZÁ-Ú0-9\s]{3,35})', page_text, re.IGNORECASE)
                     if fantasia_match:
@@ -164,6 +165,10 @@ def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
                 for a in soup.find_all('a', class_='result__snippet'):
                     txt = a.get_text()
                     if txt:
+                        # Capturar Slogan ou Frase de Efeito nas buscas
+                        if not found_slogan and any(w in txt.lower() for w in ['qualidade', 'referência', 'líder', 'compromisso', 'excelência', 'veículos', 'soluções']):
+                            found_slogan = txt[:110] + "..."
+
                         if not found_instagram:
                             ig_matches = re.findall(r'https?://(?:www\.)?instagram\.com/([a-zA-Z0-9_.]+)', txt)
                             if ig_matches:
@@ -183,7 +188,6 @@ def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
                                 if len(clean_p) >= 10:
                                     found_phone = phones[0]
 
-                # Capturar imagens indexadas na busca relevantes ao negócio
                 for img in soup.find_all('img'):
                     src = img.get('src', '')
                     if 'http' in src and 'icon' not in src and 'logo' not in src.lower():
@@ -207,38 +211,46 @@ def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
         "email": found_email,
         "phone": found_phone,
         "site": found_site,
+        "slogan": found_slogan,
         "images": found_images
     }
 
-# --- GERAÇÃO DE IMAGEM DINÂMICA BASEADA NO NOME, RAMO E DADOS ENCONTRADOS ---
-def get_dynamic_contextual_image(display_name, segmento, osint_images):
-    # Se a varredura encontrou imagens reais na web, prioriza uma delas
+# --- GERAÇÃO DE IMAGENS REALISTAS E SÍMBOLOS DO RAMO ---
+def get_realistic_niche_image(display_name, segmento, osint_images):
     if osint_images and len(osint_images) > 0:
         return osint_images[0]
         
-    # Caso contrário, gera uma imagem fotográfica de altíssima qualidade baseada no segmento e nome
     seed = hashlib.md5((display_name + segmento).encode()).hexdigest()[:6]
     seg_lower = (segmento + " " + display_name).lower()
     
     if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto']):
-        return f"https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Automóveis realista
     elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
-        return f"https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Supermercado realista
     elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
-        return f"https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Agropecuária realista
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito']):
-        return f"https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Advocacia realista
     elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
-        return f"https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Saúde / Estética realista
     else:
-        return f"https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+        return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Corporativo realista
+
+def get_niche_symbol(segmento):
+    seg_lower = segmento.lower()
+    if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'auto']): return "🚗"
+    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment']): return "🛒"
+    elif any(x in seg_lower for x in ['cafe', 'agro', 'agricult']): return "🌾"
+    elif any(x in seg_lower for x in ['advoc', 'jurid', 'direito']): return "⚖️"
+    elif any(x in seg_lower for x in ['estet', 'saude', 'clinica']): return "✨"
+    else: return "⭐"
 
 # --- GERAÇÃO DA LANDING PAGE ORIGINAL E PERSONALIZADA ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # 1. Executar varredura profunda primeiro
-    osint = deep_web_osint_search(razao, cnpj, cidade, uf, segmento)
+    # 1. Varredura avançada primeiro
+    osint = advanced_branding_search(razao, cnpj, cidade, uf, segmento)
     
-    # 2. Cores da marca extraídas da logo encontrada ou geradas de forma única
+    # 2. Cores extraídas da logo ou geradas
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
@@ -255,8 +267,15 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
     display_name = osint["fantasia"]
+    symbol = get_niche_symbol(segmento)
 
-    # Redes Sociais & Site Oficial
+    # Slogan / Copywriting personalizado encontrado ou gerado para o nicho
+    if osint["slogan"]:
+        custom_slogan = osint["slogan"]
+    else:
+        custom_slogan = f"Referência absoluta e excelência em {segmento} para toda a região de {cidade}."
+
+    # Links Sociais & Site
     social_links_html = ""
     if osint["instagram"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
@@ -266,10 +285,8 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    # 3. Imagem dinâmica inteligente gerada por último
-    img_feature = get_dynamic_contextual_image(display_name, segmento, osint["images"])
-
-    headline = f"Excelência e Qualidade em {segmento}"
+    # 3. Imagem realista e de alta qualidade gerada por último
+    img_feature = get_realistic_niche_image(display_name, segmento, osint["images"])
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -287,9 +304,10 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
     <div class="brand-bg text-white text-xs py-2 px-4 text-center font-semibold">
-        📍 {cidade} - {uf} | Atendimento Especializado em {segmento}
+        📍 {cidade} - {uf} | {symbol} Atendimento Especializado em {segmento}
     </div>
 
+    <!-- Header com o Nome Fantasia real -->
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="font-black text-lg md:text-xl tracking-tight text-slate-900 uppercase flex items-center gap-3">
@@ -300,11 +318,12 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </header>
 
+    <!-- Hero Section com Slogan / Copywriting Inteligente -->
     <section class="relative text-white py-24 px-4 brand-bg">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{headline}</h1>
-            <p class="text-base md:text-lg text-slate-100 mb-8 max-w-2xl mx-auto leading-relaxed">A <b>{display_name}</b> atua com rigor técnico, agilidade e compromisso para garantir os melhores resultados aos nossos parceiros e clientes em {cidade} e região.</p>
-            {f'<div class="flex justify-center"><a href="{whats_link}" target="_blank" class="bg-white text-slate-900 hover:bg-slate-100 text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">🚀 Entrar em Contato Agora</a></div>' if clean_tel else ''}
+            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{display_name}</h1>
+            <p class="text-lg md:text-xl text-slate-100 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">"{custom_slogan}"</p>
+            {f'<div class="flex justify-center"><a href="{whats_link}" target="_blank" class="bg-white text-slate-900 hover:bg-slate-100 text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">🚀 Falar com Atendimento</a></div>' if clean_tel else ''}
         </div>
     </section>
 
@@ -317,7 +336,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
             </div>
             <div class="grid md:grid-cols-3 gap-8">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="w-10 h-10 brand-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
+                    <div class="w-10 h-10 brand-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">{symbol}</div>
                     <h3 class="font-bold text-lg mb-2 text-slate-900">Atendimento Sob Medida</h3>
                     <p class="text-slate-600 text-sm leading-relaxed">Foco absoluto nas necessidades individuais de cada cliente em {cidade}.</p>
                 </div>
@@ -335,7 +354,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
-    <!-- 2º SOBRE A EMPRESA (Com imagem dinâmica inteligente gerada por último) -->
+    <!-- 2º SOBRE A EMPRESA (Com imagem realista gerada por último) -->
     <section class="py-16 px-4 bg-white">
         <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -351,11 +370,12 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 </div>
             </div>
             <div>
-                <img src="{img_feature}" alt="Ambiente Profissional" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
+                <img src="{img_feature}" alt="Ambiente Profissional Realista" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
             </div>
         </div>
     </section>
 
+    <!-- Rodapé Coeso com CNPJ Formatado -->
     <footer class="brand-bg text-white py-8 text-center text-xs border-t border-slate-800">
         <div class="max-w-4xl mx-auto px-4">
             <p class="font-bold text-sm mb-2">{display_name}</p>
@@ -465,7 +485,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com OSINT Avançado</div>
-            <div class="banner-subtitle">Varredura profunda do site oficial, nome fantasia, redes sociais e geração dinâmica de imagens contextuais por último.</div>
+            <div class="banner-subtitle">Nome fantasia em destaque, slogans originais, imagens realistas com símbolos do ramo e campos reservados para Instagram.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -575,12 +595,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Busca Avançada & Gerar LP Original", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Executando varredura profunda (Site, Nome Fantasia, Contato, Redes) e gerando LP original..."):
+                if st.button("🌐 Executar Busca Inteligente & Gerar LP Original", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Extraindo Nome Fantasia, slogans, símbolos do ramo e gerando Landing Page original..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Busca realizada e Landing Page gerada com sucesso!")
+                        st.success("Landing Page original gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
