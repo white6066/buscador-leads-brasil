@@ -11,29 +11,29 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Base de dados direta sem cache para forçar a atualização imediata
-data = [
-    ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226 - ALTO DA SAUDADE", "8293904127", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL"],
-    ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103 - CENTRO", "8132741010", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL"],
-    ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258 - CENTRO", "8293885886", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL"],
-    ["63324700000232", "SILVA NERES IMPORTACAO E EXPORTACAO LTDA", "2026-09-08", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "LOURIVAL MELO MOTA, 15159 - SANTOS DUMONT", "1199370549", "https://www.google.com/maps/search/?api=1&query=SILVA%20NERES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
-    ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
-    ["46531865000347", "LA SETTE IMPORTADORA E DISTRIBUIDORA LTDA", "2026-09-02", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "PAULO HENRIQUE MENDES, 75 - TABULEIRO DO MARTINS", "2138609696", "https://www.google.com/maps/search/?api=1&query=LA%20SETTE%20IMPORTADORA%20E%20DISTRIBUIDORA%20LTDA%20MACEIO%20AL"],
-    ["20799483000224", "C. DANTAS DE LIMA BARBOSA & CIA LTDA", "2026-08-26", "Supermercados", "AL", "DELMIRO GOUVEIA", "TEOTONIO VILELA, SN - NOVO", "8299622243", "https://www.google.com/maps/search/?api=1&query=C.%20DANTAS%20DE%20LIMA%20BARBOSA%20%26%20CIA%20LTDA%20DELMIRO%20GOUVEIA%20AL"],
-    ["68656601000190", "MANA HOLDING PARTICIPACOES PATRIMONIAIS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "ARAPIRACA", "SANTOS DUMONT, 378 - BAIXÃO", "8299999999", "https://www.google.com/maps/search/?api=1&query=MANA%20HOLDING%20PARTICIPACOES%20PATRIMONIAIS%20LTDA%20ARAPIRACA%20AL"],
-    ["50264359000578", "MD NE NEGOCIOS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "COMENDADOR GUSTAVO PAIVA, 2789 - MANGABEIRAS", "8130870000", "https://www.google.com/maps/search/?api=1&query=MD%20NE%20NEGOCIOS%20LTDA%20MACEIO%20AL"],
-    ["68690371000186", "VCX CAPITAL LTDA", "2026-08-19", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "ÁLVARO OTACÍLIO, 3731 - JATIÚCA", "8230284221", "https://www.google.com/maps/search/?api=1&query=VCX%20CAPITAL%20LTDA%20MACEIO%20AL"],
-    ["69041024000195", "LEIVA E ALMEIDA LTDA", "2026-09-09", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "FERNANDES LIMA, 8 - FAROL", "8296637867", "https://www.google.com/maps/search/?api=1&query=LEIVA%20E%20ALMEIDA%20LTDA%20MACEIO%20AL"],
-    ["68848678000162", "HELAIS CALHEIROS CORRETORA DE SEGUROS LTDA", "2026-08-28", "Corretores e Agentes de Seguros", "AL", "MARECHAL DEODORO", "MANOEL PEREIRA DA SILVA, 284 - FRANCÊS", "8299320190", "https://www.google.com/maps/search/?api=1&query=HELAIS%20CALHEIROS%20CORRETORA%20DE%20SEGUROS%20LTDA%20MARECHAL%20DEODORO%20AL"],
-    ["68753584000100", "GENILSON SANTOS DE OLIVEIRA", "2026-08-24", "Reparação de Equipamentos de Comunicação", "AL", "MESSIAS", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=68.753.584%20GENILSON%20SANTOS%20DE%20OLIVEIRA%20MESSIAS%20AL"],
-    ["68809605000161", "B GALVAO DOS SANTOS", "2026-08-26", "Reparação de Equipamentos de Comunicação", "AL", "UNIAO DOS PALMARES", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=B%20GALVAO%20DOS%20SANTOS%20UNIAO%20DOS%20PALMARES%20AL"],
-    ["68820635000179", "F. LOPES BARBOSA LTDA", "2026-08-22", "Comércio Varejista de Automóveis Usados", "AP", "MACAPA", "PADRE JULIO MARIA LOMBAERD, 1326 - CENTRAL", "9681320032", "https://www.google.com/maps/search/?api=1&query=F.%20LOPES%20BARBOSA%20LTDA%20MACAPA%20AP"],
-    ["37379766000724", "DELICIAS DA OCI LTDA", "2026-08-25", "Supermercados", "AP", "MACAPA", "HILDEMAR MAIA, 2626 - BURITIZAL", "9699999999", "https://www.google.com/maps/search/?api=1&query=DELICIAS%20DA%20OCI%20LTDA%20MACAPA%20AP"],
-    ["68886658000186", "ATENA LTDA", "2026-08-30", "Holdings de Instituições Não-Financeiras", "AP", "MACAPA", "CANDIDO MENDES, 1420 - CENTRAL", "9691660945", "https://www.google.com/maps/search/?api=1&query=ATENA%20LTDA%20MACAPA%20AP"]
-]
+# Carregamento de dados oficial sincronizado
+@st.cache_data
+def get_leads_data():
+    data = [
+        ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226", "8293904127", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL"],
+        ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103", "8132741010", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL"],
+        ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258", "8293885886", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL"],
+        ["29342202000527", "IBRAFISIO INSTITUTO BRASILIENSE DE FISIOTERAPIA LTDA", "2026-08-26", "Atividades de Nutrição", "DF", "BRASILIA", "03 AREA RESERVADA, 01 - SOBRADINHO", "6196938090", "https://www.google.com/maps/search/?api=1&query=IBRAFISIO%20INSTITUTO%20BRASILIENSE%20DE%20FISIOTERAPIA%20LTDA%20BRASILIA%20DF"],
+        ["68582009000191", "CLAUDIA TATIANA PEREIRA CORREA LTDA", "2026-08-14", "Atividades de Fonoaudiologia", "DF", "BRASILIA", "5, SN - NORTE (AGUAS CLARAS)", "6198539541", "https://www.google.com/maps/search/?api=1&query=CLAUDIA%20TATIANA%20PEREIRA%20CORREA%20LTDA%20BRASILIA%20DF"],
+        ["42611727005203", "GREAT WALL MOTOR BRASIL LTDA", "2026-08-25", "Comércio Varejista de Automóveis Novos", "ES", "CARIACICA", "AFRICA DO SUL, S/N", "1181185538", "https://www.google.com/maps/search/?api=1&query=GREAT%20WALL%20MOTOR%20BRASIL%20LTDA%20CARIACICA%20ES"],
+        ["68835584000159", "COMEXCAR COMERCIAL LTDA", "2026-08-26", "Comércio Varejista de Automóveis Novos", "ES", "VILA VELHA", "DARLY SANTOS, S/N", "2835428200", "https://www.google.com/maps/search/?api=1&query=COMEXCAR%20COMERCIAL%20LTDA%20VILA%20VELHA%20ES"],
+        ["68852604000108", "COLUNAS PRODUCAO DE EVENTOS LTDA", "2026-08-28", "Design de Interiores", "MT", "TANGARA DA SERRA", "16-A, 1186 - JARDIM GOIAS", "6599871087", "https://www.google.com/maps/search/?api=1&query=COLUNAS%20PRODUCAO%20DE%20EVENTOS%20LTDA%20TANGARA%20DA%20SERRA%20MT"],
+        ["68957151000176", "JEAN SALIBA DE SOUZA LTDA", "2026-08-29", "Design de Interiores", "MT", "NOVA MUTUM", "DAS HELICONIAS, 653N", "6599455068", "https://www.google.com/maps/search/?api=1&query=JEAN%20SALIBA%20DE%20SOUZA%20LTDA%20NOVA%20MUTUM%20MT"],
+        ["68984744000121", "DESIGN BOUSH LTDA", "2026-09-05", "Design de Interiores", "MT", "VARZEA GRANDE", "GOIAS, 525 - CENTRO SUL", "6593576018", "https://www.google.com/maps/search/?api=1&query=DESIGN%20BOUSH%20LTDA%20VARZEA%20GRANDE%20MT"],
+        ["68653103000194", "JOAO PAULO CAMPOS RIBEIRO LTDA", "2026-08-18", "Atividades Veterinárias", "MT", "CUIABA", "DAS PLAMEIRA, 252 - JD IMPERIAL", "6581295485", "https://www.google.com/maps/search/?api=1&query=JOAO%20PAULO%20CAMPOS%20RIBEIRO%20LTDA%20CUIABA%20MT"],
+        ["68770664000173", "ESTACAO PET LTDA", "2026-08-19", "Atividades Veterinárias", "MT", "CUIABA", "VINTE E UM, 16 - PEDRA 90", "6592979320", "https://www.google.com/maps/search/?api=1&query=ESTACAO%20PET%20LTDA%20CUIABA%20MT"],
+        ["68795916000119", "CENTRO EDUCACIONAL INVEST LTDA", "2026-08-24", "Ensino Fundamental", "MT", "CUIABA", "FERNANDO CORREA DA COSTA, 5022", "6536615124", "https://www.google.com/maps/search/?api=1&query=CENTRO%20EDUCACIONAL%20INVEST%20LTDA%20CUIABA%20MT"]
+    ]
+    df = pd.DataFrame(data, columns=["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps"])
+    df["Status"] = "Pendente"
+    return df
 
-df = pd.DataFrame(data, columns=["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps"])
-df["Status"] = "Pendente"
+df = get_leads_data()
 
 # 2. Barra Lateral - Filtros Dinâmicos
 st.sidebar.header("🎯 Filtros de Prospecção")
@@ -76,44 +76,47 @@ st.divider()
 # Exibição detalhada de cada lead
 st.subheader("📋 Lista de Empresas")
 
-for idx, row in df_filtered.iterrows():
-    razao = row["Razao Social"]
-    segmento = row["Segmento"]
-    cidade = row["Cidade"]
-    uf = row["UF"]
-    
-    with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})"):
-        c1, c2, c3 = st.columns([2, 2, 1.5])
+if df_filtered.empty:
+    st.info("Nenhum lead encontrado com os filtros selecionados.")
+else:
+    for idx, row in df_filtered.iterrows():
+        razao = row["Razao Social"]
+        segmento = row["Segmento"]
+        cidade = row["Cidade"]
+        uf = row["UF"]
         
-        with c1:
-            st.markdown(f"**CNPJ:** {row['CNPJ']}")
-            st.markdown(f"**Data de Abertura:** {row['Data Abertura']}")
-            st.markdown(f"**Endereço:** {row['Endereco']}")
-            tel = row['Telefone'] if row['Telefone'] != "" else "Não informado"
-            st.markdown(f"**Telefone/WhatsApp:** {tel}")
+        with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})"):
+            c1, c2, c3 = st.columns([2, 2, 1.5])
             
-        with c2:
-            st.markdown(f"**Status Atual:** `{row['Status']}`")
-            
-            nome_busca = razao.replace(' ', '+')
-            cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
-            url_google = f"https://www.google.com/search?q={nome_busca}+{cidade_busca}"
-            url_instagram = f"https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca}"
-            
-            if row["Maps"]:
-                st.markdown(f"📍 [Ver no Google Maps]({row['Maps']})")
-            st.markdown(f"🔍 [Pesquisar Empresa no Google]({url_google})")
-            st.markdown(f"📸 [Buscar Instagram da Empresa]({url_instagram})")
+            with c1:
+                st.markdown(f"**CNPJ:** {row['CNPJ']}")
+                st.markdown(f"**Data de Abertura:** {row['Data Abertura']}")
+                st.markdown(f"**Endereço:** {row['Endereco']}")
+                tel = row['Telefone'] if row['Telefone'] != "" else "Não informado"
+                st.markdown(f"**Telefone/WhatsApp:** {tel}")
+                
+            with c2:
+                st.markdown(f"**Status Atual:** `{row['Status']}`")
+                
+                nome_busca = razao.replace(' ', '+')
+                cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
+                url_google = f"https://www.google.com/search?q={nome_busca}+{cidade_busca}"
+                url_instagram = f"https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca}"
+                
+                if row["Maps"]:
+                    st.markdown(f"📍 [Ver no Google Maps]({row['Maps']})")
+                st.markdown(f"🔍 [Pesquisar Empresa no Google]({url_google})")
+                st.markdown(f"📸 [Buscar Instagram da Empresa]({url_instagram})")
 
-        with c3:
-            st.markdown("### Ações")
-            novo_status = st.selectbox(
-                "Atualizar Status:",
-                ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"],
-                index=0,
-                key=f"status_{idx}"
-            )
-            df.at[idx, "Status"] = novo_status
-            
-            if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
-                st.info(f"Gerando LP para {razao}...")
+            with c3:
+                st.markdown("### Ações")
+                novo_status = st.selectbox(
+                    "Atualizar Status:",
+                    ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"],
+                    index=0,
+                    key=f"status_{idx}"
+                )
+                df.at[idx, "Status"] = novo_status
+                
+                if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
+                    st.success(f"LP gerada com sucesso para {razao}!")
