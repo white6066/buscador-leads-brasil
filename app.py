@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import io
+import csv
 
 # Configuração da página
 st.set_page_config(
@@ -13,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados com leitura integral (header=None)
+# 1. Carregamento de dados com parser CSV robusto (imune a vírgulas em endereços)
 @st.cache_data(ttl=300)
 def load_data():
     urls = [
@@ -22,27 +23,57 @@ def load_data():
     ]
     
     headers = {"User-Agent": "Mozilla/5.0"}
+    rows = []
     
     for url in urls:
         try:
             response = requests.get(url, headers=headers, timeout=5)
             if response.status_code == 200:
-                df = pd.read_csv(io.StringIO(response.text), header=None)
-                if not df.empty:
-                    df["Status"] = "Pendente"
-                    return df
+                reader = csv.reader(io.StringIO(response.text))
+                for r in reader:
+                    if r and len(r) >= 6:
+                        rows.append(r)
+                if rows:
+                    break
         except Exception:
             continue
             
-    # Fallback de segurança com dados reais
-    data = [
-        ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226 - ALTO DA SAUDADE", "8293904127", "", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL", "Pendente"],
-        ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103 - CENTRO", "8132741010", "", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL", "Pendente"],
-        ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258 - CENTRO", "8293885886", "", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL", "Pendente"],
-        ["63324700000232", "SILVA NERES IMPORTACAO E EXPORTACAO LTDA", "2026-09-08", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "LOURIVAL MELO MOTA, 15159 - SANTOS DUMONT", "1199370549", "", "https://www.google.com/maps/search/?api=1&query=SILVA%20NERES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL", "Pendente"],
-        ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL", "Pendente"]
-    ]
-    return pd.DataFrame(data)
+    if not rows:
+        # Fallback de segurança com dados reais
+        rows = [
+            ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226", "8293904127", "", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL"],
+            ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103", "8132741010", "", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL"],
+            ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258", "8293885886", "", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL"]
+        ]
+        
+    processed_data = []
+    for r in rows:
+        cnpj = r[0] if len(r) > 0 else ""
+        razao = r[1] if len(r) > 1 else ""
+        data_abert = r[2] if len(r) > 2 else ""
+        segmento = r[3] if len(r) > 3 else ""
+        uf = r[4] if len(r) > 4 else ""
+        cidade = r[5] if len(r) > 5 else ""
+        
+        maps_url = ""
+        telefone = ""
+        for item in r:
+            if "google.com/maps" in item:
+                maps_url = item
+                break
+        for item in r:
+            cleaned = item.strip()
+            if cleaned.isdigit() and 8 <= len(cleaned) <= 12:
+                telefone = cleaned
+                break
+                
+        addr_parts = [p for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
+        endereco = ", ".join(addr_parts) if addr_parts else (r[6] if len(r) > 6 else "")
+        
+        processed_data.append([cnpj, razao, data_abert, segmento, uf, cidade, endereco, telefone, "", maps_url, "Pendente"])
+        
+    cols = ["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Extra", "Maps", "Status"]
+    return pd.DataFrame(processed_data, columns=cols)
 
 try:
     df = load_data()
@@ -50,16 +81,16 @@ try:
     # 2. Barra Lateral - Filtros Dinâmicos
     st.sidebar.header("🎯 Filtros de Prospecção")
 
-    segmentos = ["Todos"] + sorted(list(df.iloc[:, 3].dropna().unique()))
+    segmentos = ["Todos"] + sorted(list(df["Segmento"].dropna().unique()))
     seg_selecionado = st.sidebar.selectbox("Segmento / Nicho:", segmentos)
 
-    ufs = ["Todos"] + sorted(list(df.iloc[:, 4].dropna().unique()))
+    ufs = ["Todos"] + sorted(list(df["UF"].dropna().unique()))
     uf_selecionada = st.sidebar.selectbox("Estado (UF):", ufs)
 
     if uf_selecionada != "Todos":
-        cidades = ["Todas"] + sorted(list(df[df.iloc[:, 4] == uf_selecionada].iloc[:, 5].dropna().unique()))
+        cidades = ["Todas"] + sorted(list(df[df["UF"] == uf_selecionada]["Cidade"].dropna().unique()))
     else:
-        cidades = ["Todas"] + sorted(list(df.iloc[:, 5].dropna().unique()))
+        cidades = ["Todas"] + sorted(list(df["Cidade"].dropna().unique()))
     cidade_selecionada = st.sidebar.selectbox("Cidade:", cidades)
 
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
@@ -68,11 +99,11 @@ try:
     # Aplicar Filtros
     df_filtered = df.copy()
     if seg_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered.iloc[:, 3] == seg_selecionado]
+        df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
     if uf_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered.iloc[:, 4] == uf_selecionada]
+        df_filtered = df_filtered[df_filtered["UF"] == uf_selecionada]
     if cidade_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered.iloc[:, 5] == cidade_selecionada]
+        df_filtered = df_filtered[df_filtered["Cidade"] == cidade_selecionada]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"] == status_selecionado]
 
@@ -89,19 +120,19 @@ try:
     st.subheader("📋 Lista de Empresas")
 
     for idx, row in df_filtered.iterrows():
-        razao = row.iloc[1] if len(row) > 1 else "Empresa"
-        segmento = row.iloc[3] if len(row) > 3 else "N/A"
-        cidade = row.iloc[5] if len(row) > 5 else "N/A"
-        uf = row.iloc[4] if len(row) > 4 else "N/A"
+        razao = row["Razao Social"]
+        segmento = row["Segmento"]
+        cidade = row["Cidade"]
+        uf = row["UF"]
         
         with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})"):
             c1, c2, c3 = st.columns([2, 2, 1.5])
             
             with c1:
-                st.markdown(f"**CNPJ:** {row.iloc[0]}")
-                st.markdown(f"**Data de Abertura:** {row.iloc[2]}")
-                st.markdown(f"**Endereço:** {row.iloc[6] if len(row) > 6 else 'N/A'}")
-                st.markdown(f"**Telefone/WhatsApp:** {row.iloc[7] if len(row) > 7 else 'N/A'}")
+                st.markdown(f"**CNPJ:** {row['CNPJ']}")
+                st.markdown(f"**Data de Abertura:** {row['Data Abertura']}")
+                st.markdown(f"**Endereço:** {row['Endereco']}")
+                st.markdown(f"**Telefone/WhatsApp:** {row['Telefone'] if row['Telefone'] else 'Não informado'}")
                 
             with c2:
                 st.markdown(f"**Status Atual:** `{row['Status']}`")
@@ -111,8 +142,8 @@ try:
                 url_google = f"https://www.google.com/search?q={nome_busca}+{cidade_busca}"
                 url_instagram = f"https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca}"
                 
-                if len(row) > 9 and pd.notnull(row.iloc[9]):
-                    st.markdown(f"📍 [Ver no Google Maps]({row.iloc[9]})")
+                if pd.notnull(row["Maps"]) and row["Maps"]:
+                    st.markdown(f"📍 [Ver no Google Maps]({row['Maps']})")
                 st.markdown(f"🔍 [Pesquisar Empresa no Google]({url_google})")
                 st.markdown(f"📸 [Buscar Instagram da Empresa]({url_instagram})")
 
