@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados com mapeamento exato de colunas
+# Carregamento de dados em tempo real direto da planilha
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -35,7 +35,6 @@ def load_data_from_sheet():
             
     processed = []
     for r in rows:
-        # Mapeamento correto com base na estrutura real da sua planilha
         cnpj = r[0] if len(r) > 0 else ""
         razao = r[1] if len(r) > 1 else "Empresa"
         data_abert = r[2] if len(r) > 2 else ""
@@ -95,13 +94,13 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com limpeza de espaços nas strings
+    # Aplicar Filtros
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -115,63 +114,87 @@ try:
 
     st.divider()
 
-    # Exibição detalhada de cada lead
-    st.subheader("📋 Lista de Empresas Extraídas")
+    # Layout de Apresentação Estilo Planilha com Expansor Detalhado
+    st.subheader("📋 Lista de Empresas Extraídas (Estilo Planilha com Detalhes)")
 
     if df_filtered.empty:
         st.info("Nenhum lead encontrado com os filtros selecionados.")
     else:
+        # Cabeçalho da Tabela Compacta
+        h_cols = st.columns([2.5, 1.2, 0.9, 0.5, 0.9, 1.0, 1.2])
+        h_cols[0].markdown("**Razão Social**")
+        h_cols[1].markdown("**CNPJ**")
+        h_cols[2].markdown("**Abertura**")
+        h_cols[3].markdown("**UF**")
+        h_cols[4].markdown("**Cidade**")
+        h_cols[5].markdown("**Ações Rápidas**")
+        h_cols[6].markdown("**Status**")
+        
+        st.markdown("<hr style='margin: 5px 0px 10px 0px;'>", unsafe_allow_html=True)
+
         for idx, row in df_filtered.iterrows():
             razao = row["Razao Social"]
             segmento = row["Segmento"]
             cidade = row["Cidade"]
             uf = row["UF"]
+            cnpj = row["CNPJ"]
+            data_abert = row["Data Abertura"]
+            endereco = row["Endereco"]
+            tel = row["Telefone"]
+            maps_link = row["Maps"]
             current_status = row["Status"]
-            
-            with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})  |  `Status: {current_status}`"):
+
+            # Linha Resumida Estilo Planilha com Expansor integrado
+            with st.expander(f"🏢 **{razao}** | **CNPJ:** {cnpj} | **Data:** {data_abert} | **Local:** {cidade}/{uf} | `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
                 with c1:
-                    st.markdown(f"**CNPJ:** {row['CNPJ']}")
-                    st.markdown(f"**Data de Abertura:** {row['Data Abertura']}")
-                    st.markdown(f"**Endereço:** {row['Endereco']}")
-                    tel = row['Telefone'] if row['Telefone'] != "" else "Não informado"
-                    st.markdown(f"**Telefone/WhatsApp:** {tel}")
+                    st.markdown(f"**Razão Social Completa:** {razao}")
+                    st.markdown(f"**Segmento / Nicho:** {segmento}")
+                    st.markdown(f"**CNPJ:** {cnpj}")
+                    st.markdown(f"**Data de Abertura:** {data_abert}")
+                    st.markdown(f"**Endereço Completo:** {endereco if endereco else 'Não informado'}")
                     
                 with c2:
-                    st.markdown(f"**Status Atual:** `{current_status}`")
+                    tel_display = tel if tel != "" else "Não informado"
+                    st.markdown(f"**Telefone/WhatsApp:** {tel_display}")
                     
+                    # Links diretos de ícones
+                    if tel:
+                        clean_tel = "".join(filter(str.isdigit, str(tel)))
+                        st.markdown(f"💬 [Abrir Conversa no WhatsApp]({f'https://wa.me/55{clean_tel}'})")
+                    
+                    if maps_link:
+                        st.markdown(f"🗺️ [Ver Localização no Google Maps]({maps_link})")
+                        
                     nome_busca = str(razao).replace(' ', '+')
                     cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
-                    url_google = f"https://www.google.com/search?q={nome_busca}+{cidade_busca}"
-                    url_instagram = f"https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca}"
-                    
-                    if row["Maps"]:
-                        st.markdown(f"📍 [Ver no Google Maps]({row['Maps']})")
-                    st.markdown(f"🔍 [Pesquisar Empresa no Google]({url_google})")
-                    st.markdown(f"📸 [Buscar Instagram da Empresa]({url_instagram})")
+                    st.markdown(f"🔍 [Pesquisar Empresa no Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
+                    st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
 
                 with c3:
-                    st.markdown("### Ações")
+                    st.markdown("### Gestão do Lead")
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
                     try:
-                        current_index = status_list.index(current_status)
+                        c_idx = status_list.index(current_status)
                     except ValueError:
-                        current_index = 0
+                        c_idx = 0
                         
                     novo_status = st.selectbox(
                         "Atualizar Status:",
                         status_list,
-                        index=current_index,
-                        key=f"status_{idx}"
+                        index=c_idx,
+                        key=f"status_exp_{idx}"
                     )
                     
                     if novo_status != current_status:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
-                    
+                        
                     if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada com sucesso para {razao}!")
 
+            st.markdown("<hr style='margin: 2px 0px 5px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
+
 except Exception as e:
-    st.error(f"Erro ao conectar com a planilha ao vivo: {e}")
+    st.error(f"Erro ao carregar o painel: {e}")
