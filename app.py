@@ -22,42 +22,29 @@ def toggle_theme():
     else:
         st.session_state.theme = "Escuro"
 
-# Cores dinâmicas completas baseadas no tema selecionado
-if st.session_state.theme == "Escuro":
-    bg_app = "#0f172a"
-    bg_card = "#1e293b"
-    bg_sidebar = "#0f172a"
-    text_color = "#f8fafc"
-    text_muted = "#94a3b8"
-    border_color = "#334155"
-    hr_color = "#334155"
-    btn_bg = "#1e293b"
-    btn_text = "#ffffff"
-    input_bg = "#1e293b"
-    input_text = "#ffffff"
-    expander_bg = "#1e293b"
-else:
-    bg_app = "#f8fafc"
-    bg_card = "#ffffff"
-    bg_sidebar = "#ffffff"
-    text_color = "#0f172a"
-    text_muted = "#475569"
-    border_color = "#e2e8f0"
-    hr_color = "#cbd5e1"
-    btn_bg = "#f1f5f9"
-    btn_text = "#0f172a"
-    input_bg = "#ffffff"
-    input_text = "#0f172a"
-    expander_bg = "#ffffff"
+# Cores dinâmicas com base no tema selecionado
+is_dark = st.session_state.theme == "Escuro"
 
-# Estilização CSS completa para harmonizar fontes, botões, tabelas e expansores
+bg_app = "#0f172a" if is_dark else "#f8fafc"
+bg_card = "#1e293b" if is_dark else "#ffffff"
+text_color = "#f8fafc" if is_dark else "#0f172a"
+text_muted = "#94a3b8" if is_dark else "#475569"
+border_color = "#334155" if is_dark else "#e2e8f0"
+hr_color = "#334155" if is_dark else "#cbd5e1"
+btn_bg = "#1e293b" if is_dark else "#f1f5f9"
+btn_text = "#ffffff" if is_dark else "#0f172a"
+input_bg = "#1e293b" if is_dark else "#ffffff"
+input_text = "#ffffff" if is_dark else "#0f172a"
+expander_bg = "#1e293b" if is_dark else "#ffffff"
+
+# Estilização CSS segura e robusta sem conflitos de f-string
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     /* Barra lateral */
     [data-testid="stSidebar"] {{ 
-        background-color: {bg_sidebar}; 
+        background-color: {bg_app}; 
         color: {text_color} !important; 
         padding-top: 1rem; 
         border-right: 1px solid {border_color}; 
@@ -146,7 +133,6 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
     
-    /* Textos da listagem principal e colunas */
     p, span, div {{
         color: {text_color};
     }}
@@ -217,7 +203,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "☀️ Modo Claro" if st.session_state.theme == "Escuro" else "🌙 Modo Escuro"
+        theme_btn_label = "☀️ Modo Claro" if not is_dark else "🌙 Modo Escuro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
@@ -364,7 +350,25 @@ try:
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
-                    st.markdown(f""<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
+                    st.markdown(f"**Segmento:** {segmento}")
+                    st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
+                with c2:
+                    st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
+                    st.markdown(f"📸 [Abrir Perfil no Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
+                with c3:
+                    status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
+                    try:
+                        c_idx = status_list.index(current_status)
+                    except ValueError:
+                        c_idx = 0
+                    novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
+                    if novo_status != current_status:
+                        st.session_state.df_status.at[idx, "Status"] = novo_status
+                        st.rerun()
+                    if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
+                        st.success(f"LP gerada!")
+
+            st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
         # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
         st.divider()
