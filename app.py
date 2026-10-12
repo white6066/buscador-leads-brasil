@@ -96,7 +96,6 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# Funções de Formatação Inteligente
 def format_cnpj(cnpj_str):
     nums = "".join(filter(str.isdigit, str(cnpj_str)))
     if len(nums) == 14:
@@ -211,12 +210,18 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": extra_activities[:3]
     }
 
-def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
+def generate_ai_contextual_image(segmento, razao, instructions_list):
     seg_lower = (segmento + " " + razao).lower()
     
-    # SÓ muda a imagem se houver comando explícito de foto/imagem
-    if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir']):
-        prompt = f"professional commercial photography of {explicit_image_instruction}, photorealistic, 4k resolution, high quality business display"
+    # Procura a última instrução válida sobre imagem/foto no histórico
+    latest_img_prompt = ""
+    for inst in instructions_list:
+        inst_l = inst.lower()
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar']):
+            latest_img_prompt = inst
+
+    if latest_img_prompt and len(latest_img_prompt.strip()) > 3:
+        prompt = f"professional commercial photography of {latest_img_prompt}, photorealistic, 4k resolution, high quality business display"
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
             prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
@@ -236,7 +241,7 @@ def generate_ai_contextual_image(segmento, razao, explicit_image_instruction="")
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + explicit_image_instruction).encode()).hexdigest(), 16) % 10000
+    seed = int(hashlib.md5((segmento + razao + latest_img_prompt).encode()).hexdigest(), 16) % 10000
     ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
     return ai_image_url
 
@@ -262,29 +267,28 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
         return palettes[h % len(palettes)], "Paleta Exclusiva"
 
-# --- Acumulador de Modificações e Interpretador Inteligente ---
 def apply_accumulated_modifications(html_content, instructions_list):
-    """Aplica cumulativamente todas as instruções acumuladas pelo usuário"""
+    """Interpreta e acumula todas as instruções do usuário mantendo as alterações anteriores"""
     css_injections = []
     
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        # 1. Trocar cor de "Canais de Atendimento" para branco
+        # 1. Mudanças específicas de cores em elementos como "Canais de Atendimento"
         if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
             html_content = html_content.replace(
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
             )
             html_content = html_content.replace(
-                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>',
+                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-slate-700">Canais de Atendimento</p>',
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
             )
-        
-        # 2. Outras regras gerais de cores via CSS acumulado
+
+        # 2. Mudanças gerais de cores da fonte / texto
         color_map = {"branco": "#ffffff", "preto": "#000000", "azul": "#2563eb", "verde": "#16a34a", "vermelho": "#dc2626", "cinza": "#64748b"}
         for c_name, c_hex in color_map.items():
-            if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower):
+            if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
                 css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
 
     if css_injections:
@@ -295,13 +299,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
 # --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
-    # Verifica se alguma instrução na lista exige mudança de imagem
-    image_instruction = ""
-    for inst in instructions_list:
-        if any(w in inst.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir']):
-            image_instruction = inst
-            break
-
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
@@ -351,7 +348,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature = generate_ai_contextual_image(segmento, razao, image_instruction)
+    img_feature = generate_ai_contextual_image(segmento, razao, instructions_list)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -558,7 +555,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
 </body>
 </html>"""
     
-    # Aplica o histórico acumulado de modificações sem perder as anteriores
+    # Aplica todas as modificações acumuladas no histórico de forma inteligente
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
@@ -793,20 +790,19 @@ try:
                 with col_inst_txt:
                     new_instruction = st.text_input(
                         "O que mudar na LP", 
-                        placeholder="Ex: trocar cor para branco...", 
+                        placeholder="Ex: trocar foto para carros novos...", 
                         key=f"cust_inst_{idx}",
                         label_visibility="collapsed"
                     )
                 with col_btn_conf:
                     btn_confirmar_clicado = st.button("🔄 Confirmar Mudança", key=f"btn_conf_lp_{idx}", use_container_width=True)
 
-                # Inicializa a lista de histórico de instruções para esta empresa no session_state
                 hist_key = f"instructions_history_{idx}"
                 if hist_key not in st.session_state:
                     st.session_state[hist_key] = []
 
                 if btn_gerar_clicado:
-                    st.session_state[hist_key] = [] # Limpa histórico ao gerar do zero
+                    st.session_state[hist_key] = []
                     if new_instruction and new_instruction.strip():
                         st.session_state[hist_key].append(new_instruction.strip())
                     with st.spinner("Gerando Landing Page inicial..."):
