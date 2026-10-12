@@ -50,7 +50,7 @@ else:
     input_text = "#0f172a"
     header_bg = "#f8fafc"
 
-# Estilização CSS limpa e sem conflitos de chaves
+# Estilização CSS segura sem conflitos de chaves
 css_style = f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
