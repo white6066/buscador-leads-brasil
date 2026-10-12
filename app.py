@@ -50,8 +50,8 @@ else:
     input_text = "#0f172a"
     header_bg = "#f8fafc"
 
-# Estilização CSS completa e rigorosa para toda a página
-st.markdown(f"""
+# Estilização CSS limpa e sem conflitos de chaves
+css_style = f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
@@ -117,7 +117,9 @@ st.markdown(f"""
     
     .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(css_style, unsafe_allow_html=True)
 
 # Carregamento de dados com cache
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
