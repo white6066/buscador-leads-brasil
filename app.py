@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados 100% flexível e direto da planilha
+# Carregamento de dados limpo e direto da planilha
 @st.cache_data(ttl=30)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -27,16 +27,16 @@ def load_data_from_sheet():
     reader = csv.reader(io.StringIO(response.text))
     rows = []
     for r in reader:
-        if r:
-            val0 = str(r[0]).strip().lower()
-            # Ignorar cabeçalhos e linhas de título da planilha
-            if val0 == "" or "página" in val0 or "cnpj" in val0 or "razão" in val0 or "titulo" in val0:
+        if r and len(r) > 0 and str(r[0]).strip() != "":
+            # Ignorar apenas linhas de cabeçalho óbvias que contenham 'Página1' ou 'Razão Social'
+            val_chk = str(r[0]).strip().lower()
+            val_chk1 = str(r[1]).strip().lower() if len(r) > 1 else ""
+            if "página" in val_chk or "razão social" in val_chk1 or "cnpj" in val_chk1:
                 continue
             rows.append(r)
             
     processed = []
     for r in rows:
-        # Preenchimento dinâmico seguro para evitar erros de índice
         while len(r) < 10:
             r.append("")
             
