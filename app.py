@@ -33,6 +33,8 @@ if st.session_state.theme == "Escuro":
     hr_color = "#334155"
     btn_bg = "#1e293b"
     btn_text = "#ffffff"
+    input_bg = "#1e293b"
+    input_text = "#ffffff"
 else:
     bg_app = "#f8fafc"
     bg_card = "#ffffff"
@@ -43,8 +45,10 @@ else:
     hr_color = "#cbd5e1"
     btn_bg = "#f1f5f9"
     btn_text = "#0f172a"
+    input_bg = "#ffffff"
+    input_text = "#0f172a"
 
-# Estilização CSS dinâmica e moderna (incluindo correção do botão da barra lateral)
+# Estilização CSS completa para eliminar qualquer bloco branco indesejado
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -63,7 +67,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    /* Remover fundo branco nativo dos botões na barra lateral */
+    /* Botão da barra lateral */
     [data-testid="stSidebar"] button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -76,6 +80,19 @@ st.markdown(f"""
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
+
+    /* Caixas de Texto / Pesquisa Rápida */
+    input[type="text"] {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+    }}
+    
+    div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        border-color: {border_color} !important;
+        border-radius: 8px !important;
+    }}
 
     /* Cartões de Métricas */
     div[data-testid="metric-container"] {{
@@ -159,7 +176,6 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        # Botão de alternância de Tema integrado
         theme_btn_label = "☀️ Modo Claro" if st.session_state.theme == "Escuro" else "🌙 Modo Escuro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
