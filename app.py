@@ -15,18 +15,16 @@ st.set_page_config(
 if "theme" not in st.session_state:
     st.session_state.theme = "Escuro"
 
-# Alternar Tema
 def toggle_theme():
     if st.session_state.theme == "Escuro":
         st.session_state.theme = "Claro"
     else:
         st.session_state.theme = "Escuro"
 
-# Cores dinâmicas completas para todos os elementos (Modo Escuro vs Modo Claro)
+# Cores dinâmicas
 if st.session_state.theme == "Escuro":
     bg_app = "#0f172a"
     bg_card = "#1e293b"
-    bg_sidebar = "#0f172a"
     text_color = "#f8fafc"
     text_muted = "#94a3b8"
     border_color = "#334155"
@@ -35,11 +33,9 @@ if st.session_state.theme == "Escuro":
     btn_text = "#ffffff"
     input_bg = "#1e293b"
     input_text = "#ffffff"
-    header_bg = "#0f172a"
 else:
     bg_app = "#f8fafc"
     bg_card = "#ffffff"
-    bg_sidebar = "#ffffff"
     text_color = "#0f172a"
     text_muted = "#475569"
     border_color = "#e2e8f0"
@@ -48,19 +44,18 @@ else:
     btn_text = "#0f172a"
     input_bg = "#ffffff"
     input_text = "#0f172a"
-    header_bg = "#f8fafc"
 
-# Estilização CSS limpa e segura injetada diretamente
+# Estilização CSS limpa e segura (sem f-string para evitar erros de chaves)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     header[data-testid="stHeader"] {{
-        background-color: {header_bg} !important;
+        background-color: {bg_app} !important;
     }
     
     [data-testid="stSidebar"] {{ 
-        background-color: {bg_sidebar}; 
+        background-color: {bg_app}; 
         color: {text_color} !important; 
         padding-top: 1rem; 
         border-right: 1px solid {border_color}; 
@@ -77,10 +72,6 @@ st.markdown(f"""
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
-    }}
-    [data-testid="stSidebar"] button:hover {{
-        border-color: #38bdf8 !important;
-        color: #38bdf8 !important;
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
@@ -104,13 +95,13 @@ st.markdown(f"""
     }}
 
     div[data-testid="metric-container"] {{
-        background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px;
     }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.85rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.4rem !important; font-weight: 800 !important; }}
 
     .banner-box {{
-        background-color: {bg_card}; padding: 20px 28px; border-radius: 14px; color: {text_color}; margin-bottom: 16px; border: 1px solid {border_color}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background-color: {bg_card}; padding: 20px 28px; border-radius: 14px; color: {text_color}; margin-bottom: 16px; border: 1px solid {border_color};
     }}
     .banner-title {{ font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: {text_color} !important; }}
     .banner-subtitle {{ color: {text_muted}; font-size: 0.9rem; }}
@@ -119,7 +110,6 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# Carregamento de dados com cache
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -177,7 +167,6 @@ try:
 
     current_df = st.session_state.df_status
 
-    # --- BARRA LATERAL ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
@@ -209,7 +198,6 @@ try:
         st.divider()
         st.markdown("<p style='font-size: 0.75rem;'>💡 Use 'Gerenciar' para atualizar status.</p>", unsafe_allow_html=True)
 
-    # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Central de Leads & Novas Empresas</div>
@@ -217,7 +205,6 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- FILTRAGEM ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
@@ -228,7 +215,6 @@ try:
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # --- MÉTRICAS ---
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total Exibidos", len(df_filtered))
     m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
@@ -237,7 +223,6 @@ try:
 
     st.divider()
 
-    # --- PESQUISA & EXPORTAÇÃO ---
     col_search, col_export = st.columns([5, 1])
     with col_search:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
@@ -347,7 +332,6 @@ try:
 
             st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
-        # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
         st.divider()
         col_p1, col_p2, col_p3 = st.columns([3, 2, 3])
         with col_p2:
