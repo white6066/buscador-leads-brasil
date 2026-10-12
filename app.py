@@ -39,14 +39,9 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Zoom Suave a 90%
+# Estilização CSS Moderna com Aproveitamento Completo da Tela
 st.markdown(f"""
 <style>
-    /* Zoom suave a 90% para compactar ligeiramente e aproveitar a tela */
-    html, body, [data-testid="stAppViewContainer"] {{
-        zoom: 90%;
-    }}
-
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     /* Integrar cabeçalho superior do Streamlit com o tema */
@@ -340,7 +335,7 @@ try:
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        items_per_page = 22
+        items_per_page = 25
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
         
