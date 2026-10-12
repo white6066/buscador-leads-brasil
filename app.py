@@ -4,14 +4,14 @@ import requests
 import io
 import csv
 
-# 1. Configuração da página e Layout Moderno Compacto
+# 1. Configuração da página e Layout Moderno Unificado
 st.set_page_config(
     page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-# Estilização CSS otimizada para alinhamento e espaçamento reduzido
+# Estilização CSS para unificar o fundo e remover faixas escuras indesejadas
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
@@ -128,13 +128,13 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- FILTRAGEM ---
+    # --- FILTRAGEM FLEXÍVEL E SEGURA ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todos":
+    if cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -220,7 +220,6 @@ try:
             with r_cols[4]:
                 st.markdown(f"{cidade}")
             with r_cols[5]:
-                # Links de Ações Rápidas compactos
                 action_str = []
                 if tel:
                     clean_tel = "".join(filter(str.isdigit, str(tel)))
