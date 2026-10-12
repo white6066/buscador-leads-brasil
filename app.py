@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados limpo e direto da planilha
+# Carregamento de dados robusto e limpo direto da planilha
 @st.cache_data(ttl=30)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -28,8 +28,9 @@ def load_data_from_sheet():
     rows = []
     for r in reader:
         if r and len(r) >= 5:
-            val0 = str(r[0]).strip()
-            if val0 == "" or "página" in val0.lower():
+            val0 = str(r[0]).strip().lower()
+            # Ignorar cabeçalho e títulos iniciais
+            if val0 == "" or "página" in val0 or "cnpj" in val0 or "razão" in val0:
                 continue
             rows.append(r)
             
@@ -66,13 +67,10 @@ try:
     df = load_data_from_sheet()
 
     # Sincronização de status na sessão mantendo o estado persistente
-    if "df_status" not in st.session_state:
+    if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
-        if len(st.session_state.df_status) == len(df):
-            df["Status"] = st.session_state.df_status["Status"]
-        else:
-            st.session_state.df_status = df.copy()
+        df["Status"] = st.session_state.df_status["Status"]
 
     current_df = st.session_state.df_status
 
@@ -94,7 +92,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com segurança
+    # Aplicar Filtros com segurança total
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
