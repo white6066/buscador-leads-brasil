@@ -270,7 +270,8 @@ def apply_accumulated_modifications(html_content, instructions_list):
         "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
         "preto": "#000000", "branco": "#ffffff", "cinza": "#64748b",
         "laranja": "#ea580c", "roxo": "#7c3aed", "rosa": "#db2777",
-        "bege": "#d4b996", "dourado": "#d97706", "amarelo": "#ca8a04"
+        "bege": "#d4b996", "dourado": "#d97706", "amarelo": "#ca8a04",
+        "azul marinho": "#1e3a8a", "azul escuro": "#0f172a"
     }
 
     for instruction in instructions_list:
@@ -298,7 +299,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
     # Aplica cor principal personalizada no CSS e atualiza o rodapé (.footer-bg) para acompanhar a mesma cor
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
-        # Substitui a classe bg-[#070e0b] do rodapé para usar a cor principal escolhida
         html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
 
     if css_injections:
@@ -799,45 +799,50 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                form_key = f"form_mod_{idx}"
-                with st.form(key=form_key):
-                    col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.0, 2.7, 1.3])
-                    with col_btn_gen:
-                        submitted_gen = st.form_submit_button("🌐 Gerar LP", use_container_width=True)
-                    with col_inst_txt:
-                        new_instruction = st.text_input(
-                            "O que mudar na LP", 
-                            placeholder="Ex: trocar cor principal para bege", 
-                            key=f"cust_inst_{idx}",
-                            label_visibility="collapsed"
-                        )
-                    with col_btn_conf:
-                        submitted_conf = st.form_submit_button("🔄 Confirmar", use_container_width=True)
-
+                # Gerenciamento com larguras proporcionais (Gerer LP um pouco maior e botões de ação iguais)
+                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.3, 2.5, 1.2])
+                
                 hist_key = f"instructions_history_{idx}"
                 if hist_key not in st.session_state:
                     st.session_state[hist_key] = []
+                
+                input_key = f"cust_inst_{idx}"
+                if input_key not in st.session_state:
+                    st.session_state[input_key] = ""
 
-                if submitted_gen:
-                    st.session_state[hist_key] = []
-                    if new_instruction and new_instruction.strip():
-                        st.session_state[hist_key].append(new_instruction.strip())
-                    with st.spinner("Gerando Landing Page inicial..."):
-                        lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
-                        st.session_state[f"lp_data_{idx}"] = lp_html
-                        st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page gerada com sucesso!")
-                        st.rerun()
+                with col_btn_gen:
+                    if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
+                        st.session_state[hist_key] = []
+                        current_val = st.session_state.get(input_key, "").strip()
+                        if current_val:
+                            st.session_state[hist_key].append(current_val)
+                        with st.spinner("Gerando Landing Page inicial..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
+                            st.session_state[f"lp_data_{idx}"] = lp_html
+                            st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
+                            st.success("Landing Page gerada com sucesso!")
+                            st.rerun()
 
-                elif submitted_conf:
-                    if new_instruction and new_instruction.strip():
-                        st.session_state[hist_key].append(new_instruction.strip())
-                    with st.spinner("Aplicando alterações cumulativas..."):
-                        lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
-                        st.session_state[f"lp_data_{idx}"] = lp_html
-                        st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
-                        st.rerun()
+                with col_inst_txt:
+                    st.text_input(
+                        "O que mudar na LP", 
+                        placeholder="Ex: trocar cor principal para azul marinho", 
+                        key=input_key,
+                        label_visibility="collapsed"
+                    )
+
+                with col_btn_conf:
+                    if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
+                        current_val = st.session_state.get(input_key, "").strip()
+                        if current_val:
+                            st.session_state[hist_key].append(current_val)
+                            st.session_state[input_key] = ""  # Limpa a caixa de texto após confirmar
+                        with st.spinner("Aplicando alterações cumulativas..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
+                            st.session_state[f"lp_data_{idx}"] = lp_html
+                            st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
+                            st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
+                            st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
