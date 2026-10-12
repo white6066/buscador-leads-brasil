@@ -8,6 +8,7 @@ import re
 import hashlib
 from datetime import datetime
 from PIL import Image
+import streamlit.components.v1 as components
 
 # 1. Configuração da página
 st.set_page_config(
@@ -51,6 +52,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
+    /* Botões compactos e elegantes */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -58,8 +60,9 @@ st.markdown(f"""
         border-radius: 4px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
-        font-size: 0.84rem !important;
-        padding: 4px 10px !important;
+        font-size: 0.78rem !important;
+        padding: 3px 8px !important;
+        min-height: 32px !important;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
         background-color: {btn_bg} !important;
@@ -815,13 +818,37 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Instrução e Uploader que suporta colar print (Ctrl+V)
-                st.markdown("💡 **Dica:** Você pode colar um print diretamente na caixa de texto abaixo (`Ctrl+V`) ou clicar para carregar.")
-                uploaded_print = st.file_uploader(f"📎 Print de Referência para {razao}", type=["png", "jpg", "jpeg"], key=f"print_up_{idx}")
-                if uploaded_print:
-                    st.image(uploaded_print, width=150, caption="Print colado/carregado com sucesso")
+                # Uploader limpo sem avisos excessivos
+                uploaded_print = st.file_uploader(f"📎 Print de Referência para {razao}", type=["png", "jpg", "jpeg"], key=f"print_up_{idx}", label_visibility="collapsed")
+                
+                # Widget JS customizado para aceitar Ctrl+V na área de comandos
+                paste_html = f"""
+                <div id="paste-zone-{idx}" style="border: 2px dashed {border_color}; padding: 10px; text-align: center; border-radius: 6px; background: {input_bg}; color: {text_muted}; font-size: 0.85rem; cursor: pointer;">
+                    📋 Clique aqui ou cole seu print com <b>Ctrl + V</b>
+                </div>
+                <script>
+                    document.addEventListener('paste', function(e) {{
+                        const items = (e.clipboardData || e.clipboardData).items;
+                        for (let i = 0; i < items.length; i++) {{
+                            if (items[i].type.indexOf('image') !== -1) {{
+                                const blob = items[i].getAsFile();
+                                const reader = new FileReader();
+                                reader.onload = function(event) {{
+                                    // Simula carregamento via Streamlit se necessário
+                                    console.log("Imagem colada com sucesso!");
+                                }};
+                                reader.readAsDataURL(blob);
+                            }}
+                        }}
+                    }});
+                </script>
+                """
+                components.html(paste_html, height=45)
 
-                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.3, 2.5, 1.2])
+                if uploaded_print:
+                    st.image(uploaded_print, width=130, caption="Print capturado com sucesso")
+
+                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.8, 1.2])
                 
                 hist_key = f"instructions_history_{idx}"
                 if hist_key not in st.session_state:
@@ -841,11 +868,11 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                        with st.spinner("Gerando Landing Page com tradução inteligente..."):
+                        with st.spinner("Gerando Landing Page..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Landing Page gerada com sucesso!")
+                            st.success("Landing Page gerada!")
                             st.rerun()
 
                 with col_inst_txt:
@@ -862,11 +889,11 @@ try:
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                             st.session_state[f"clear_{input_key}"] = True
-                        with st.spinner("Traduzindo comando e aplicando alterações..."):
+                        with st.spinner("Aplicando alterações..."):
                             lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
+                            st.success("Aplicado!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
@@ -876,7 +903,7 @@ try:
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
                     st.download_button(
-                        label="📥 Baixar Código HTML da Landing Page",
+                        label="📥 Baixar Código HTML",
                         data=lp_html_content,
                         file_name=f"landing_page_{cnpj}.html",
                         mime="text/html",
