@@ -98,6 +98,9 @@ def limpar_cnpj(cnpj):
 
 
 all_values = sheet.get_all_values()
+linhas_com_conteudo = [
+    row for row in all_values if any(str(cell).strip() for cell in row)
+]
 
 cabecalhos_desejados = [
     "CNPJ",
@@ -112,12 +115,13 @@ cabecalhos_desejados = [
     "Google Maps",
 ]
 
-if not all_values:
+if not linhas_com_conteudo:
+  sheet.clear()
   sheet.append_row(cabecalhos_desejados)
   existing_cnpjs = set()
 else:
   existing_cnpjs = set(
-      limpar_cnpj(row[0]) for row in all_values[1:] if row and row[0]
+      limpar_cnpj(row[0]) for row in linhas_com_conteudo[1:] if row and row[0]
   )
 
 novas_empresas = obter_empresas_recentes()
@@ -147,10 +151,15 @@ if novas_empresas:
       existing_cnpjs.add(cnpj_limpo)
 
   if linhas_para_adicionar:
+    # Se a planilha estava apenas com lixo vazio, limpa e adiciona os cabeçalhos na primeira linha
+    if not linhas_com_conteudo or len(linhas_com_conteudo) <= 1:
+      sheet.clear()
+      sheet.append_row(cabecalhos_desejados)
+
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas de alta"
-        " relevância à planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas organizadas"
+        " à planilha!"
     )
   else:
     print(
