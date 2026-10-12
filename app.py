@@ -199,7 +199,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 def generate_ai_contextual_image(segmento, razao):
     seg_lower = (segmento + " " + razao).lower()
     
-    # Prompts altamente realistas, comerciais e focados em carros novos/seminovos comuns do mercado brasileiro
     if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
         prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
     elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
@@ -245,7 +244,7 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
         return palettes[h % len(palettes)], "Paleta Exclusiva"
 
-# --- GERADOR DA LP MASTERPIECE COM CORREÇÃO DE PROPORÇÃO DE IMAGEM ---
+# --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
@@ -290,7 +289,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    # Imagem realista gerada por IA com proporção perfeita
     img_feature = generate_ai_contextual_image(segmento, razao)
 
     html_code = f"""<!DOCTYPE html>
@@ -347,8 +345,12 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
         <a class="hover:brand-text transition" href="#contato">Contato</a>
       </nav>
-      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition">
-        💬 <span class="hidden sm:inline">WhatsApp Direto</span>
+      <!-- Botão Superior Harmonizado com a Cor da LP e Ícone do WhatsApp -->
+      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2.5 rounded-xl brand-bg px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90">
+        <svg class="h-5 w-5 fill-current text-white" viewBox="0 0 24 24">
+          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+        </svg>
+        <span>Falar pelo WhatsApp</span>
       </a>
     </div>
   </header>
@@ -372,7 +374,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         </div>
         <div class="relative mx-auto w-full max-w-xl">
           <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
-            <!-- Imagem proporcional sem distorção -->
             <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-900">
               <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="eager">
             </div>
@@ -409,10 +410,10 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
+    <!-- Seção Sobre Sem Botões Repetidos de WhatsApp -->
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
-          <!-- Imagem proporcional sem distorção na seção Sobre -->
           <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-xl">
             <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="lazy">
           </div>
@@ -426,11 +427,11 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
           <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Tradição e inovação na {display_name}.</h2>
           <p class="mt-5 leading-8 text-slate-600">Fundada em <b>{data_abert}</b> sob a Razão Social <i>{razao}</i>, a <b>{display_name}</b> destaca-se no mercado de <b>{segmento}</b> em <b>{cidade} - {uf}</b>. Nossa trajetória é pautada na entrega de valor real aos nossos clientes.</p>
           <p class="mt-4 leading-8 text-slate-600">Conecte-se diretamente com nossa equipe para tirar dúvidas, solicitar propostas ou iniciar parcerias de sucesso.</p>
-          <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-95 shadow-md">Falar no WhatsApp ↗</a>
         </div>
       </div>
     </section>
 
+    <!-- Seção de Contato com Botão de Redirecionamento Direto no Número -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -438,8 +439,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
             <div class="brand-bg p-8 text-white sm:p-10 lg:p-12">
               <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>
               <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos à sua disposição.</h2>
-              <p class="mt-4 leading-7 text-white/85">Entre em contato instantaneamente através do nosso WhatsApp oficial ou venha nos visitar.</p>
-              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100 shadow">Abrir WhatsApp Agora ↗</a>
+              <p class="mt-4 leading-7 text-white/85">Entre em contato instantaneamente através do nosso canal oficial de atendimento.</p>
             </div>
             <div class="p-8 sm:p-10 lg:p-12">
               <h3 class="display text-xl font-extrabold text-slate-900">Informações Cadastrais & Contato</h3>
@@ -458,8 +458,9 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📞</span>
                   <div>
                     <p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p>
-                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-1 block text-sm font-bold brand-text hover:underline">
-                      {display_phone_text} ↗
+                    <!-- Botão de clique direto no número redirecionando para o WhatsApp -->
+                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-2 rounded-xl brand-bg px-4 py-2.5 text-sm font-bold text-white shadow transition hover:opacity-90">
+                      <span>{display_phone_text}</span> ↗
                     </a>
                   </div>
                 </div>
@@ -594,7 +595,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com correção de proporção visual e imagens geradas por IA rigorosamente contextuais (sem carros esportivos fictícios).</div>
+            <div class="banner-subtitle">Sistema inteligente com layout otimizado, sem repetições e botões de redirecionamento dinâmicos.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -704,8 +705,8 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar IA Realista & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Gerando imagem realista na proporção perfeita, refinando copywriting e montando Landing Page..."):
+                if st.button("🌐 Executar IA & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Gerando Landing Page limpa e profissional..."):
                         lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
