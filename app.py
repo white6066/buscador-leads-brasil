@@ -39,7 +39,7 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Borda Perfeita nos Selectboxes
+# Estilização CSS Moderna com Arredondamento Suave (4px)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -78,7 +78,7 @@ st.markdown(f"""
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
         font-size: 0.88rem !important;
@@ -112,16 +112,16 @@ st.markdown(f"""
     div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }}
 
-    /* Selectbox Geral e Caixas de Filtro com Arredondamento Perfeito */
+    /* Selectbox Geral e Caixas de Filtro com Arredondamento Suave (4px) */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         overflow: hidden !important;
     }}
     div[data-baseweb="select"] span {{
@@ -133,7 +133,7 @@ st.markdown(f"""
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }}
     li[data-baseweb="option"], div[role="option"] {{
@@ -154,7 +154,7 @@ st.markdown(f"""
         background-color: {bg_card}; 
         border: 1px solid {border_color}; 
         padding: 14px 18px; 
-        border-radius: 12px; 
+        border-radius: 6px; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
@@ -169,7 +169,7 @@ st.markdown(f"""
     .banner-box {{
         background-color: {bg_card}; 
         padding: 20px 28px; 
-        border-radius: 14px; 
+        border-radius: 6px; 
         color: {text_color}; 
         margin-bottom: 20px; 
         border: 1px solid {border_color}; 
@@ -184,13 +184,13 @@ st.markdown(f"""
     div[data-testid="stExpander"] {{
         background-color: {expander_bg} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 12px !important;
+        border-radius: 6px !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }}
     div[data-testid="stExpander"] summary {{
         background-color: {expander_bg} !important;
         color: {text_color} !important;
-        border-radius: 12px !important;
+        border-radius: 6px !important;
         font-size: 0.9rem !important;
     }}
     div[data-testid="stExpander"] summary span {{
