@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados em tempo real direto da planilha
+# Carregamento de dados limpo e direto da planilha
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -35,18 +35,19 @@ def load_data_from_sheet():
             
     processed = []
     for r in rows:
-        cnpj = r[0] if len(r) > 0 else ""
-        razao = r[1] if len(r) > 1 else "Empresa"
-        data_abert = r[2] if len(r) > 2 else ""
-        segmento = r[3] if len(r) > 3 else "N/A"
-        uf = r[4] if len(r) > 4 else "N/A"
-        cidade = r[5] if len(r) > 5 else "N/A"
+        # Extração limpa garantindo colunas válidas
+        cnpj = str(r[0]).strip() if len(r) > 0 else ""
+        razao = str(r[1]).strip() if len(r) > 1 else "Empresa"
+        data_abert = str(r[2]).strip() if len(r) > 2 else ""
+        segmento = str(r[3]).strip() if len(r) > 3 else "N/A"
+        uf = str(r[4]).strip().upper() if len(r) > 4 else "N/A"
+        cidade = str(r[5]).strip().upper() if len(r) > 5 else "N/A"
         
         maps_url = ""
         telefone = ""
         for item in r:
             if "google.com/maps" in item:
-                maps_url = item
+                maps_url = item.strip()
                 break
         for item in r:
             cleaned = item.strip()
@@ -54,8 +55,8 @@ def load_data_from_sheet():
                 telefone = cleaned
                 break
                 
-        addr_parts = [p for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
-        endereco = ", ".join(addr_parts) if addr_parts else (r[6] if len(r) > 6 else "")
+        addr_parts = [p.strip() for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
+        endereco = ", ".join(addr_parts) if addr_parts else (str(r[6]).strip() if len(r) > 6 else "")
         
         processed.append([cnpj, razao, data_abert, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
         
@@ -86,7 +87,7 @@ try:
     uf_selecionada = st.sidebar.selectbox("Estado (UF):", ufs)
 
     if uf_selecionada != "Todos":
-        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"].astype(str) == uf_selecionada]["Cidade"].dropna().unique().astype(str)))
+        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"] == uf_selecionada]["Cidade"].dropna().unique().astype(str)))
     else:
         cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().unique().astype(str)))
     cidade_selecionada = st.sidebar.selectbox("Cidade:", cidades)
@@ -94,16 +95,16 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com segurança absoluta
+    # Aplicar Filtros com correspondência exata
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
+        df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
     if uf_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todos":
-        df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
+        df_filtered = df_filtered[df_filtered["UF"] == uf_selecionada]
+    if cidade_selecionada != "Todas":
+        df_filtered = df_filtered[df_filtered["Cidade"] == cidade_selecionada]
     if status_selecionado != "Todos":
-        df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
+        df_filtered = df_filtered[df_filtered["Status"] == status_selecionado]
 
     # Métricas
     col1, col2, col3, col4 = st.columns(4)
