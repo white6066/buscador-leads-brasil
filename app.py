@@ -416,4 +416,23 @@ try:
         with p_col1:
             if st.button("⏮️ Início", use_container_width=True):
                 st.session_state.page_num = 1
-                st.
+                st.rerun()
+        with p_col2:
+            if st.button("◀️", use_container_width=True):
+                if st.session_state.page_num > 1:
+                    st.session_state.page_num -= 1
+                    st.rerun()
+        with p_col3:
+            st.markdown(f"<div style='text-align: center; padding-top: 6px; font-weight: 700;'>Página {st.session_state.page_num} de {total_pages}</div>", unsafe_allow_html=True)
+        with p_col4:
+            if st.button("▶️", use_container_width=True):
+                if st.session_state.page_num < total_pages:
+                    st.session_state.page_num += 1
+                    st.rerun()
+        with p_col5:
+            if st.button("Fim ⏭️", use_container_width=True):
+                st.session_state.page_num = total_pages
+                st.rerun()
+
+except Exception as e:
+    st.error(f"Erro ao carregar o painel: {e}")
