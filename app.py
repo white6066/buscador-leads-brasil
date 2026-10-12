@@ -914,10 +914,6 @@ try:
                             st.rerun()
 
                 with col_inst_txt:
-                    # Inicialização correta da chave no session_state antes de criar o widget
-                    if input_key not in st.session_state:
-                        st.session_state[input_key] = ""
-                        
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         placeholder="Ex: na imagem 1 quero carros vermelhos, na imagem 2 quero escritório moderno", 
@@ -943,6 +939,8 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
+                            
+                            # Limpeza segura do input alterando o valor no session_state ANTES do próximo rerun
                             st.session_state[input_key] = ""
                             st.success("Alteração aplicada com sucesso!")
                             st.rerun()
