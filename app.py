@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados limpo e direto da planilha
+# Carregamento de dados em tempo real direto da planilha
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,13 +29,14 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) >= 5:
             val0 = str(r[0]).strip().lower()
-            if "página" in val0 or "título" in val0 or val0 == "":
+            val1 = str(r[1]).strip().lower()
+            # Ignorar linhas de cabeçalho ou títulos da planilha
+            if "página" in val0 or "título" in val0 or val0 == "" or "razão social" in val1 or "cnpj" in val1:
                 continue
             rows.append(r)
             
     processed = []
     for r in rows:
-        # Extração limpa garantindo colunas válidas
         cnpj = str(r[0]).strip() if len(r) > 0 else ""
         razao = str(r[1]).strip() if len(r) > 1 else "Empresa"
         data_abert = str(r[2]).strip() if len(r) > 2 else ""
@@ -95,13 +96,13 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com correspondência exata
+    # Aplicar Filtros
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"] == uf_selecionada]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"] == cidade_selecionada]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"] == status_selecionado]
@@ -115,14 +116,14 @@ try:
 
     st.divider()
 
-    # Layout de Apresentação Estilo Planilha com Expansor Detalhado
-    st.subheader("📋 Lista de Empresas Extraídas (Estilo Planilha com Detalhes)")
+    # Título limpo e profissional
+    st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
         st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
     else:
-        # Cabeçalho da Tabela Compacta
-        h_cols = st.columns([2.5, 1.2, 0.9, 0.5, 0.9, 1.0, 1.2])
+        # Cabeçalho da Tabela perfeitamente alinhado com as colunas dos registros
+        h_cols = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
         h_cols[0].markdown("**Razão Social**")
         h_cols[1].markdown("**CNPJ**")
         h_cols[2].markdown("**Abertura**")
@@ -145,8 +146,8 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Resumida Estilo Planilha com Expansor integrado
-            with st.expander(f"🏢 **{razao}** | **CNPJ:** {cnpj} | **Data:** {data_abert} | **Local:** {cidade}/{uf} | `Status: {current_status}`"):
+            # Linha Resumida com Expansor alinhado às proporções do cabeçalho
+            with st.expander(f"🏢 **{razao}**"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
                 with c1:
