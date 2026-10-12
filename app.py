@@ -39,10 +39,19 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa com correção absoluta para botões
+# Estilização CSS completa (incluindo integração do cabeçalho superior)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
+    
+    /* Integrar cabeçalho superior do Streamlit com o tema */
+    [data-testid="stHeader"] {{
+        background-color: {bg_app} !important;
+        border-bottom: 1px solid {border_color} !important;
+    }}
+    [data-testid="stHeader"] * {{
+        color: {text_color} !important;
+    }}
     
     /* Barra lateral */
     [data-testid="stSidebar"] {{ 
@@ -407,23 +416,4 @@ try:
         with p_col1:
             if st.button("⏮️ Início", use_container_width=True):
                 st.session_state.page_num = 1
-                st.rerun()
-        with p_col2:
-            if st.button("◀️", use_container_width=True):
-                if st.session_state.page_num > 1:
-                    st.session_state.page_num -= 1
-                    st.rerun()
-        with p_col3:
-            st.markdown(f"<div style='text-align: center; padding-top: 6px; font-weight: 700;'>Página {st.session_state.page_num} de {total_pages}</div>", unsafe_allow_html=True)
-        with p_col4:
-            if st.button("▶️", use_container_width=True):
-                if st.session_state.page_num < total_pages:
-                    st.session_state.page_num += 1
-                    st.rerun()
-        with p_col5:
-            if st.button("Fim ⏭️", use_container_width=True):
-                st.session_state.page_num = total_pages
-                st.rerun()
-
-except Exception as e:
-    st.error(f"Erro ao carregar o painel: {e}")
+                st.
