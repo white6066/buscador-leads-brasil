@@ -4,49 +4,84 @@ import requests
 import io
 import csv
 
-# 1. Configuração da página e Layout Moderno Unificado
+# 1. Configuração da página
 st.set_page_config(
     page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-# Estilização CSS para unificar o fundo principal e eliminar blocos brancos
-st.markdown("""
+# Inicializar o estado do Tema (Dark por predefinição)
+if "theme" not in st.session_state:
+    st.session_state.theme = "Escuro"
+
+# Alternar Tema
+def toggle_theme():
+    if st.session_state.theme == "Escuro":
+        st.session_state.theme = "Claro"
+    else:
+        st.session_state.theme = "Escuro"
+
+# Cores dinâmicas com base no tema selecionado
+if st.session_state.theme == "Escuro":
+    bg_app = "#0f172a"
+    bg_card = "#1e293b"
+    bg_sidebar = "#0f172a"
+    text_color = "#f8fafc"
+    text_muted = "#94a3b8"
+    border_color = "#334155"
+    hr_color = "#334155"
+    input_bg = "#1e293b"
+else:
+    bg_app = "#f8fafc"
+    bg_card = "#ffffff"
+    bg_sidebar = "#ffffff"
+    text_color = "#0f172a"
+    text_muted = "#475569"
+    border_color = "#e2e8f0"
+    hr_color = "#cbd5e1"
+    input_bg = "#ffffff"
+
+# Estilização CSS dinâmica e moderna
+st.markdown(f"""
 <style>
-    /* Fundo principal unificado em tom escuro corporativo */
-    .stApp { background-color: #0f172a; color: #f8fafc; }
+    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
     /* Barra lateral */
-    [data-testid="stSidebar"] { background-color: #0f172a; color: #ffffff !important; padding-top: 1rem; border-right: 1px solid #1e293b; }
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span { 
-        color: #f8fafc !important; 
+    [data-testid="stSidebar"] {{ 
+        background-color: {bg_sidebar}; 
+        color: {text_color} !important; 
+        padding-top: 1rem; 
+        border-right: 1px solid {border_color}; 
+    }}
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{ 
+        color: {text_color} !important; 
         font-weight: 500 !important; 
-    }
-    [data-testid="stSidebar"] div.stSelectbox { margin-bottom: -10px !important; }
-    [data-testid="stSidebar"] hr { margin: 10px 0px !important; border-color: #334155 !important; }
+    }}
+    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
+    [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
 
     /* Cartões de Métricas */
-    div[data-testid="metric-container"] {
-        background-color: #1e293b; border: 1px solid #334155; padding: 10px 14px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    div[data-testid="metric-container"] label { color: #94a3b8 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #ffffff !important; font-size: 1.4rem !important; font-weight: 800 !important; }
+    div[data-testid="metric-container"] {{
+        background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.85rem !important; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.4rem !important; font-weight: 800 !important; }}
 
     /* Banner Superior */
-    .banner-box {
-        background-color: #1e293b; padding: 18px 26px; border-radius: 14px; color: white; margin-bottom: 12px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    }
-    .banner-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; color: #ffffff !important; }
-    .banner-subtitle { color: #94a3b8; font-size: 0.85rem; }
+    .banner-box {{
+        background-color: {bg_card}; padding: 20px 28px; border-radius: 14px; color: {text_color}; margin-bottom: 16px; border: 1px solid {border_color}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }}
+    .banner-title {{ font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: {text_color} !important; }}
+    .banner-subtitle {{ color: {text_muted}; font-size: 0.9rem; }}
     
-    .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #f8fafc !important; }
+    .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# Carregamento de dados otimizado com cache
+# Carregamento de dados com cache
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -107,9 +142,16 @@ try:
     # --- BARRA LATERAL ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
-        st.markdown("<p style='color: #cbd5e1; font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
+        # Botão de alternância de Tema moderno
+        theme_btn_label = "☀️ Modo Claro" if st.session_state.theme == "Escuro" else "🌙 Modo Escuro"
+        if st.button(theme_btn_label, use_container_width=True):
+            toggle_theme()
+            st.rerun()
+
+        st.divider()
         st.markdown("#### 🎯 Filtros")
         
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
@@ -128,7 +170,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Gerenciar' para alterar status.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem;'>💡 Use 'Gerenciar' para atualizar status.</p>", unsafe_allow_html=True)
 
     # --- BANNER ---
     st.markdown("""
@@ -179,12 +221,10 @@ try:
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        # Configuração da paginação (25 por página)
         items_per_page = 25
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
 
-        # Cabeçalho da Tabela
         cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
         cols_header[1].markdown("**CNPJ**")
@@ -194,7 +234,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #334155;'>", unsafe_allow_html=True)
+        st.markdown(f"<hr style='margin: 2px 0px 6px 0px; border-color: {hr_color};'>", unsafe_allow_html=True)
 
         start_idx = (st.session_state.get('page_num', 1) - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
@@ -268,7 +308,7 @@ try:
                     if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada!")
 
-            st.markdown("<hr style='margin: 1px 0px 3px 0px; border-color: #1e293b;'>", unsafe_allow_html=True)
+            st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
         # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
         st.divider()
