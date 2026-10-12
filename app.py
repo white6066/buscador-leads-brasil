@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS para corrigir o contraste do topo, unificar fundos e margens
+# Estilização CSS para unificar o tom do banner com o tema escuro
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
@@ -33,11 +33,12 @@ st.markdown("""
     div[data-testid="metric-container"] label { color: #475569 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #0f172a !important; font-size: 1.4rem !important; font-weight: 800 !important; }
 
+    /* Banner com o mesmo tom da barra lateral */
     .banner-box {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px 24px; border-radius: 14px; color: white; margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background-color: #0f172a; padding: 18px 26px; border-radius: 14px; color: white; margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     .banner-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; color: #ffffff !important; }
-    .banner-subtitle { color: #cbd5e1; font-size: 0.85rem; }
+    .banner-subtitle { color: #94a3b8; font-size: 0.85rem; }
     .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #1e293b !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -192,7 +193,6 @@ try:
         
         st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #cbd5e1;'>", unsafe_allow_html=True)
 
-        # Paginação aplicada aos dados antes da renderização das linhas
         start_idx = (st.session_state.get('page_num', 1) - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
         end_idx = start_idx + items_per_page
