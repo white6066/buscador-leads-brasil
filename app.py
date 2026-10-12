@@ -10,7 +10,7 @@ from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com OSINT Avançado",
+    page_title="Novas Empresas - Gerador LP Premium & Harmonioso",
     page_icon="🚀",
     layout="wide"
 )
@@ -117,14 +117,14 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- OSINT AVANÇADO: CAPTURA NOME FANTASIA, SLOGAN, REDES E LOGO ---
+# --- OSINT AVANÇADO: NOME FANTASIA, SLOGAN E REDES ---
 def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
     queries = [
         f"{razao} {cidade} {uf}",
         f"CNPJ {cnpj} biz",
-        f"{razao} slogan frase"
+        f"{razao} slogan"
     ]
     
     found_logo = None
@@ -146,7 +146,6 @@ def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
                 soup = BeautifulSoup(res.text, 'html.parser')
                 page_text = soup.get_text()
                 
-                # Capturar Site Oficial
                 if not found_site:
                     for a in soup.find_all('a', class_='result__url'):
                         href = a.get('href', '')
@@ -154,7 +153,6 @@ def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
                             found_site = href
                             break
 
-                # Capturar Nome Fantasia inteligente
                 if not found_fantasia:
                     fantasia_match = re.search(r'(?:Nome Fantasia|fantasia|conhecida como)[:\s]+([A-ZÁ-Ú0-9\s]{3,35})', page_text, re.IGNORECASE)
                     if fantasia_match:
@@ -165,8 +163,7 @@ def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
                 for a in soup.find_all('a', class_='result__snippet'):
                     txt = a.get_text()
                     if txt:
-                        # Capturar Slogan ou Frase de Efeito nas buscas
-                        if not found_slogan and any(w in txt.lower() for w in ['qualidade', 'referência', 'líder', 'compromisso', 'excelência', 'veículos', 'soluções']):
+                        if not found_slogan and any(w in txt.lower() for w in ['qualidade', 'referência', 'líder', 'compromisso', 'excelência', 'soluções', 'especializada']):
                             found_slogan = txt[:110] + "..."
 
                         if not found_instagram:
@@ -215,7 +212,7 @@ def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
         "images": found_images
     }
 
-# --- GERAÇÃO DE IMAGENS REALISTAS E SÍMBOLOS DO RAMO ---
+# --- SELEÇÃO DE IMAGENS REALISTAS E SÍMBOLOS DO RAMO (POR ÚLTIMO) ---
 def get_realistic_niche_image(display_name, segmento, osint_images):
     if osint_images and len(osint_images) > 0:
         return osint_images[0]
@@ -224,41 +221,33 @@ def get_realistic_niche_image(display_name, segmento, osint_images):
     seg_lower = (segmento + " " + display_name).lower()
     
     if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto']):
-        return f"https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Automóveis realista
+        return f"https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=85&sig={seed}"
     elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
-        return f"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Supermercado realista
-    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
-        return f"https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Agropecuária realista
+        return f"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'bovin']):
+        return f"https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=85&sig={seed}"
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito']):
-        return f"https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Advocacia realista
+        return f"https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=85&sig={seed}"
     elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
-        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Saúde / Estética realista
+        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=85&sig={seed}"
     else:
-        return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80&sig={seed}" # Corporativo realista
+        return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
 
-def get_niche_symbol(segmento):
-    seg_lower = segmento.lower()
-    if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'auto']): return "🚗"
-    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment']): return "🛒"
-    elif any(x in seg_lower for x in ['cafe', 'agro', 'agricult']): return "🌾"
-    elif any(x in seg_lower for x in ['advoc', 'jurid', 'direito']): return "⚖️"
-    elif any(x in seg_lower for x in ['estet', 'saude', 'clinica']): return "✨"
-    else: return "⭐"
-
-# --- GERAÇÃO DA LANDING PAGE ORIGINAL E PERSONALIZADA ---
+# --- GERAÇÃO DA LANDING PAGE COM PADRÃO PREMIUM E HARMONIOSO ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # 1. Varredura avançada primeiro
+    # 1. Varredura feita primeiro
     osint = advanced_branding_search(razao, cnpj, cidade, uf, segmento)
     
-    # 2. Cores extraídas da logo ou geradas
+    # 2. Paleta de cores refinada (Gera tons corporativos sóbrios e harmoniosos baseados na marca)
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
     
     if not primary_color:
         h = hashlib.md5((razao + cnpj).encode()).hexdigest()
-        primary_color = f"#{int(h[4:6], 16) % 150:02x}{int(h[6:8], 16) % 180:02x}{int(h[8:10], 16) % 200:02x}"
-        if primary_color == "#000000": primary_color = "#1e3a8a"
+        # Tons modernos (ex: Verde floresta profundo / Azul executivo / Grafite nobre)
+        palettes = ["#173f32", "#1e3a8a", "#0f172a", "#113f48", "#2c3e50"]
+        primary_color = palettes[int(h, 16) % len(palettes)]
 
     formatted_cnpj = format_cnpj(cnpj)
     
@@ -267,128 +256,193 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
     display_name = osint["fantasia"]
-    symbol = get_niche_symbol(segmento)
 
-    # Slogan / Copywriting personalizado encontrado ou gerado para o nicho
-    if osint["slogan"]:
-        custom_slogan = osint["slogan"]
-    else:
-        custom_slogan = f"Referência absoluta e excelência em {segmento} para toda a região de {cidade}."
+    # Slogan inteligente ou frase de efeito corporativa
+    custom_slogan = osint["slogan"] if osint["slogan"] else f"Compromisso, responsabilidade e atenção em cada contato com nossos clientes e parceiros em {cidade}."
 
-    # Links Sociais & Site
+    # Links Sociais & Site Oficial
     social_links_html = ""
     if osint["instagram"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="text-emerald-700 underline font-semibold">Aceder ao Perfil</a></p>'
     else:
         social_links_html += f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Campo Reservado (Adicionar Futuramente)</span></p>'
 
     if osint["site"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="text-emerald-700 underline font-semibold">{osint["site"]}</a></p>'
 
-    # 3. Imagem realista e de alta qualidade gerada por último
+    # 3. Imagem realista de altíssima qualidade gerada estritamente por último
     img_feature = get_realistic_niche_image(display_name, segmento, osint["images"])
 
     html_code = f"""<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{display_name} | {segmento} em {cidade}/{uf}</title>
+    <title>{display_name} | {cidade} – {uf}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .brand-bg {{ background-color: {primary_color}; }}
-        .brand-text {{ color: {primary_color}; }}
-        .brand-border {{ border-color: {primary_color}; }}
+        :root {{ --brand: {primary_color}; }}
+        body {{ font-family: 'DM Sans', sans-serif; color: #18241f; }}
+        h1, h2, h3, .display {{ font-family: 'Manrope', sans-serif; }}
+        .brand-bg {{ background-color: var(--brand); }}
+        .brand-text {{ color: var(--brand); }}
+        .lift {{ transition: transform .22s ease, box-shadow .22s ease; }}
+        .lift:hover {{ transform: translateY(-3px); box-shadow: 0 16px 32px rgba(0,0,0,.08); }}
     </style>
 </head>
-<body class="font-sans antialiased bg-slate-50 text-slate-800">
+<body class="bg-[#f7f9f7] antialiased">
 
-    <div class="brand-bg text-white text-xs py-2 px-4 text-center font-semibold">
-        📍 {cidade} - {uf} | {symbol} Atendimento Especializado em {segmento}
+    <!-- Top Notice Bar -->
+    <div class="brand-bg text-white text-xs py-2.5 px-4 text-center font-semibold tracking-wide">
+        📍 {cidade} · {uf} | Atendimento Especializado em {segmento}
     </div>
 
-    <!-- Header com o Nome Fantasia real -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-100">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="font-black text-lg md:text-xl tracking-tight text-slate-900 uppercase flex items-center gap-3">
-                {f'<img src="{osint["logo"]}" class="w-10 h-10 rounded-full object-cover border border-slate-200">' if osint["logo"] else f'<span class="w-3.5 h-3.5 rounded-full inline-block brand-bg"></span>'}
-                <span>{display_name}</span>
-            </div>
-            {f'<a href="{whats_link}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg shadow transition flex items-center gap-2">💬 WhatsApp</a>' if clean_tel else ''}
+    <!-- Header Harmonioso e Profissional -->
+    <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
+            <a href="#inicio" class="flex items-center gap-3 rounded-lg focus:outline-none">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg">
+                    {display_name[0].upper()}
+                </span>
+                <span>
+                    <span class="block display text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
+                    <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Atendimento em {cidade} · {uf}</span>
+                </span>
+            </a>
+            <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
+                <a href="#sobre" class="hover:text-emerald-700 transition">Sobre</a>
+                <a href="#compromisso" class="hover:text-emerald-700 transition">Nosso compromisso</a>
+                <a href="#contato" class="hover:text-emerald-700 transition">Contato</a>
+            </nav>
+            {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-3 text-sm font-bold text-white shadow-sm transition sm:px-5">💬 WhatsApp</a>' if clean_tel else ''}
         </div>
     </header>
 
-    <!-- Hero Section com Slogan / Copywriting Inteligente -->
-    <section class="relative text-white py-24 px-4 brand-bg">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{display_name}</h1>
-            <p class="text-lg md:text-xl text-slate-100 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">"{custom_slogan}"</p>
-            {f'<div class="flex justify-center"><a href="{whats_link}" target="_blank" class="bg-white text-slate-900 hover:bg-slate-100 text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">🚀 Falar com Atendimento</a></div>' if clean_tel else ''}
-        </div>
-    </section>
-
-    <!-- 1º OS PILARES (Sempre antes do Sobre) -->
-    <section class="py-16 px-4 bg-slate-50 border-b border-slate-200">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Nossos Pilares</h2>
-                <p class="text-slate-600 mt-2">Compromisso total com a qualidade e satisfação</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="w-10 h-10 brand-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">{symbol}</div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-900">Atendimento Sob Medida</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed">Foco absoluto nas necessidades individuais de cada cliente em {cidade}.</p>
+    <main>
+        <!-- Hero Section Moderna -->
+        <section id="inicio" class="relative overflow-hidden text-white brand-bg py-20 lg:py-28">
+            <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+                <div class="max-w-2xl">
+                    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90">
+                        <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
+                        PRESENÇA LOCAL · {cidade}, {uf}
+                    </div>
+                    <h1 class="display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
+                    <p class="mt-6 text-base leading-8 text-white/80 sm:text-lg">"{custom_slogan}"</p>
+                    {f'<div class="mt-9 flex flex-wrap gap-4"><a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-4 text-sm font-extrabold shadow-lg transition hover:bg-slate-100">Falar com a equipe ↗</a><a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Conhecer a empresa</a></div>' if clean_tel else ''}
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="w-10 h-10 brand-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">⚡</div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-900">Agilidade e Rapidez</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed">Canais diretos via WhatsApp e suporte eficiente sem burocracia.</p>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="w-10 h-10 brand-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">🛡️</div>
-                    <h3 class="font-bold text-lg mb-2 text-slate-900">Confiança e Rigor</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed">Transparência e excelência garantidas em todas as etapas de atuação.</p>
+                <div class="relative mx-auto w-full max-w-xl">
+                    <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-sm">
+                        <img src="{img_feature}" alt="{display_name} - Atendimento Profissional" class="h-64 w-full rounded-2xl object-cover sm:h-80 lg:h-[380px]" loading="eager">
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 2º SOBRE A EMPRESA (Com imagem realista gerada por último) -->
-    <section class="py-16 px-4 bg-white">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <!-- 1º OS PILARES (Sempre antes do Sobre) -->
+        <section id="compromisso" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
+            <div class="mx-auto max-w-7xl px-5 lg:px-8">
+                <div class="mx-auto mb-12 max-w-2xl text-center">
+                    <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Nosso compromisso</p>
+                    <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Uma relação construída com confiança.</h2>
+                    <p class="mt-4 leading-7 text-slate-600">Acreditamos que uma boa experiência começa com clareza, disponibilidade e respeito às necessidades de cada cliente.</p>
+                </div>
+                <div class="grid gap-6 md:grid-cols-3">
+                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">✓</div>
+                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento atencioso</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Escuta e comunicação objetiva para entender sua solicitação e orientar os próximos passos em {cidade}.</p>
+                    </article>
+                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">⚡</div>
+                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Comunicação direta</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Um canal de contato simples para tirar dúvidas e solicitar informações sem complicação.</p>
+                    </article>
+                    <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">🛡️</div>
+                        <h3 class="display mt-5 text-lg font-bold text-slate-900">Responsabilidade</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Compromisso com informações claras e uma relação profissional transparente em cada etapa.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2º SOBRE A EMPRESA (Com foto realista por último) -->
+        <section id="sobre" class="py-16 sm:py-24">
+            <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
+                <div class="relative">
+                    <img src="{img_feature}" alt="Estrutura Profissional" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
+                    <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Atuação local</p>
+                        <p class="display mt-1 font-extrabold brand-text">{cidade} · {uf}</p>
+                    </div>
+                </div>
+                <div class="pt-4 lg:pt-0">
+                    <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Sobre a empresa</p>
+                    <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
+                    <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para oferecer excelência e suporte completo.</p>
+                    <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade ou esclarecer dúvidas, fale diretamente com a equipe pelos nossos canais de atendimento.</p>
+                    {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow">Conversar pelo WhatsApp ↗</a>' if clean_tel else ''}
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Contato Harmoniosa -->
+        <section id="contato" class="bg-[#eaf0eb] py-16 sm:py-20">
+            <div class="mx-auto max-w-7xl px-5 lg:px-8">
+                <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
+                    <div class="grid lg:grid-cols-[.85fr_1.15fr]">
+                        <div class="brand-bg p-8 text-white sm:p-10 lg:p-12">
+                            <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Vamos conversar?</p>
+                            <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos a um contato de distância.</h2>
+                            <p class="mt-4 leading-7 text-white/80">Use o WhatsApp para solicitar informações e conversar diretamente com a empresa.</p>
+                            {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100 shadow">Chamar no WhatsApp ↗</a>' if clean_tel else ''}
+                        </div>
+                        <div class="p-8 sm:p-10 lg:p-12">
+                            <h3 class="display text-xl font-extrabold text-slate-900">Informações de contato</h3>
+                            <div class="mt-6 space-y-5">
+                                <div class="flex gap-4">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📍</span>
+                                    <div><p class="text-sm font-bold text-slate-900">Endereço</p><p class="mt-1 text-sm leading-6 text-slate-600">{endereco if endereco else cidade + ' - ' + uf}</p></div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📞</span>
+                                    <div><p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p><p class="mt-1 text-sm text-slate-600">{active_tel if active_tel else 'Não informado'}</p></div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">🏛️</span>
+                                    <div><p class="text-sm font-bold text-slate-900">Dados Oficiais</p><p class="mt-1 text-sm text-slate-600">Razão Social: {razao}</p><p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj}</p>{social_links_html}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé Sóbrio e Profissional -->
+    <footer class="bg-[#10271f] px-5 py-8 text-white/70">
+        <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
             <div>
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Sobre a Nossa Empresa</h2>
-                <div class="w-16 h-1 brand-bg mb-6 rounded"></div>
-                <p class="text-slate-600 leading-relaxed text-base mb-4">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para oferecer excelência e suporte completo.</p>
-                
-                <div class="space-y-3 mt-6">
-                    <p class="text-sm text-slate-700 flex items-center gap-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
-                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📞 Contato:</b> {active_tel}</p>' if active_tel else ''}
-                    {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>✉️ E-mail:</b> {osint["email"]}</p>' if osint["email"] else ''}
-                    {social_links_html}
-                </div>
+                <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
+                <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
             </div>
-            <div>
-                <img src="{img_feature}" alt="Ambiente Profissional Realista" class="rounded-2xl shadow-lg object-cover w-full h-80 border border-slate-100">
+            <div class="text-xs sm:text-right">
+                <p>CNPJ: {formatted_cnpj}</p>
+                <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
             </div>
-        </div>
-    </section>
-
-    <!-- Rodapé Coeso com CNPJ Formatado -->
-    <footer class="brand-bg text-white py-8 text-center text-xs border-t border-slate-800">
-        <div class="max-w-4xl mx-auto px-4">
-            <p class="font-bold text-sm mb-2">{display_name}</p>
-            <p class="text-white/80 mb-1">Razão Social: {razao}</p>
-            <p class="text-white/80 mb-2">CNPJ: {formatted_cnpj} | {cidade}/{uf}</p>
-            <p class="text-white/60">&copy; 2026 Todos os direitos reservados.</p>
         </div>
     </footer>
-
+    <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>"""
     return html_code
 
+# --- CARREGAMENTO DA PLANILHA ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -484,8 +538,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com OSINT Avançado</div>
-            <div class="banner-subtitle">Nome fantasia em destaque, slogans originais, imagens realistas com símbolos do ramo e campos reservados para Instagram.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP Premium & Harmonioso</div>
+            <div class="banner-subtitle">Landing pages modernas, com fontes DM Sans/Manrope, nomes fantasia destacados, slogans corporativos e imagens realistas por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -595,12 +649,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Busca Inteligente & Gerar LP Original", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Extraindo Nome Fantasia, slogans, símbolos do ramo e gerando Landing Page original..."):
+                if st.button("🌐 Executar Busca & Gerar LP Premium", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Realizando varredura inteligente e gerando Landing Page premium e harmoniosa..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page original gerada com sucesso!")
+                        st.success("Landing Page premium gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
