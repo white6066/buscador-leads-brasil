@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa com harmonização dos botões de paginação
+# Estilização CSS completa
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -222,11 +222,10 @@ try:
 
     current_df = st.session_state.df_status
 
-    # Inicializar número da página no session_state se não existir
     if "page_num" not in st.session_state:
         st.session_state.page_num = 1
 
-    # --- BARRA LATERAL (Filtros Independentes) ---
+    # --- BARRA LATERAL ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
@@ -263,7 +262,7 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- APLICAR FILTRAGEM COMBINADA ---
+    # --- FILTRAGEM ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
