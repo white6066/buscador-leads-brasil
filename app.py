@@ -313,7 +313,7 @@ try:
             df_filtered["Cidade"].str.lower().str.contains(ql)
         ]
 
-    st.subheader("📋 Lista de Empresas Localizadas na busca")
+    st.subheader("📋 Lista de Empresas Localizadas na Busca")
 
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
