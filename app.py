@@ -39,7 +39,7 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Zoom de 95% e Aproveitamento Total de Tela
+# Estilização CSS Moderna com Compactação e Aproveitamento de Espaço
 st.markdown(f"""
 <style>
     /* Zoom suave a 95% mantendo o equilíbrio ideal */
@@ -49,6 +49,12 @@ st.markdown(f"""
 
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
+    /* Reduzir margens superiores do Streamlit para colar o conteúdo acima */
+    .block-container {{
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }}
+
     /* Integrar cabeçalho superior do Streamlit com o tema */
     [data-testid="stHeader"] {{
         background-color: {bg_app} !important;
@@ -147,7 +153,7 @@ st.markdown(f"""
     div[data-testid="metric-container"] {{
         background-color: {bg_card}; 
         border: 1px solid {border_color}; 
-        padding: 16px 20px; 
+        padding: 14px 18px; 
         border-radius: 14px; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }}
@@ -155,22 +161,22 @@ st.markdown(f"""
     div[data-testid="metric-container"] div[data-testid="stMetricValue"], 
     div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {{ 
         color: {text_color} !important; 
-        font-size: 1.6rem !important; 
+        font-size: 1.5rem !important; 
         font-weight: 800 !important; 
     }}
 
     /* Banner Superior Estilizado */
     .banner-box {{
         background-color: {bg_card}; 
-        padding: 24px 32px; 
+        padding: 20px 28px; 
         border-radius: 16px; 
         color: {text_color}; 
-        margin-bottom: 20px; 
+        margin-bottom: 16px; 
         border: 1px solid {border_color}; 
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     }}
-    .banner-title {{ font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; color: {text_color} !important; }}
-    .banner-subtitle {{ color: {text_muted}; font-size: 0.95rem; line-height: 1.4; }}
+    .banner-title {{ font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
+    .banner-subtitle {{ color: {text_muted}; font-size: 0.9rem; line-height: 1.4; }}
     
     .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
 
