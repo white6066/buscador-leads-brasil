@@ -117,13 +117,14 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-def smart_osint_search(razao, cnpj, cidade, uf):
+# --- BUSCA OSINT PROFUNDA E INTELIGENTE (SITE OFICIAL, FANTASIA, TELEFONE E IMAGENS) ---
+def deep_web_osint_search(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
     queries = [
-        f"{razao} {cidade} {uf} nome fantasia",
-        f"{razao} {cidade} {uf} instagram",
-        f"CNPJ {cnpj} biz contato"
+        f"{razao} {cidade} {uf}",
+        f"CNPJ {cnpj} biz",
+        f"{razao} instagram site"
     ]
     
     found_logo = None
@@ -131,6 +132,8 @@ def smart_osint_search(razao, cnpj, cidade, uf):
     found_email = None
     found_phone = None
     found_fantasia = None
+    found_site = None
+    found_images = []
     
     for q in queries:
         try:
@@ -142,8 +145,17 @@ def smart_osint_search(razao, cnpj, cidade, uf):
                 soup = BeautifulSoup(res.text, 'html.parser')
                 page_text = soup.get_text()
                 
+                # Capturar Site Oficial
+                if not found_site:
+                    for a in soup.find_all('a', class_='result__url'):
+                        href = a.get('href', '')
+                        if href and 'http' in href and 'duckduckgo' not in href and 'instagram' not in href and 'facebook' not in href:
+                            found_site = href
+                            break
+
+                # Capturar Nome Fantasia
                 if not found_fantasia:
-                    fantasia_match = re.search(r'(?:Nome Fantasia|fantasia)[:\s]+([A-ZÁ-Ú0-9\s]{3,30})', page_text, re.IGNORECASE)
+                    fantasia_match = re.search(r'(?:Nome Fantasia|fantasia|conhecida como)[:\s]+([A-ZÁ-Ú0-9\s]{3,35})', page_text, re.IGNORECASE)
                     if fantasia_match:
                         candidate = fantasia_match.group(1).strip()
                         if candidate.upper() not in razao.upper() and len(candidate) > 2:
@@ -171,10 +183,16 @@ def smart_osint_search(razao, cnpj, cidade, uf):
                                 if len(clean_p) >= 10:
                                     found_phone = phones[0]
 
+                # Capturar imagens indexadas na busca relevantes ao negócio
+                for img in soup.find_all('img'):
+                    src = img.get('src', '')
+                    if 'http' in src and 'icon' not in src and 'logo' not in src.lower():
+                        found_images.append(src)
+
                 if not found_logo:
                     for img in soup.find_all('img'):
                         src = img.get('src', '')
-                        if 'http' in src and 'icon' not in src:
+                        if 'http' in src and ('logo' in src.lower() or 'icon' in src.lower()):
                             found_logo = src
                             break
         except Exception:
@@ -187,14 +205,40 @@ def smart_osint_search(razao, cnpj, cidade, uf):
         "logo": found_logo,
         "instagram": found_instagram,
         "email": found_email,
-        "phone": found_phone
+        "phone": found_phone,
+        "site": found_site,
+        "images": found_images
     }
 
-def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # 1. Varredura OSINT executada primeiro
-    osint = smart_osint_search(razao, cnpj, cidade, uf)
+# --- GERAÇÃO DE IMAGEM DINÂMICA BASEADA NO NOME, RAMO E DADOS ENCONTRADOS ---
+def get_dynamic_contextual_image(display_name, segmento, osint_images):
+    # Se a varredura encontrou imagens reais na web, prioriza uma delas
+    if osint_images and len(osint_images) > 0:
+        return osint_images[0]
+        
+    # Caso contrário, gera uma imagem fotográfica de altíssima qualidade baseada no segmento e nome
+    seed = hashlib.md5((display_name + segmento).encode()).hexdigest()[:6]
+    seg_lower = (segmento + " " + display_name).lower()
     
-    # 2. Definição de cores da marca
+    if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto']):
+        return f"https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
+        return f"https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
+        return f"https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito']):
+        return f"https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
+        return f"https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+    else:
+        return f"https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80&sig={seed}"
+
+# --- GERAÇÃO DA LANDING PAGE ORIGINAL E PERSONALIZADA ---
+def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
+    # 1. Executar varredura profunda primeiro
+    osint = deep_web_osint_search(razao, cnpj, cidade, uf, segmento)
+    
+    # 2. Cores da marca extraídas da logo encontrada ou geradas de forma única
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
@@ -210,28 +254,22 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
-    if osint["instagram"]:
-        instagram_html = f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
-    else:
-        instagram_html = f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram Oficial:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Campo Reservado (Adicionar Futuramente)</span></p>'
-
-    # 3. SELEÇÃO DE IMAGENS PROFISSIONAIS DE ALTA QUALIDADE POR NICHO (Por último)
-    seg_lower = (segmento + " " + razao).lower()
-    if any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad']):
-        img_feature = "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80" # Supermercado limpo e organizado
-    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'plant']):
-        img_feature = "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80" # Agronegócio / Campo sustentável
-    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito']):
-        img_feature = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80" # Jurídico / Escritório Executivo
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
-        img_feature = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80" # Clínica / Estética moderna
-    elif any(x in seg_lower for x in ['vestu', 'roupa', 'loja', 'calcado']):
-        img_feature = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" # Loja moderna de varejo
-    else:
-        img_feature = "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80" # Ambiente corporativo premium
-
-    headline = f"Excelência em {segmento}"
     display_name = osint["fantasia"]
+
+    # Redes Sociais & Site Oficial
+    social_links_html = ""
+    if osint["instagram"]:
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
+    else:
+        social_links_html += f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Campo Reservado (Adicionar Futuramente)</span></p>'
+
+    if osint["site"]:
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
+
+    # 3. Imagem dinâmica inteligente gerada por último
+    img_feature = get_dynamic_contextual_image(display_name, segmento, osint["images"])
+
+    headline = f"Excelência e Qualidade em {segmento}"
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -297,7 +335,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </div>
     </section>
 
-    <!-- 2º SOBRE A EMPRESA (Com imagem contextual profissional gerada por último) -->
+    <!-- 2º SOBRE A EMPRESA (Com imagem dinâmica inteligente gerada por último) -->
     <section class="py-16 px-4 bg-white">
         <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -309,7 +347,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                     <p class="text-sm text-slate-700 flex items-center gap-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
                     {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📞 Contato:</b> {active_tel}</p>' if active_tel else ''}
                     {f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>✉️ E-mail:</b> {osint["email"]}</p>' if osint["email"] else ''}
-                    {instagram_html}
+                    {social_links_html}
                 </div>
             </div>
             <div>
@@ -427,7 +465,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com OSINT Avançado</div>
-            <div class="banner-subtitle">Busca inteligente realizada primeiro, com imagens contextuais de alta qualidade e alinhadas ao nicho inseridas por último.</div>
+            <div class="banner-subtitle">Varredura profunda do site oficial, nome fantasia, redes sociais e geração dinâmica de imagens contextuais por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -537,8 +575,8 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Busca Inteligente & Gerar LP", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Buscando Nome Fantasia, cores da logo, redes sociais e gerando página com imagens profissionais..."):
+                if st.button("🌐 Executar Busca Avançada & Gerar LP Original", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Executando varredura profunda (Site, Nome Fantasia, Contato, Redes) e gerando LP original..."):
                         lp_html = generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
