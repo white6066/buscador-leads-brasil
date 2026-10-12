@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import requests
-import io
-import csv
+requests = __import__('requests')
+io = __import__('io')
+csv = __import__('csv')
+datetime = __import__('datetime').datetime
 
 # 1. Configuração da página
 st.set_page_config(
@@ -216,7 +217,19 @@ def load_data_from_sheet():
             
         cnpj = str(r[0]).strip()
         razao = str(r[1]).strip() if str(r[1]).strip() != "" else "Empresa"
-        data_abert = str(r[2]).strip()
+        
+        # Formatar data para DD/MM/AAAA
+        raw_date = str(r[2]).strip()
+        data_abert = raw_date
+        try:
+            if "-" in raw_date:
+                dt_obj = datetime.strptime(raw_date.split("T")[0], "%Y-%m-%d")
+                data_abert = dt_obj.strftime("%d/%m/%Y")
+            elif "/" in raw_date and len(raw_date.split("/")[-1]) == 4:
+                data_abert = raw_date
+        except:
+            data_abert = raw_date
+
         segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
