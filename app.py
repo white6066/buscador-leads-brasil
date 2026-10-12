@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa
+# Estilização CSS completa (incluindo remoção do sublinhado azul dos links)
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -71,6 +71,11 @@ st.markdown(f"""
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
+
+    /* Remover sublinhado azul de todos os links de ações rápidas */
+    a, a:hover, a:focus, a:active {{
+        text-decoration: none !important;
+    }}
 
     /* Caixas de Texto / Pesquisa Rápida */
     input[type="text"] {{
@@ -218,7 +223,7 @@ try:
 
     current_df = st.session_state.df_status
 
-    # --- BARRA LATERAL (Filtros em Cascata Inteligentes) ---
+    # --- BARRA LATERAL (Filtros totalmente independentes e combináveis) ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
@@ -232,25 +237,15 @@ try:
         st.divider()
         st.markdown("#### 🎯 Filtros")
         
-        # 1. Segmento
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().astype(str).str.strip().unique()))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
 
-        # Filtrar UFs com base no segmento selecionado
-        df_f1 = current_df.copy()
-        if seg_selecionado != "Todos":
-            df_f1 = df_f1[df_f1["Segmento"].astype(str).str.strip() == seg_selecionado]
-        ufs = ["Todos"] + sorted(list(df_f1["UF"].dropna().astype(str).str.strip().str.upper().unique()))
+        ufs = ["Todos"] + sorted(list(current_df["UF"].dropna().astype(str).str.strip().str.upper().unique()))
         uf_selecionada = st.selectbox("Estado (UF):", ufs)
 
-        # Filtrar Cidades com base no segmento e UF selecionados
-        df_f2 = df_f1.copy()
-        if uf_selecionada != "Todos":
-            df_f2 = df_f2[df_f2["UF"].astype(str).str.strip().str.upper() == uf_selecionada]
-        cidades = ["Todas"] + sorted(list(df_f2["Cidade"].dropna().astype(str).str.strip().str.upper().unique()))
+        cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().astype(str).str.strip().str.upper().unique()))
         cidade_selecionada = st.selectbox("Cidade:", cidades)
 
-        # Status
         status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
@@ -265,13 +260,13 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- APLICAR FILTRAGEM FINAL ---
+    # --- APLICAR FILTRAGEM COMBINADA LIVRE ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada]
-    if cidade_selecionada != "Todos":
+    if cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
