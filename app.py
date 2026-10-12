@@ -10,7 +10,7 @@ from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com IA de Precisão",
+    page_title="Novas Empresas - Gerador LP com IA de Imagem",
     page_icon="🚀",
     layout="wide"
 )
@@ -120,22 +120,9 @@ def extract_colors_from_logo(image_url):
 # --- MOTOR DE VARREDURA OSINT DE ALTA PRECISÃO ---
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile", f"{razao} instagram oficial"]
     
-    queries = [
-        f"{razao} {cidade} {uf}",
-        f"CNPJ {cnpj} business profile",
-        f"{razao} instagram oficial",
-        f"{razao} serviços atividades"
-    ]
-    
-    found_logo = None
-    found_instagram = None
-    found_email = None
-    found_phone = None
-    found_fantasia = None
-    found_site = None
-    found_slogan = None
-    found_images = []
+    found_logo, found_instagram, found_email, found_phone, found_fantasia, found_site, found_slogan = None, None, None, None, None, None, None
     extra_activities = []
     
     for q in queries:
@@ -167,37 +154,25 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
                     if txt:
                         if not found_slogan and any(w in txt.lower() for w in ['qualidade', 'referência', 'líder', 'compromisso', 'excelência', 'soluções', 'especializada']):
                             found_slogan = txt[:110] + "..."
-
                         if not found_instagram:
                             ig_matches = re.findall(r'https?://(?:www\.)?instagram\.com/([a-zA-Z0-9_.]+)', txt)
                             if ig_matches:
                                 handle = ig_matches[0]
                                 if handle.lower() not in ['p', 'reel', 'explore', 'accounts']:
                                     found_instagram = f"https://instagram.com/{handle}"
-                                    
                         if not found_email:
                             emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', txt)
-                            if emails:
-                                found_email = emails[0]
-                                
+                            if emails: found_email = emails[0]
                         if not found_phone:
                             phones = re.findall(r'(?:(?:\+|00)?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}[-\s]?\d{4}|\d{4}[-\s]?\d{4})', txt)
                             if phones:
                                 clean_p = "".join(filter(str.isdigit, phones[0]))
-                                if len(clean_p) >= 10:
-                                    found_phone = phones[0]
+                                if len(clean_p) >= 10: found_phone = phones[0]
 
-                        # Captura áreas de atuação correlacionadas no texto
-                        for keyword in ['atendimento', 'suporte', 'assessoria', 'consultoria', 'gestão', 'fornecimento', 'distribuição', 'comércio', 'serviços']:
+                        for keyword in ['atendimento', 'suporte', 'assessoria', 'consultoria', 'gestão', 'fornecimento', 'comércio', 'serviços']:
                             if keyword in txt.lower() and len(txt) < 80:
                                 clean_act = txt.strip()
-                                if clean_act not in extra_activities:
-                                    extra_activities.append(clean_act)
-
-                for img in soup.find_all('img'):
-                    src = img.get('src', '')
-                    if 'http' in src and 'icon' not in src and 'logo' not in src.lower():
-                        found_images.append(src)
+                                if clean_act not in extra_activities: extra_activities.append(clean_act)
 
                 if not found_logo:
                     for img in soup.find_all('img'):
@@ -209,7 +184,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
             continue
             
     commercial_name = found_fantasia if found_fantasia else razao
-    
     return {
         "fantasia": commercial_name,
         "logo": found_logo,
@@ -218,43 +192,38 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "phone": found_phone,
         "site": found_site,
         "slogan": found_slogan,
-        "images": found_images,
         "extra_activities": extra_activities[:3]
     }
 
-# --- SELEÇÃO DE FOTOGRAFIA CIRÚRGICA & 100% REALISTA ---
-def get_verified_realistic_image(display_name, segmento, osint_images):
-    if osint_images and len(osint_images) > 0:
-        return osint_images[0]
-        
-    seed = hashlib.md5((display_name + segmento).encode()).hexdigest()[:6]
-    seg_lower = (segmento + " " + display_name).lower()
+# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL (POLLINATIONS.AI) ---
+def generate_ai_contextual_image(segmento, razao):
+    seg_lower = (segmento + " " + razao).lower()
     
-    # 1. Saúde, Hospitais e Clínicas Médicas
-    if any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'enferm', 'terapia', 'laborat']):
-        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 2. Automotivo, Veículos, Oficinas, Seminovos
-    elif any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto', 'mecanica']):
-        return f"https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 3. Supermercados, Varejo, Comércio de Alimentos
-    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad', 'comercio']):
-        return f"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 4. Agronegócio, Fazendas, Pecuária, Café
-    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'bovin', 'pecuaria']):
-        return f"https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 5. Advocacia, Jurídico, Contabilidade, Consultoria
+    # Criação de Prompt em Inglês altamente preciso para a IA de Imagem
+    if any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
+        prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k, commercial interior design"
+    elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
+        prompt = "modern high-end medical clinic interior, clean professional healthcare environment, advanced medical equipment, bright welcoming lighting, photorealistic, 4k"
+    elif any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica']):
+        prompt = "luxury modern car dealership showroom with polished clean floors, elegant contemporary automobiles on display, soft studio spotlighting, photorealistic, 4k"
+    elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'comercio']):
+        prompt = "high-end modern supermarket interior, beautifully organized shelves with gourmet products, bright clean aisles, commercial retail photography, 4k"
+    elif any(x in seg_lower for x in ['cafe', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
+        prompt = "modern agricultural business office and sustainable agribusiness landscape, professional corporate environment, high resolution, photorealistic"
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
-        return f"https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 6. Estética, Beleza, Salão, Spa
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'cosmetic']):
-        return f"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    # 7. Construção, Engenharia, Obras, Imóveis
-    elif any(x in seg_lower for x in ['constru', 'engenhar', 'obra', 'imovel', 'imobiliaria']):
-        return f"https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+        prompt = "sophisticated modern executive corporate office, meeting room with glass walls, professional business atmosphere, architectural photography, 4k"
+    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa']):
+        prompt = "luxury modern aesthetic beauty spa interior, elegant relaxing design, minimalist lighting, high-end wellness center, photorealistic, 4k"
     else:
-        return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+        prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
-# --- PALETA DE CORES ADAPTATIVA COM IA DE PSICOLOGIA DE MERCADO ---
+    encoded_prompt = urllib.parse.quote(prompt)
+    seed = int(hashlib.md5((segmento + razao).encode()).hexdigest(), 16) % 10000
+    # URL da API pública de IA geradora de imagens
+    ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
+    return ai_image_url
+
+# --- PALETA DE CORES ADAPTATIVA ---
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
         extracted = extract_colors_from_logo(logo_url)
@@ -262,30 +231,26 @@ def determine_harmonious_palette(razao, segmento, logo_url):
             return extracted, "Identidade Visual Oficial (Logo)"
             
     seg_lower = segmento.lower()
-    if any(w in seg_lower for w in ['hospital', 'saude', 'medico', 'odont', 'estet', 'clinica', 'laborat']):
-        return "#0f766e", "Verde Teal (Harmonia e Bem-Estar)"
+    if any(w in seg_lower for w in ['hospital', 'saude', 'medico', 'odont', 'estet', 'clinica']):
+        return "#0f766e", "Verde Teal (Saúde & Bem-Estar)"
     elif any(w in seg_lower for w in ['financeiro', 'contab', 'direito', 'advoc', 'consult']):
-        return "#1e3a8a", "Azul Executivo (Seriedade e Confiança)"
-    elif any(w in seg_lower for w in ['agro', 'rural', 'bovino', 'fazenda', 'cafe']):
-        return "#173f32", "Verde Floresta (Sustentabilidade e Crescimento)"
-    elif any(w in seg_lower for w in ['constru', 'engenhar', 'imobi', 'obra']):
-        return "#c2410c", "Laranja Terracota (Força e Estrutura)"
+        return "#1e3a8a", "Azul Executivo (Seriedade & Confiança)"
+    elif any(w in seg_lower for w in ['agro', 'rural', 'fazenda', 'cafe']):
+        return "#173f32", "Verde Floresta (Agro & Sustentabilidade)"
+    elif any(w in seg_lower for w in ['constr', 'material', 'engenhar', 'obra']):
+        return "#c2410c", "Laranja Terracota (Construção & Força)"
     else:
         h = int(hashlib.md5((razao + segmento).encode()).hexdigest(), 16)
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
-        return palettes[h % len(palettes)], "Paleta Exclusiva Harmonizada"
+        return palettes[h % len(palettes)], "Paleta Exclusiva"
 
-# --- GERADOR DA LP COMPLETA, ELEGANTE E COM REVISÃO IA ---
+# --- GERADOR DA LP MASTERPIECE COM IA DE IMAGEM ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # Passo 1: Varredura profunda
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
-    
-    # Passo 2: Definição de Cores Harmoniosas
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
     formatted_cnpj = format_cnpj(cnpj)
     
-    # Passo 3: Validação de Telefones e WhatsApp
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
@@ -300,20 +265,17 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
 
     display_name = osint["fantasia"]
     
-    # Passo 4: Copywriting com IA Revisada (Elegância, Fluidez e Confiança)
     if osint["slogan"]:
         custom_slogan = osint["slogan"]
     else:
         custom_slogan = f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
-    # Se houver atividades extras capturadas, cria tópicos ricos
     extra_acts = osint["extra_activities"]
     if not extra_acts:
         extra_acts = [f"Atuação especializada em {segmento}", "Atendimento consultivo e personalizado", "Compromisso com prazos e qualidade total"]
 
     activities_html = "".join([f'<li class="flex items-center gap-2 text-sm text-slate-700"><span class="brand-text font-bold">✓</span> {act}</li>' for act in extra_acts])
 
-    # Passo 5: Endereço & Links
     full_address = endereco if endereco else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
@@ -327,10 +289,9 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    # Passo 6: Imagem rigorosamente contextualizada
-    img_feature = get_verified_realistic_image(display_name, segmento, osint["images"])
+    # Imagem gerada por Inteligência Artificial sob medida para o negócio
+    img_feature = generate_ai_contextual_image(segmento, razao)
 
-    # Código HTML Final da Masterpiece
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -416,7 +377,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Áreas e Diferenciais Capturados -->
     <section id="servicos" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="mx-auto mb-12 max-w-2xl text-center">
@@ -445,7 +405,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Sobre a Empresa -->
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
@@ -465,7 +424,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       </div>
     </section>
 
-    <!-- Contato & Google Maps Interativo -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -628,8 +586,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Precisão</div>
-            <div class="banner-subtitle">Sistema inteligente com varredura OSINT profunda, análise de áreas extras, copywriting elegante e imagens 100% realistas e contextuais.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem</div>
+            <div class="banner-subtitle">Sistema inteligente com varredura OSINT, IA de geração de imagens customizadas por nicho e alta conversão.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -739,12 +697,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Varredura Profunda & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Realizando varredura OSINT, revisão de copywriting e gerando Landing Page elegante..."):
+                if st.button("🌐 Executar IA de Imagem & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Gerando imagem por inteligência artificial, criando copywriting e montando Landing Page..."):
                         lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page Masterpiece gerada com sucesso!")
+                        st.success("Landing Page com IA gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
