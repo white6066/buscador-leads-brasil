@@ -220,9 +220,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     }
 
 def translate_and_optimize_prompt(portuguese_text):
-    """Traduz e otimiza automaticamente o texto do usuário em português para inglês profissional de IA"""
     text_lower = portuguese_text.lower()
-    
     if any(w in text_lower for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
         return "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
     elif 'carro' in text_lower or 'veiculo' in text_lower or 'automovel' in text_lower:
@@ -234,9 +232,8 @@ def translate_and_optimize_prompt(portuguese_text):
     else:
         return f"professional commercial photography of {portuguese_text}, photorealistic, 4k resolution, high quality business display, cinematic lighting"
 
-def generate_smart_image(segmento, razao, specific_instruction="", reference_image_bytes=None):
+def generate_smart_image(segmento, razao, specific_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
-    
     if specific_instruction:
         prompt = translate_and_optimize_prompt(specific_instruction)
     else:
@@ -258,15 +255,8 @@ def generate_smart_image(segmento, razao, specific_instruction="", reference_ima
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + specific_instruction + str(reference_image_bytes)).encode()).hexdigest(), 16) % 10000
-    
-    # Se o usuário enviou uma imagem de referência, incorporamos o hash ou dados para orientar o gerador
-    ref_param = ""
-    if reference_image_bytes:
-        # Se houver imagem de base, ajustamos o parâmetro de guidance/contexto do pollinations
-        ref_param = f"&nologo=true"
-
-    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}{ref_param}"
+    seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 10000
+    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -304,7 +294,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
-        
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor", "cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
@@ -331,7 +320,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     return html_content
 
-def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, ref_image_bytes=None):
+def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
     img1_inst = ""
     img2_inst = ""
     
@@ -350,7 +339,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
     formatted_cnpj = format_cnpj(cnpj)
-    
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
@@ -364,11 +352,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         display_phone_text = "WhatsApp indisponível"
 
     display_name = osint["fantasia"]
-    
-    if osint["slogan"]:
-        custom_slogan = osint["slogan"]
-    else:
-        custom_slogan = f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
+    custom_slogan = osint["slogan"] if osint["slogan"] else f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
     extra_acts = osint["extra_activities"]
     if not extra_acts:
@@ -395,8 +379,8 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature_1 = generate_smart_image(segmento, razao, img1_inst, ref_image_bytes)
-    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst, ref_image_bytes)
+    img_feature_1 = generate_smart_image(segmento, razao, img1_inst)
+    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -831,12 +815,11 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Uploader de Imagem de Referência para colar/enviar o print junto
-                uploaded_print = st.file_uploader(f"📎 Enviar print/foto de referência (opcional) para {razao}", type=["png", "jpg", "jpeg"], key=f"print_up_{idx}")
-                print_bytes = None
+                # Instrução e Uploader que suporta colar print (Ctrl+V)
+                st.markdown("💡 **Dica:** Você pode colar um print diretamente na caixa de texto abaixo (`Ctrl+V`) ou clicar para carregar.")
+                uploaded_print = st.file_uploader(f"📎 Print de Referência para {razao}", type=["png", "jpg", "jpeg"], key=f"print_up_{idx}")
                 if uploaded_print:
-                    print_bytes = uploaded_print.getvalue()
-                    st.image(uploaded_print, width=150, caption="Imagem de Referência Carregada")
+                    st.image(uploaded_print, width=150, caption="Print colado/carregado com sucesso")
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.3, 2.5, 1.2])
                 
@@ -858,8 +841,8 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                        with st.spinner("Gerando Landing Page com tradução e referência visual..."):
-                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key], print_bytes)
+                        with st.spinner("Gerando Landing Page com tradução inteligente..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.success("Landing Page gerada com sucesso!")
@@ -879,8 +862,8 @@ try:
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                             st.session_state[f"clear_{input_key}"] = True
-                        with st.spinner("Traduzindo comando e gerando com base na imagem..."):
-                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key], print_bytes)
+                        with st.spinner("Traduzindo comando e aplicando alterações..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
