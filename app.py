@@ -9,6 +9,7 @@ import hashlib
 from datetime import datetime
 from PIL import Image
 import streamlit.components.v1 as components
+import base64
 
 # 1. Configuração da página
 st.set_page_config(
@@ -818,24 +819,33 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Uploader limpo sem avisos excessivos
-                uploaded_print = st.file_uploader(f"📎 Print de Referência para {razao}", type=["png", "jpg", "jpeg"], key=f"print_up_{idx}", label_visibility="collapsed")
-                
-                # Widget JS customizado para aceitar Ctrl+V na área de comandos
-                paste_html = f"""
-                <div id="paste-zone-{idx}" style="border: 2px dashed {border_color}; padding: 10px; text-align: center; border-radius: 6px; background: {input_bg}; color: {text_muted}; font-size: 0.85rem; cursor: pointer;">
-                    📋 Clique aqui ou cole seu print com <b>Ctrl + V</b>
+                # Componente dedicado para colagem de print (Ctrl + V)
+                paste_component_html = f"""
+                <div id="drop-zone-{idx}" contenteditable="true" style="
+                    border: 2px dashed {border_color}; 
+                    background: {input_bg}; 
+                    color: {text_color}; 
+                    padding: 12px; 
+                    text-align: center; 
+                    border-radius: 6px; 
+                    font-size: 0.85rem;
+                    outline: none;
+                    cursor: text;
+                ">
+                    📋 Clique aqui e pressione <b>Ctrl + V</b> para colar o print do modelo
                 </div>
+                <div id="preview-{idx}" style="margin-top: 8px; text-align: center;"></div>
                 <script>
-                    document.addEventListener('paste', function(e) {{
-                        const items = (e.clipboardData || e.clipboardData).items;
-                        for (let i = 0; i < items.length; i++) {{
-                            if (items[i].type.indexOf('image') !== -1) {{
-                                const blob = items[i].getAsFile();
-                                const reader = new FileReader();
+                    const zone = document.getElementById('drop-zone-{idx}');
+                    zone.addEventListener('paste', (e) => {{
+                        let items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                        for (let index in items) {{
+                            let item = items[index];
+                            if (item.kind === 'file') {{
+                                let blob = item.getAsFile();
+                                let reader = new FileReader();
                                 reader.onload = function(event) {{
-                                    // Simula carregamento via Streamlit se necessário
-                                    console.log("Imagem colada com sucesso!");
+                                    document.getElementById('preview-{idx}').innerHTML = '<img src="' + event.target.result + '" style="max-height: 100px; border-radius: 4px; border: 1px solid #0ea5e9;" />';
                                 }};
                                 reader.readAsDataURL(blob);
                             }}
@@ -843,10 +853,7 @@ try:
                     }});
                 </script>
                 """
-                components.html(paste_html, height=45)
-
-                if uploaded_print:
-                    st.image(uploaded_print, width=130, caption="Print capturado com sucesso")
+                components.html(paste_component_html, height=140)
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.8, 1.2])
                 
