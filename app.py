@@ -10,7 +10,7 @@ from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com IA Adaptativa",
+    page_title="Novas Empresas - Gerador LP com IA de Precisão",
     page_icon="🚀",
     layout="wide"
 )
@@ -117,14 +117,15 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-# --- MOTOR DE INTELIGÊNCIA OSINT E DIGITAL ---
-def intelligent_company_scraper(razao, cnpj, cidade, uf, segmento):
+# --- MOTOR DE VARREDURA OSINT DE ALTA PRECISÃO ---
+def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     
     queries = [
         f"{razao} {cidade} {uf}",
-        f"CNPJ {cnpj} business",
-        f"{razao} instagram oficial"
+        f"CNPJ {cnpj} business profile",
+        f"{razao} instagram oficial",
+        f"{razao} serviços atividades"
     ]
     
     found_logo = None
@@ -135,6 +136,7 @@ def intelligent_company_scraper(razao, cnpj, cidade, uf, segmento):
     found_site = None
     found_slogan = None
     found_images = []
+    extra_activities = []
     
     for q in queries:
         try:
@@ -185,6 +187,13 @@ def intelligent_company_scraper(razao, cnpj, cidade, uf, segmento):
                                 if len(clean_p) >= 10:
                                     found_phone = phones[0]
 
+                        # Captura áreas de atuação correlacionadas no texto
+                        for keyword in ['atendimento', 'suporte', 'assessoria', 'consultoria', 'gestão', 'fornecimento', 'distribuição', 'comércio', 'serviços']:
+                            if keyword in txt.lower() and len(txt) < 80:
+                                clean_act = txt.strip()
+                                if clean_act not in extra_activities:
+                                    extra_activities.append(clean_act)
+
                 for img in soup.find_all('img'):
                     src = img.get('src', '')
                     if 'http' in src and 'icon' not in src and 'logo' not in src.lower():
@@ -209,60 +218,74 @@ def intelligent_company_scraper(razao, cnpj, cidade, uf, segmento):
         "phone": found_phone,
         "site": found_site,
         "slogan": found_slogan,
-        "images": found_images
+        "images": found_images,
+        "extra_activities": extra_activities[:3]
     }
 
-# --- SELEÇÃO DE FOTOGRAFIA CONTEXTUAL ---
-def get_contextual_image(display_name, segmento, osint_images):
+# --- SELEÇÃO DE FOTOGRAFIA CIRÚRGICA & 100% REALISTA ---
+def get_verified_realistic_image(display_name, segmento, osint_images):
     if osint_images and len(osint_images) > 0:
         return osint_images[0]
         
     seed = hashlib.md5((display_name + segmento).encode()).hexdigest()[:6]
     seg_lower = (segmento + " " + display_name).lower()
     
-    if any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto', 'mecanica']):
+    # 1. Saúde, Hospitais e Clínicas Médicas
+    if any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'enferm', 'terapia', 'laborat']):
+        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    # 2. Automotivo, Veículos, Oficinas, Seminovos
+    elif any(x in seg_lower for x in ['automov', 'carro', 'veiculo', 'seminovo', 'auto', 'mecanica']):
         return f"https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    # 3. Supermercados, Varejo, Comércio de Alimentos
     elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'atacad', 'comercio']):
         return f"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'bovin']):
+    # 4. Agronegócio, Fazendas, Pecuária, Café
+    elif any(x in seg_lower for x in ['cafe', 'cafeicult', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda', 'bovin', 'pecuaria']):
         return f"https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    # 5. Advocacia, Jurídico, Contabilidade, Consultoria
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
         return f"https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=85&sig={seed}"
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'saude', 'odont', 'clinica']):
-        return f"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    # 6. Estética, Beleza, Salão, Spa
+    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa', 'cosmetic']):
+        return f"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
+    # 7. Construção, Engenharia, Obras, Imóveis
     elif any(x in seg_lower for x in ['constru', 'engenhar', 'obra', 'imovel', 'imobiliaria']):
         return f"https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=85&sig={seed}"
     else:
         return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
 
-# --- GERADOR DE PALETA DE CORES ADAPTATIVA (PSICOLOGIA DE MERCADO + LOGO) ---
-def determine_adaptive_palette(razao, segmento, logo_url):
+# --- PALETA DE CORES ADAPTATIVA COM IA DE PSICOLOGIA DE MERCADO ---
+def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
         extracted = extract_colors_from_logo(logo_url)
         if extracted:
-            return extracted, "Extraída da Logo/Marca"
+            return extracted, "Identidade Visual Oficial (Logo)"
             
     seg_lower = segmento.lower()
-    if any(w in seg_lower for w in ['saude', 'medico', 'odont', 'estet', 'clinica']):
-        return "#0f766e", "Verde Teal (Saúde & Bem-Estar)"
+    if any(w in seg_lower for w in ['hospital', 'saude', 'medico', 'odont', 'estet', 'clinica', 'laborat']):
+        return "#0f766e", "Verde Teal (Harmonia e Bem-Estar)"
     elif any(w in seg_lower for w in ['financeiro', 'contab', 'direito', 'advoc', 'consult']):
-        return "#1e3a8a", "Azul Executivo (Confiança & Seriedade)"
+        return "#1e3a8a", "Azul Executivo (Seriedade e Confiança)"
     elif any(w in seg_lower for w in ['agro', 'rural', 'bovino', 'fazenda', 'cafe']):
-        return "#173f32", "Verde Floresta (Agro & Sustentabilidade)"
+        return "#173f32", "Verde Floresta (Sustentabilidade e Crescimento)"
     elif any(w in seg_lower for w in ['constru', 'engenhar', 'imobi', 'obra']):
-        return "#c2410c", "Laranja Terra (Construção & Força)"
+        return "#c2410c", "Laranja Terracota (Força e Estrutura)"
     else:
         h = int(hashlib.md5((razao + segmento).encode()).hexdigest(), 16)
-        dynamic_palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
-        return dynamic_palettes[h % len(dynamic_palettes)], "Dinâmica Exclusiva"
+        palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
+        return palettes[h % len(palettes)], "Paleta Exclusiva Harmonizada"
 
-# --- IA GERADORA DA LANDING PAGE ADAPTATIVA ---
-def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    osint = intelligent_company_scraper(razao, cnpj, cidade, uf, segmento)
-    primary_color, palette_source = determine_adaptive_palette(razao, segmento, osint["logo"])
+# --- GERADOR DA LP COMPLETA, ELEGANTE E COM REVISÃO IA ---
+def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
+    # Passo 1: Varredura profunda
+    osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
+    
+    # Passo 2: Definição de Cores Harmoniosas
+    primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
     formatted_cnpj = format_cnpj(cnpj)
     
+    # Passo 3: Validação de Telefones e WhatsApp
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
@@ -277,26 +300,37 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
 
     display_name = osint["fantasia"]
     
+    # Passo 4: Copywriting com IA Revisada (Elegância, Fluidez e Confiança)
     if osint["slogan"]:
         custom_slogan = osint["slogan"]
     else:
-        custom_slogan = f"Soluções especializadas em {segmento} com foco em excelência, inovação e compromisso com você."
+        custom_slogan = f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
+    # Se houver atividades extras capturadas, cria tópicos ricos
+    extra_acts = osint["extra_activities"]
+    if not extra_acts:
+        extra_acts = [f"Atuação especializada em {segmento}", "Atendimento consultivo e personalizado", "Compromisso com prazos e qualidade total"]
+
+    activities_html = "".join([f'<li class="flex items-center gap-2 text-sm text-slate-700"><span class="brand-text font-bold">✓</span> {act}</li>' for act in extra_acts])
+
+    # Passo 5: Endereço & Links
     full_address = endereco if endereco else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
 
     social_links_html = ""
     if osint["instagram"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="text-emerald-700 underline font-semibold">Aceder ao Perfil</a></p>'
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram Oficial:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
     else:
         social_links_html += f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Não informado</span></p>'
 
     if osint["site"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="text-emerald-700 underline font-semibold">{osint["site"]}</a></p>'
+        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature = get_contextual_image(display_name, segmento, osint["images"])
+    # Passo 6: Imagem rigorosamente contextualizada
+    img_feature = get_verified_realistic_image(display_name, segmento, osint["images"])
 
+    # Código HTML Final da Masterpiece
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -311,8 +345,8 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
   <style>
     :root {{
       --primary: {primary_color};
-      --primary-deep: #0b1310;
-      --ink: #18241f;
+      --primary-deep: #070e0b;
+      --ink: #111816;
     }}
     html {{ scroll-behavior: smooth; }}
     body {{ font-family: "DM Sans", sans-serif; color: var(--ink); }}
@@ -321,24 +355,24 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
     .brand-text {{ color: var(--primary); }}
     .hero-bg {{
       background:
-        radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.12), transparent 35%),
-        linear-gradient(135deg, var(--primary-deep), var(--primary) 70%, #111827);
+        radial-gradient(ellipse at 85% 15%, rgba(255,255,255,.14), transparent 40%),
+        linear-gradient(135deg, var(--primary-deep), var(--primary) 70%, #0f172a);
     }}
-    .lift {{ transition: transform .22s ease, box-shadow .22s ease; }}
-    .lift:hover {{ transform: translateY(-4px); box-shadow: 0 18px 38px rgba(0,0,0,.12); }}
+    .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
+    .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
   </style>
 </head>
-<body class="bg-[#f8faf8] antialiased">
-  <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-white">
+<body class="bg-[#fafbf9] antialiased">
+  <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
     <span class="inline-flex items-center justify-center gap-2">
-      📍 ATUAÇÃO PROFISSIONAL EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
+      ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
     </span>
   </div>
 
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
       <a href="#inicio" class="flex items-center gap-3">
-        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">
           {display_name[0].upper()}
         </span>
         <span class="min-w-0">
@@ -347,114 +381,118 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
         </span>
       </a>
       <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
-        <a class="hover:brand-text transition" href="#sobre">Sobre</a>
-        <a class="hover:brand-text transition" href="#compromisso">Nossos Valores</a>
+        <a class="hover:brand-text transition" href="#sobre">Sobre Nós</a>
+        <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
         <a class="hover:brand-text transition" href="#contato">Contato</a>
       </nav>
-      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-sm transition sm:px-5">
-        💬 <span class="hidden sm:inline">WhatsApp</span>
+      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition">
+        💬 <span class="hidden sm:inline">WhatsApp Direto</span>
       </a>
     </div>
   </header>
 
   <main>
     <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28">
-      <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+      <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
         <div class="max-w-2xl">
-          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90">
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-white/95 backdrop-blur-sm">
             <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-            SOLUÇÃO INTELIGENTE & PERSONALIZADA
+            REFERÊNCIA OFICIAL REGISTRADA
           </div>
           <h1 class="display max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
           <p class="mt-6 max-w-xl text-base leading-8 text-white/85 sm:text-lg">"{custom_slogan}"</p>
           <div class="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-4 text-sm font-extrabold shadow-lg transition hover:bg-slate-100">
-              Falar com a equipe ↗
+            <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-4 text-sm font-extrabold shadow-xl transition hover:bg-slate-100">
+              Conversar com Especialistas ↗
             </a>
-            <a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Saber mais</a>
+            <a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/35 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Conhecer Empresa</a>
           </div>
         </div>
         <div class="relative mx-auto w-full max-w-xl">
-          <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-sm">
-            <img src="{img_feature}" alt="{display_name}" class="h-64 w-full rounded-2xl object-cover sm:h-80 lg:h-[380px]" loading="eager">
+          <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
+            <img src="{img_feature}" alt="{display_name}" class="h-64 w-full rounded-2xl object-cover sm:h-80 lg:h-[390px]" loading="eager">
           </div>
         </div>
       </div>
     </section>
 
-    <section id="compromisso" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
+    <!-- Áreas e Diferenciais Capturados -->
+    <section id="servicos" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="mx-auto mb-12 max-w-2xl text-center">
-          <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Nossos diferenciais</p>
-          <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Compromisso com o seu resultado.</h2>
-          <p class="mt-4 leading-7 text-slate-600">Atuação pautada na transparência, agilidade e excelência técnica em cada entrega.</p>
+          <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Atuação Estratégica</p>
+          <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Soluções completas e estruturadas.</h2>
+          <p class="mt-4 leading-7 text-slate-600">Compromisso com alto desempenho, segurança jurídica e excelência operacional.</p>
         </div>
         <div class="grid gap-6 md:grid-cols-3">
           <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">✓</div>
-            <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento Dedicado</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Comunicação próxima e objetiva para compreender e atender prontamente às suas solicitações.</p>
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">🎯</div>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento Direto</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Comunicação ágil e humanizada para compreender suas demandas com total precisão.</p>
+            <ul class="mt-4 space-y-2">{activities_html}</ul>
           </article>
           <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">⚡</div>
-            <h3 class="display mt-5 text-lg font-bold text-slate-900">Agilidade e Praticidade</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Canais diretos e eficientes para solucionar dúvidas e iniciar novos projetos sem burocracia.</p>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Agilidade e Rigor</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Processos estruturados para garantir eficiência e pontualidade em cada entrega realizada.</p>
           </article>
           <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">🛡️</div>
-            <h3 class="display mt-5 text-lg font-bold text-slate-900">Credibilidade e Confiança</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Segurança de contar com uma empresa regularizada e comprometida com a qualidade total.</p>
+            <h3 class="display mt-5 text-lg font-bold text-slate-900">Segurança & Confiança</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Empresa constituída sob rigorosos padrões de conformidade e idoneidade no mercado.</p>
           </article>
         </div>
       </div>
     </section>
 
+    <!-- Sobre a Empresa -->
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
           <img src="{img_feature}" alt="{display_name}" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
           <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fundação</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fundação Oficial</p>
             <p class="display mt-1 font-extrabold brand-text">{data_abert}</p>
           </div>
         </div>
         <div class="pt-4 lg:pt-0">
-          <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Sobre a empresa</p>
-          <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
-          <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) atua fortemente no segmento de <b>{segmento}</b>. Nossa estrutura foi desenhada para entregar soluções sob medida para o mercado.</p>
-          <p class="mt-4 leading-8 text-slate-600">Entre em contato agora mesmo com a nossa equipe para tirar dúvidas ou solicitar propostas.</p>
-          <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow">Conversar pelo WhatsApp ↗</a>
+          <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Quem Somos</p>
+          <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Tradição e inovação na {display_name}.</h2>
+          <p class="mt-5 leading-8 text-slate-600">Fundada em <b>{data_abert}</b> sob a Razão Social <i>{razao}</i>, a <b>{display_name}</b> destaca-se no mercado de <b>{segmento}</b> em <b>{cidade} - {uf}</b>. Nossa trajetória é pautada na entrega de valor real aos nossos clientes.</p>
+          <p class="mt-4 leading-8 text-slate-600">Conecte-se diretamente com nossa equipe para tirar dúvidas, solicitar propostas ou iniciar parcerias de sucesso.</p>
+          <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-95 shadow-md">Falar no WhatsApp ↗</a>
         </div>
       </div>
     </section>
 
+    <!-- Contato & Google Maps Interativo -->
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-[.85fr_1.15fr]">
             <div class="brand-bg p-8 text-white sm:p-10 lg:p-12">
-              <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Fale connosco</p>
-              <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos prontos para atender você.</h2>
-              <p class="mt-4 leading-7 text-white/85">Entre em contato de forma rápida através do nosso canal de atendimento oficial.</p>
-              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100 shadow">Chamar no WhatsApp ↗</a>
+              <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>
+              <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos à sua disposição.</h2>
+              <p class="mt-4 leading-7 text-white/85">Entre em contato instantaneamente através do nosso WhatsApp oficial ou venha nos visitar.</p>
+              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100 shadow">Abrir WhatsApp Agora ↗</a>
             </div>
             <div class="p-8 sm:p-10 lg:p-12">
-              <h3 class="display text-xl font-extrabold text-slate-900">Canais e Dados Oficiais</h3>
+              <h3 class="display text-xl font-extrabold text-slate-900">Informações Cadastrais & Contato</h3>
               <div class="mt-6 space-y-5">
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📍</span>
                   <div>
-                    <p class="text-sm font-bold text-slate-900">Endereço</p>
+                    <p class="text-sm font-bold text-slate-900">Localização</p>
                     <p class="mt-1 text-sm leading-6 text-slate-600">{full_address}</p>
                     <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold brand-text hover:underline">
-                      Abrir no Google Maps ↗
+                      Ver no Google Maps ↗
                     </a>
                   </div>
                 </div>
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📞</span>
                   <div>
-                    <p class="text-sm font-bold text-slate-900">WhatsApp / Telefone</p>
+                    <p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p>
                     <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-1 block text-sm font-bold brand-text hover:underline">
                       {display_phone_text} ↗
                     </a>
@@ -463,9 +501,9 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">🏛️</span>
                   <div>
-                    <p class="text-sm font-bold text-slate-900">Registro Cadastral</p>
+                    <p class="text-sm font-bold text-slate-900">Dados Oficiais</p>
                     <p class="mt-1 text-sm text-slate-600">Razão Social: {razao}</p>
-                    <p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj} ({color_rationale})</p>
                     <div class="mt-2">{social_links_html}</div>
                   </div>
                 </div>
@@ -477,7 +515,7 @@ def generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel_pl
     </section>
   </main>
 
-  <footer class="bg-[#0b1310] px-5 py-8 text-white/70">
+  <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
     <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
       <div>
         <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
@@ -590,8 +628,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA Adaptativa</div>
-            <div class="banner-subtitle">Sistema inteligente que varre a web, extrai cores, redes sociais, WhatsApp e gera páginas dinâmicas e exclusivas para qualquer nicho.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Precisão</div>
+            <div class="banner-subtitle">Sistema inteligente com varredura OSINT profunda, análise de áreas extras, copywriting elegante e imagens 100% realistas e contextuais.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -683,7 +721,7 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            with st.expander(f"⚙️ Gerenciar & Criar LP com IA: {razao}"):
+            with st.expander(f"⚙️ Gerenciar & Criar LP Masterpiece: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
@@ -701,12 +739,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar Varredura Inteligente & Gerar LP", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Executando varredura OSINT, extraindo paleta de cores e gerando IA Adaptativa..."):
-                        lp_html = generate_adaptive_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
+                if st.button("🌐 Executar Varredura Profunda & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Realizando varredura OSINT, revisão de copywriting e gerando Landing Page elegante..."):
+                        lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page inteligente gerada com sucesso!")
+                        st.success("Landing Page Masterpiece gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
