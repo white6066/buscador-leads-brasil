@@ -14,8 +14,8 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados em tempo real direto da planilha com parser CSV dedicado
-@st.cache_data(ttl=300)
+# Carregamento de dados flexível e direto da planilha ao vivo
+@st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -27,21 +27,21 @@ def load_data_from_sheet():
     reader = csv.reader(io.StringIO(response.text))
     rows = []
     for r in reader:
-        if r and len(r) >= 6:
-            # Ignorar linhas de cabeçalho ou títulos como '# Página1'
-            val0 = str(r[0]).strip()
-            if "Página" in val0 or not val0.replace('.', '').isdigit() or len(val0.replace('.', '')) < 10:
+        if r and len(r) >= 5:  # Garantir que a linha tem dados mínimos essenciais
+            val0 = str(r[0]).strip().lower()
+            # Ignorar apenas linhas de título óbvias
+            if "página" in val0 or "título" in val0 or val0 == "":
                 continue
             rows.append(r)
             
     processed = []
     for r in rows:
         cnpj = r[0] if len(r) > 0 else ""
-        razao = r[1] if len(r) > 1 else ""
+        razao = r[1] if len(r) > 1 else "Empresa"
         data_abert = r[2] if len(r) > 2 else ""
-        segmento = r[3] if len(r) > 3 else ""
-        uf = r[4] if len(r) > 4 else ""
-        cidade = r[5] if len(r) > 5 else ""
+        segmento = r[3] if len(r) > 3 else "N/A"
+        uf = r[4] if len(r) > 4 else "N/A"
+        cidade = r[5] if len(r) > 5 else "N/A"
         
         maps_url = ""
         telefone = ""
@@ -66,26 +66,38 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
+    # Inicializar estado na sessão para persistir as alterações de status feitas no app
+    if "df_status" not in st.session_state:
+        st.session_state.df_status = df.copy()
+    else:
+        # Se a planilha for atualizada, manter o dataframe sincronizado preservando os status alterados
+        if len(st.session_state.df_status) == len(df):
+            df["Status"] = st.session_state.df_status["Status"]
+        else:
+            st.session_state.df_status = df.copy()
+
+    current_df = st.session_state.df_status
+
     # 2. Barra Lateral - Filtros Dinâmicos
     st.sidebar.header("🎯 Filtros de Prospecção")
 
-    segmentos = ["Todos"] + sorted(list(df["Segmento"].dropna().unique().astype(str)))
+    segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
     seg_selecionado = st.sidebar.selectbox("Segmento / Nicho:", segmentos)
 
-    ufs = ["Todos"] + sorted(list(df["UF"].dropna().unique().astype(str)))
+    ufs = ["Todos"] + sorted(list(current_df["UF"].dropna().unique().astype(str)))
     uf_selecionada = st.sidebar.selectbox("Estado (UF):", ufs)
 
     if uf_selecionada != "Todos":
-        cidades = ["Todas"] + sorted(list(df[df["UF"].astype(str) == uf_selecionada]["Cidade"].dropna().unique().astype(str)))
+        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"].astype(str) == uf_selecionada]["Cidade"].dropna().unique().astype(str)))
     else:
-        cidades = ["Todas"] + sorted(list(df["Cidade"].dropna().unique().astype(str)))
+        cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().unique().astype(str)))
     cidade_selecionada = st.sidebar.selectbox("Cidade:", cidades)
 
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
     # Aplicar Filtros
-    df_filtered = df.copy()
+    df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"] == seg_selecionado]
     if uf_selecionada != "Todos":
@@ -98,9 +110,9 @@ try:
     # Métricas
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total de Leads Exibidos", len(df_filtered))
-    col2.metric("Pendentes", len(df_filtered[df_filtered["Status"] == "Pendente"]))
-    col3.metric("LPs Geradas", len(df_filtered[df_filtered["Status"] == "LP Gerada"]))
-    col4.metric("Vendas Fechadas", len(df_filtered[df_filtered["Status"] == "Finalizado Positivo"]))
+    col2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
+    col3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
+    col4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
     st.divider()
 
@@ -115,8 +127,9 @@ try:
             segmento = row["Segmento"]
             cidade = row["Cidade"]
             uf = row["UF"]
+            current_status = row["Status"]
             
-            with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})"):
+            with st.expander(f"🏢 **{razao}** — {segmento} ({cidade}/{uf})  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 
                 with c1:
@@ -127,7 +140,7 @@ try:
                     st.markdown(f"**Telefone/WhatsApp:** {tel}")
                     
                 with c2:
-                    st.markdown(f"**Status Atual:** `{row['Status']}`")
+                    st.markdown(f"**Status Atual:** `{current_status}`")
                     
                     nome_busca = str(razao).replace(' ', '+')
                     cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
@@ -141,13 +154,22 @@ try:
 
                 with c3:
                     st.markdown("### Ações")
+                    status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
+                    try:
+                        current_index = status_list.index(current_status)
+                    except ValueError:
+                        current_index = 0
+                        
                     novo_status = st.selectbox(
                         "Atualizar Status:",
-                        ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"],
-                        index=0,
+                        status_list,
+                        index=current_index,
                         key=f"status_{idx}"
                     )
-                    df.at[idx, "Status"] = novo_status
+                    
+                    if novo_status != current_status:
+                        st.session_state.df_status.at[idx, "Status"] = novo_status
+                        st.rerun()
                     
                     if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada com sucesso para {razao}!")
