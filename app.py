@@ -220,16 +220,25 @@ try:
             with r_cols[4]:
                 st.markdown(f"{cidade}")
             with r_cols[5]:
+                # WhatsApp, Google Maps e Instagram (com lupa mantida para pesquisa no Google e ícone oficial para o Instagram)
                 action_str = []
                 if tel:
                     clean_tel = "".join(filter(str.isdigit, str(tel)))
-                    action_str.append(f"[💬](https://wa.me/55{clean_tel})")
+                    action_str.append(f"[🟢](https://wa.me/55{clean_tel})")
+                else:
+                    action_str.append("🟢")
+                
                 if maps_link:
-                    action_str.append(f"[🗺️]({maps_link})")
+                    action_str.append(f"[📍]({maps_link})")
+                else:
+                    action_str.append("📍")
+                
                 nome_busca = str(razao).replace(' ', '+')
                 cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
                 action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
-                st.markdown(" ".join(action_str) if action_str else "-")
+                action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
+                
+                st.markdown(" ".join(action_str))
             with r_cols[6]:
                 st.markdown(f"🟢 `{current_status}`")
 
@@ -241,7 +250,7 @@ try:
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
-                    st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
+                    st.markdown(f"📸 [Abrir Perfil no Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
                     try:
