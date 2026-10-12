@@ -4,12 +4,13 @@ import requests
 import io
 import csv
 import urllib.parse
-import random
+import re
 import hashlib
+from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Acompanhamento & Gerador LP Avançado",
+    page_title="Novas Empresas - Acompanhamento & Gerador LP Exclusivo",
     page_icon="🚀",
     layout="wide"
 )
@@ -93,16 +94,44 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- MOTOR DE CONSULTA EXTERNA & WEB SCRAPING INTELIGENTE ---
-def fetch_external_web_intelligence(razao, segmento, cidade, uf):
-    query = f"{razao} {segmento} {cidade} {uf}"
-    encoded_q = urllib.parse.quote(query)
+# --- EXTRAÇÃO DE PALETA DE CORES POR ANÁLISE DE PIXELS DE IMAGEM ---
+def extract_palette_from_image_bytes(image_bytes):
+    try:
+        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+        img = img.resize((80, 80))
+        colors = img.getcolors(80*80)
+        if not colors:
+            return None
+        colors.sort(key=lambda x: x[0], reverse=True)
+        
+        extracted = []
+        for count, (r, g, b) in colors:
+            # Filtrar brancos/cinzas claríssimos e pretos puros
+            if not (r > 230 and g > 230 and b > 230) and not (r < 25 and g < 25 and b < 25):
+                hex_col = f"#{r:02x}{g:02x}{b:02x}"
+                if hex_col not in extracted:
+                    extracted.append(hex_col)
+                if len(extracted) >= 2:
+                    break
+        if extracted:
+            return extracted
+    except Exception:
+        pass
+    return None
+
+# --- VARREDURA E ENRIQUECIMENTO WEB MULTI-AGENTE ---
+def deep_web_enrichment(razao, segmento, cidade, uf):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    query = f"{razao} {segmento} {cidade} {uf} instagram logo"
+    encoded_q = urllib.parse.quote(query)
     
     snippets = []
+    found_logo_url = None
+    extracted_colors = None
+    
+    # 1. Scraping de Snippets e Presença na Web
     try:
-        url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
-        res = requests.get(url, headers=headers, timeout=5)
+        res = requests.get(f"https://html.duckduckgo.com/html/?q={encoded_q}", headers=headers, timeout=5)
         if res.status_code == 200:
             from bs4 import BeautifulSoup
             soup = BeautifulSoup(res.text, 'html.parser')
@@ -110,68 +139,77 @@ def fetch_external_web_intelligence(razao, segmento, cidade, uf):
                 txt = a.get_text().strip()
                 if txt:
                     snippets.append(txt)
+            
+            # Buscar imagem de perfil/logo pública
+            for img in soup.find_all('img'):
+                src = img.get('src', '')
+                if 'http' in src or 'duckduckgo.com/iu/' in src:
+                    if src.startswith('//'): src = 'https:' + src
+                    found_logo_url = src
+                    break
     except Exception:
         pass
-        
-    return snippets
 
-# --- ENGINE DE GERAÇÃO INTELIGENTE DE CORES E LÓGICA DE SEGMENTO ---
-def generate_unique_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert):
-    # 1. Executar consulta externa
-    snippets = fetch_external_web_intelligence(razao, segmento, cidade, uf)
-    context_research = " ".join(snippets[:2]) if snippets else f"Excelência e referência em {segmento} para clientes exigentes."
+    # 2. Se encontrou imagem, tentar descarregar e extrair paleta real por computação gráfica
+    if found_logo_url:
+        try:
+            r_img = requests.get(found_logo_url, headers=headers, timeout=4)
+            if r_img.status_code == 200:
+                extracted_colors = extract_palette_from_image_bytes(r_img.content)
+        except Exception:
+            pass
 
-    # 2. Gerar cores exclusivas por criptografia e características do nicho
-    seg_lower = segmento.lower()
+    # 3. Fallback de algoritmo criptográfico para cor hex exclusiva se não encontrar logo público
+    if not extracted_colors:
+        h = hashlib.md5((razao + cidade + segmento).encode()).hexdigest()
+        p_col = f"#{h[:6]}"
+        s_col = f"#{h[6:12]}"
+        extracted_colors = [p_col, s_col]
+
+    return {
+        "snippets": snippets,
+        "logo_url": found_logo_url,
+        "primary_color": extracted_colors[0],
+        "secondary_color": extracted_colors[1] if len(extracted_colors) > 1 else "#0ea5e9"
+    }
+
+# --- GERADOR COMPLETO DA LANDING PAGE COM LÓGICA DE ATUAÇÃO ---
+def build_custom_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert):
+    intel = deep_web_enrichment(razao, segmento, cidade, uf)
     
-    # Hash único para criar paletas de cores irrepetíveis por empresa
-    hash_object = hashlib.md5((razao + segmento).encode())
-    hex_digest = hash_object.hexdigest()
+    primary = intel["primary_color"]
+    secondary = intel["secondary_color"]
+    logo_src = intel["logo_url"]
     
-    # Cores baseadas no nicho com variação única por hash
-    if any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'peric']):
-        # Tons corporativos sofisticados (Azul Profundo / Grafite / Dourado)
-        primary = f"#{hex_digest[:6]}" if int(hex_digest[:2], 16) < 150 else "#1e3a8a"
-        secondary = "#0f172a"
-        scope_logic = "Atendimento jurídico e consultoria estratégica com abrangência nacional e suporte digital dedicado."
-        cta_text = "Falar com Advogado / Consultor"
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'cosmet', 'spa', 'sobrancelh']):
-        # Tons elegantes (Rose / Vinho / Nude)
-        primary = f"#{hex_digest[:6]}" if int(hex_digest[:2], 16) > 100 else "#db2777"
-        secondary = "#831843"
-        scope_logic = f"Atendimento presencial exclusivo com hora marcada em {cidade}/{uf} para elevar sua autoestima e bem-estar."
-        cta_text = "Agendar Horário VIP"
-    elif any(x in seg_lower for x in ['saude', 'medic', 'clinica', 'odont', 'denta', 'psic']):
-        # Tons clínicos de confiança (Turquesa / Azul Clínico)
-        primary = f"#{hex_digest[:6]}" if int(hex_digest[:2], 16) < 200 else "#0d9488"
-        secondary = "#115e59"
-        scope_logic = f"Estrutura clínica moderna e acolhedora localizada em {cidade} com foco em saúde preventiva e tratamentos avançados."
-        cta_text = "Agendar Consulta"
-    elif any(x in seg_lower for x in ['auto', 'veicul', 'mecanic', 'carro', 'pneu']):
-        # Tons fortes (Vermelho / Grafite Industrial)
-        primary = f"#{hex_digest[:6]}" if int(hex_digest[:2], 16) < 200 else "#dc2626"
-        secondary = "#18181b"
-        scope_logic = f"Oficina e soluções automotivas completas em {cidade}/{uf} com equipamentos de última geração e peças genuínas."
-        cta_text = "Solicitar Orçamento Rápido"
-    else:
-        # Padrão dinâmico exclusivo baseado no hash da empresa
-        primary = f"#{hex_digest[:6]}"
-        secondary = "#0f172a"
-        scope_logic = f"Soluções profissionais e personalizadas no segmento de {segmento} com atendimento ágil em {cidade} e região."
-        cta_text = "Entrar em Contato Agora"
-
     clean_tel = "".join(filter(str.isdigit, str(tel))) if tel else ""
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
+    
+    seg_lower = segmento.lower()
+    
+    # Lógica de atuação e copy específica por nicho
+    if any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult']):
+        scope_headline = "Autoridade, Estratégia e Abrangência de Atendimento"
+        scope_desc = f"Atendimento jurídico e consultivo estratégico para clientes de {cidade}/{uf} e todo o território nacional, com suporte digital completo e total sigilo."
+        cta_text = "Falar com Advogado / Especialista"
+        bg_hero_img = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80"
+    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'cosmet', 'spa', 'sobrancelh']):
+        scope_headline = f"Sua Experiência VIP e Exclusiva em {cidade}"
+        scope_desc = f"Atendimento presencial personalizado com agendamento flexível em {cidade}/{uf}. Ambiente preparado para elevar sua autoestima e bem-estar."
+        cta_text = "Agendar Horário VIP no WhatsApp"
+        bg_hero_img = "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=1400&q=80"
+    elif any(x in seg_lower for x in ['saude', 'medic', 'clinica', 'odont', 'denta', 'psic']):
+        scope_headline = f"Cuidado Humanizado e Estrutura Médica em {cidade}"
+        scope_desc = f"Atendimento clínico especializado em {cidade}/{uf}, com foco na sua saúde integral, biossegurança rigorosa e agendamento descomplicado."
+        cta_text = "Agendar Consulta Presencial"
+        bg_hero_img = "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80"
+    else:
+        scope_headline = f"Excelência em {segmento} em {cidade} e Região"
+        scope_desc = f"Soluções sob medida desenvolvidas com agilidade e compromisso técnico para atender a sua necessidade com o melhor custo-benefício."
+        cta_text = "Solicitar Orçamento no WhatsApp"
+        bg_hero_img = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80"
 
-    # Imagens de fundo dinâmicas
-    bg_images = [
-        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80",
-        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80",
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1400&q=80"
-    ]
-    hero_bg_img = bg_images[abs(hash(razao)) % len(bg_images)]
+    snippets_text = " ".join(intel["snippets"][:2]) if intel["snippets"] else scope_desc
 
-    # HTML da Landing Page Exclusiva
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -180,38 +218,38 @@ def generate_unique_landing_page(razao, segmento, cidade, uf, endereco, tel, dat
     <title>{razao} | {segmento} em {cidade}/{uf}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .custom-primary {{ background-color: {primary}; }}
-        .custom-text {{ color: {primary}; }}
-        .custom-border {{ border-color: {primary}; }}
-        .custom-hero {{ background: linear-gradient(rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.92)), url('{hero_bg_img}'); background-size: cover; background-position: center; }}
+        .brand-primary {{ background-color: {primary}; }}
+        .brand-text {{ color: {primary}; }}
+        .brand-border {{ border-color: {primary}; }}
+        .hero-bg {{ background: linear-gradient(rgba(15, 23, 42, 0.90), rgba(15, 23, 42, 0.90)), url('{bg_hero_img}'); background-size: cover; background-position: center; }}
     </style>
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
-    <!-- Top Notice Bar -->
+    <!-- Top Notice -->
     <div class="bg-slate-950 text-slate-300 text-xs py-2 px-4 text-center border-b border-slate-800">
-        ⭐ Especialistas em {segmento} | Atendimento Dedicado
+        📍 {cidade} - {uf} | Especialistas em <b>{segmento}</b>
     </div>
 
-    <!-- Sticky Header -->
+    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="font-black text-xl tracking-tight text-slate-900 uppercase flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full inline-block custom-primary"></span>
+                {f'<img src="{logo_src}" class="w-8 h-8 rounded-full object-cover">' if logo_src else f'<span class="w-4 h-4 rounded-full inline-block brand-primary"></span>'}
                 {razao}
             </div>
             <a href="{whats_link}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg shadow transition flex items-center gap-2">
-                💬 WhatsApp Direto
+                💬 Atendimento via WhatsApp
             </a>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="relative text-white py-24 px-4 custom-hero">
+    <section class="relative text-white py-24 px-4 hero-bg">
         <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-block custom-primary text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4">Referência em {segmento}</span>
-            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">Soluções Especializadas de Alto Padrão</h1>
-            <p class="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">{context_research}</p>
+            <span class="inline-block brand-primary text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4">Referência em {segmento}</span>
+            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{scope_headline}</h1>
+            <p class="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">{snippets_text}</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="{whats_link}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
                     🚀 {cta_text}
@@ -220,50 +258,50 @@ def generate_unique_landing_page(razao, segmento, cidade, uf, endereco, tel, dat
         </div>
     </section>
 
-    <!-- Quem Somos & Lógica de Atuação -->
+    <!-- Seção Quem Somos -->
     <section class="py-16 px-4 bg-white border-b border-slate-200">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Quem Somos & Nossa Proposta</h2>
-            <div class="w-16 h-1 custom-primary mx-auto mb-6 rounded"></div>
-            <p class="text-slate-600 leading-relaxed text-base mb-6">A <b>{razao}</b> foi constituída em <b>{data_abert}</b> com o compromisso firme de excelência no segmento de <b>{segmento}</b>. {scope_logic}</p>
-            <p class="text-slate-600 text-sm">📍 <b>Localização de Apoio:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Quem Somos</h2>
+            <div class="w-16 h-1 brand-primary mx-auto mb-6 rounded"></div>
+            <p class="text-slate-600 leading-relaxed text-base mb-4">A <b>{razao}</b> é uma empresa fundada em <b>{data_abert}</b> com atuação focada no setor de <b>{segmento}</b>. {scope_desc}</p>
+            <p class="text-slate-500 text-sm"><b>📍 Endereço Oficial:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
         </div>
     </section>
 
-    <!-- Pilares / Serviços -->
+    <!-- Diferenciais e Serviços -->
     <section class="py-16 px-4 max-w-6xl mx-auto">
         <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Nossos Diferenciais</h2>
-            <p class="text-slate-600 mt-2">Por que escolher a {razao}?</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Por que nos escolher?</h2>
+            <p class="text-slate-600 mt-2">Nossos pilares de excelência no atendimento</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 custom-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">Estratégia Personalizada</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">Atendimento desenhado sob medida para atender exatamente à sua demanda com eficiência.</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Atendimento Sob Medida</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Desenvolvemos cada etapa focando exclusivamente na sua necessidade e no seu orçamento.</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 custom-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">⚡</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">Agilidade e Rigor</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">Processos estruturados para garantir prazos cumpridos e padrão superior de entrega.</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">⚡</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Agilidade e Resposta Rápida</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Processos desburocratizados para lhe responder pelo WhatsApp sem esperas.</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 custom-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">🛡️</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">Compromisso e Ética</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">Transparência em todas as etapas para construir parcerias sólidas e duradouras.</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">🛡️</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Transparência e Confiança</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Clareza nas propostas e compromisso de entregar o melhor resultado em {cidade}.</p>
             </div>
         </div>
     </section>
 
-    <!-- Contato & Call to Action Final -->
+    <!-- Contato Final -->
     <section class="py-16 px-4 bg-slate-900 text-white">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-4">Vamos Conversar?</h2>
-            <p class="text-slate-400 mb-8">Entre em contato direto com os especialistas da <b>{razao}</b>.</p>
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">Fale Conosco Hoje Mesmo</h2>
+            <p class="text-slate-400 mb-8">Nossa equipe em {cidade} está pronta para lhe atender pelo WhatsApp.</p>
             <div class="inline-block bg-slate-800 p-6 rounded-2xl border border-slate-700 text-left mb-8 w-full max-w-md">
                 <p class="text-sm text-slate-300 mb-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
-                <p class="text-sm text-slate-300 mb-2"><b>📞 Contato:</b> {tel if tel else 'Disponível no chat'}</p>
-                <p class="text-sm text-slate-300"><b>🗓️ Abertura:</b> {data_abert}</p>
+                <p class="text-sm text-slate-300 mb-2"><b>📞 Telefone:</b> {tel if tel else 'Disponível no chat'}</p>
+                <p class="text-sm text-slate-300"><b>🗓️ Abertura Oficial:</b> {data_abert}</p>
             </div>
             <br>
             <a href="{whats_link}" target="_blank" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition">
@@ -280,7 +318,7 @@ def generate_unique_landing_page(razao, segmento, cidade, uf, endereco, tel, dat
 </html>"""
     return html_code
 
-# --- CARREGAMENTO DE DADOS DA PLANILHA ---
+# --- CARREGAMENTO DE DADOS COM CACHE ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -378,8 +416,8 @@ try:
     # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Acompanhamento & Gerador LP Avançado</div>
-            <div class="banner-subtitle">Consulta externa na web, lógica de atuação específica por segmento e cores exclusivas para cada Landing Page.</div>
+            <div class="banner-title">🚀 Novas Empresas - Acompanhamento & Gerador LP Exclusivo</div>
+            <div class="banner-subtitle">Realiza varredura na web, analisa pixels para extrair paleta de cores real do logo/Instagram e aplica lógica de negócio dinamarquesa por ramo.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -492,11 +530,11 @@ try:
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
                 if st.button("🔍 Analisar Web & Criar LP Exclusiva", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Executando varredura web, aplicando lógica do segmento e gerando LP única..."):
-                        lp_html = generate_unique_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert)
+                    with st.spinner("Analisando presença web, descarregando imagem/logo e extraindo paleta de cores..."):
+                        lp_html = build_custom_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page exclusiva gerada com sucesso!")
+                        st.success("Landing Page gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
