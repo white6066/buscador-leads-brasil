@@ -22,7 +22,7 @@ def toggle_theme():
     else:
         st.session_state.theme = "Escuro"
 
-# Cores dinâmicas completas para todos os elementos (Modo Escuro vs Modo Claro)
+# Cores dinâmicas com base no tema selecionado
 if st.session_state.theme == "Escuro":
     bg_app = "#0f172a"
     bg_card = "#1e293b"
@@ -35,30 +35,23 @@ if st.session_state.theme == "Escuro":
     btn_text = "#ffffff"
     input_bg = "#1e293b"
     input_text = "#ffffff"
-    header_bg = "#0f172a"
 else:
     bg_app = "#f8fafc"
     bg_card = "#ffffff"
     bg_sidebar = "#ffffff"
     text_color = "#0f172a"
     text_muted = "#475569"
-    border_color = "#cbd5e1"
+    border_color = "#e2e8f0"
     hr_color = "#cbd5e1"
     btn_bg = "#f1f5f9"
     btn_text = "#0f172a"
     input_bg = "#ffffff"
     input_text = "#0f172a"
-    header_bg = "#f8fafc"
 
-# Estilização CSS completa e rigorosa para toda a página e cabeçalho superior
+# Estilização CSS completa para eliminar qualquer bloco branco indesejado
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
-    
-    /* Forçar a parte superior / cabeçalho nativo do Streamlit a acompanhar o tema */
-    header[data-testid="stHeader"] {{
-        background-color: {header_bg} !important;
-    }
     
     /* Barra lateral */
     [data-testid="stSidebar"] {{ 
@@ -88,7 +81,7 @@ st.markdown(f"""
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
 
-    /* Caixas de Texto / Pesquisa Rápida e Inputs */
+    /* Caixas de Texto / Pesquisa Rápida */
     input[type="text"] {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
@@ -99,12 +92,6 @@ st.markdown(f"""
         background-color: {input_bg} !important;
         border-color: {border_color} !important;
         border-radius: 8px !important;
-    }}
-    
-    div[data-baseweb="select"] > div {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border-color: {border_color} !important;
     }}
 
     /* Cartões de Métricas */
