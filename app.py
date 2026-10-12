@@ -50,8 +50,8 @@ else:
     input_text = "#0f172a"
     header_bg = "#f8fafc"
 
-# Estilização CSS segura sem conflitos de chaves
-css_style = f"""
+# Template CSS seguro usando .format() para evitar conflitos de chaves
+css_template = """
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
@@ -119,7 +119,12 @@ css_style = f"""
 </style>
 """
 
-st.markdown(css_style, unsafe_allow_html=True)
+st.markdown(css_template.format(
+    bg_app=bg_app, bg_card=bg_card, bg_sidebar=bg_sidebar,
+    text_color=text_color, text_muted=text_muted, border_color=border_color,
+    hr_color=hr_color, btn_bg=btn_bg, btn_text=btn_text,
+    input_bg=input_bg, input_text=input_text, header_bg=header_bg
+), unsafe_allow_html=True)
 
 # Carregamento de dados com cache
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
