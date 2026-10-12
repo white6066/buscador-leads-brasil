@@ -58,7 +58,8 @@ st.markdown(f"""
         border-radius: 4px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
-        font-size: 0.88rem !important;
+        font-size: 0.84rem !important;
+        padding: 4px 10px !important;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
         background-color: {btn_bg} !important;
@@ -213,7 +214,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 def generate_ai_contextual_image(segmento, razao, instructions_list):
     seg_lower = (segmento + " " + razao).lower()
     
-    # Procura a última instrução válida sobre imagem/foto no histórico
     latest_img_prompt = ""
     for inst in instructions_list:
         inst_l = inst.lower()
@@ -269,12 +269,26 @@ def determine_harmonious_palette(razao, segmento, logo_url):
 
 def apply_accumulated_modifications(html_content, instructions_list):
     """Interpreta e acumula todas as instruções do usuário mantendo as alterações anteriores"""
+    custom_primary_color = None
     css_injections = []
     
+    color_map = {
+        "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
+        "preto": "#000000", "branco": "#ffffff", "cinza": "#64748b",
+        "laranja": "#ea580c", "roxo": "#7c3aed", "rosa": "#db2777"
+    }
+
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        # 1. Mudanças específicas de cores em elementos como "Canais de Atendimento"
+        # 1. Mudança da cor principal (variável --primary)
+        if "cor principal" in inst_lower or "cor do tema" in inst_lower or "mudar cor" in inst_lower or "trocar cor" in inst_lower:
+            for c_name, c_hex in color_map.items():
+                if c_name in inst_lower:
+                    custom_primary_color = c_hex
+                    break
+
+        # 2. Mudança de elementos específicos (ex: Canais de Atendimento)
         if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
             html_content = html_content.replace(
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
@@ -285,11 +299,14 @@ def apply_accumulated_modifications(html_content, instructions_list):
                 '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
             )
 
-        # 2. Mudanças gerais de cores da fonte / texto
-        color_map = {"branco": "#ffffff", "preto": "#000000", "azul": "#2563eb", "verde": "#16a34a", "vermelho": "#dc2626", "cinza": "#64748b"}
+        # 3. Mudanças gerais de cores da fonte / texto
         for c_name, c_hex in color_map.items():
             if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
                 css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
+
+    # Aplica cor principal personalizada no CSS se houver
+    if custom_primary_color:
+        html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
 
     if css_injections:
         full_css = f"<style>\n" + "\n".join(css_injections) + "\n</style>"
@@ -555,7 +572,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
 </body>
 </html>"""
     
-    # Aplica todas as modificações acumuladas no histórico de forma inteligente
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
@@ -784,24 +800,27 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.2, 2.3, 1.5])
-                with col_btn_gen:
-                    btn_gerar_clicado = st.button("🌐 Gerar LP IA", key=f"btn_auto_lp_{idx}", use_container_width=True)
-                with col_inst_txt:
-                    new_instruction = st.text_input(
-                        "O que mudar na LP", 
-                        placeholder="Ex: trocar foto para carros novos...", 
-                        key=f"cust_inst_{idx}",
-                        label_visibility="collapsed"
-                    )
-                with col_btn_conf:
-                    btn_confirmar_clicado = st.button("🔄 Confirmar Mudança", key=f"btn_conf_lp_{idx}", use_container_width=True)
+                # Formulário para garantir que o input de texto limpe após a confirmação
+                form_key = f"form_mod_{idx}"
+                with st.form(key=form_key):
+                    col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.0, 2.7, 1.3])
+                    with col_btn_gen:
+                        submitted_gen = st.form_submit_button("🌐 Gerar LP", use_container_width=True)
+                    with col_inst_txt:
+                        new_instruction = st.text_input(
+                            "O que mudar na LP", 
+                            placeholder="Ex: trocar cor principal para vermelho", 
+                            key=f"cust_inst_{idx}",
+                            label_visibility="collapsed"
+                        )
+                    with col_btn_conf:
+                        submitted_conf = st.form_submit_button("🔄 Confirmar", use_container_width=True)
 
                 hist_key = f"instructions_history_{idx}"
                 if hist_key not in st.session_state:
                     st.session_state[hist_key] = []
 
-                if btn_gerar_clicado:
+                if submitted_gen:
                     st.session_state[hist_key] = []
                     if new_instruction and new_instruction.strip():
                         st.session_state[hist_key].append(new_instruction.strip())
@@ -810,8 +829,9 @@ try:
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                         st.success("Landing Page gerada com sucesso!")
+                        st.rerun()
 
-                elif btn_confirmar_clicado:
+                elif submitted_conf:
                     if new_instruction and new_instruction.strip():
                         st.session_state[hist_key].append(new_instruction.strip())
                     with st.spinner("Aplicando alterações cumulativas..."):
@@ -819,6 +839,7 @@ try:
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                         st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
+                        st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
