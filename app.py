@@ -214,7 +214,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
-    # SÓ muda a imagem se houver comando explícito de foto/imagem
     if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar']):
         prompt = f"professional commercial photography of {explicit_image_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
@@ -277,7 +276,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        # 1. Mudança da cor principal (variável --primary)
+        # 1. Mudança da cor principal
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor", "cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
@@ -296,9 +295,11 @@ def apply_accumulated_modifications(html_content, instructions_list):
             if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
                 css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
 
-    # Aplica cor principal personalizada no CSS se houver
+    # Aplica cor principal personalizada no CSS e atualiza o rodapé (.footer-bg) para acompanhar a mesma cor
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
+        # Substitui a classe bg-[#070e0b] do rodapé para usar a cor principal escolhida
+        html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
 
     if css_injections:
         full_css = f"<style>\n" + "\n".join(css_injections) + "\n</style>"
@@ -308,7 +309,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
 # --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
-    # Verifica se a última instrução pedia especificamente troca de imagem
     latest_img_instruction = ""
     for inst in instructions_list:
         inst_l = inst.lower()
@@ -799,7 +799,6 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Gerenciamento de input de texto e formulário limpador
                 form_key = f"form_mod_{idx}"
                 with st.form(key=form_key):
                     col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.0, 2.7, 1.3])
