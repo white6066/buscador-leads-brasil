@@ -233,7 +233,7 @@ def get_realistic_niche_image(display_name, segmento, osint_images):
     else:
         return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
 
-# --- GERAÇÃO DA LANDING PAGE EXATAMENTE NO PADRÃO RM ---
+# --- GERAÇÃO DA LANDING PAGE EXATAMENTE NO PADRÃO RM (ABRANGENTE E WHATSAPP CLICÁVEL) ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
     # 1. Varredura executada primeiro
     osint = advanced_branding_search(razao, cnpj, cidade, uf, segmento)
@@ -244,16 +244,25 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         primary_color = extract_colors_from_logo(osint["logo"])
     
     if not primary_color:
-        primary_color = "#173f32" # Verde floresta premium idêntico ao modelo RM
+        primary_color = "#173f32"
 
     formatted_cnpj = format_cnpj(cnpj)
     
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
-    whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
+    
+    # Garante link do WhatsApp funcional com mensagem padrão ou direto para o número
+    if clean_tel:
+        if not clean_tel.startswith("55") and len(clean_tel) <= 11:
+            clean_tel = "55" + clean_tel
+        whats_link = f"https://wa.me/{clean_tel}"
+        display_phone_text = active_tel
+    else:
+        whats_link = "https://wa.me/"
+        display_phone_text = "Fale conosco pelo WhatsApp"
 
     display_name = osint["fantasia"]
-    custom_slogan = osint["slogan"] if osint["slogan"] else f"Cuidado, responsabilidade e atenção em cada contato com nossos clientes e parceiros."
+    custom_slogan = osint["slogan"] if osint["slogan"] else f"Compromisso, dedicação e excelência em {segmento} para nossos clientes e parceiros."
 
     # Endereço e Google Maps Clicável
     full_address = endereco if endereco else f"{cidade} - {uf}"
@@ -279,7 +288,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="{primary_color}">
-  <title>{display_name} | {cidade} – {uf}</title>
+  <title>{display_name} | Soluções em {segmento}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -318,7 +327,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
   <div class="forest px-4 py-2.5 text-center text-xs font-semibold tracking-wide text-white/90">
     <span class="inline-flex items-center justify-center gap-2">
       <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-      {cidade.upper()} · {uf.upper()}
+      SOLUÇÕES PROFISSIONAIS EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
     </span>
   </div>
 
@@ -330,7 +339,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         </span>
         <span class="min-w-0">
           <span class="block display truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
-          <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Atendimento em {cidade} · {uf}</span>
+          <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Excelência e Qualidade</span>
         </span>
       </a>
       <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex" aria-label="Navegação principal">
@@ -369,7 +378,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
             <img src="{img_feature}" alt="{display_name}" class="h-64 w-full rounded-[1.15rem] object-cover sm:h-80 lg:h-[390px]" loading="eager">
             <div class="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/20 bg-[#102f26]/90 p-5 backdrop-blur-md sm:bottom-8 sm:left-8 sm:right-8">
               <p class="text-xs font-bold uppercase tracking-[.2em] text-[#c8dc9a]">{display_name}</p>
-              <p class="mt-2 display text-lg font-bold text-white sm:text-xl">Atendimento profissional e comunicação clara.</p>
+              <p class="mt-2 display text-lg font-bold text-white sm:text-xl">Atendimento profissional e dedicado.</p>
               <p class="mt-1 text-sm text-white/70">{cidade}, {uf}</p>
             </div>
           </div>
@@ -411,21 +420,21 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
         <div class="relative">
           <img src="{img_feature}" alt="{display_name}" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
           <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Atuação local</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Localização</p>
             <p class="display mt-1 font-extrabold forest-text">{cidade} · {uf}</p>
           </div>
         </div>
         <div class="pt-4 lg:pt-0">
           <p class="text-xs font-extrabold uppercase tracking-[.2em] forest-text">Sobre a empresa</p>
           <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
-          <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura foi planejada para oferecer excelência e suporte completo.</p>
-          <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade, entender os serviços oferecidos ou esclarecer dúvidas, fale diretamente pelo WhatsApp.</p>
+          <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura foi planejada para oferecer excelência, agilidade e suporte completo.</p>
+          <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade, entender os serviços oferecidos ou esclarecer dúvidas, fale diretamente com a equipe.</p>
           <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl forest px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#102f26] shadow">Entrar em contato <span aria-hidden="true">↗</span></a>
         </div>
       </div>
     </section>
 
-    <!-- Seção de Contato com Endereço Interativo para o Google Maps -->
+    <!-- Seção de Contato com Endereço e WhatsApp Clicável -->
     <section id="contato" class="bg-[#eaf0eb] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -451,7 +460,13 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 </div>
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e5eee7] forest-text">📞</span>
-                  <div><p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p><p class="mt-1 text-sm text-slate-600">{active_tel if active_tel else 'Não informado'}</p></div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p>
+                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-1 block text-sm font-bold forest-text hover:underline">
+                      {display_phone_text} ↗
+                    </a>
+                    <p class="mt-0.5 text-xs text-slate-500">Clique para iniciar uma conversa imediata.</p>
+                  </div>
                 </div>
                 <div class="flex gap-4">
                   <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e5eee7] forest-text">🏛️</span>
@@ -578,8 +593,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Padrão RM</div>
-            <div class="banner-subtitle">Landing pages modernas, idênticas ao layout RM Reprodução Bovina, com atalhos, navegação suave e imagens realistas por último.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP Padrão RM</div>
+            <div class="banner-subtitle">Landing pages modernas, textos abrangentes, WhatsApp 100% clicável e redirecionável, e imagens realistas por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
