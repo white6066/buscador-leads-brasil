@@ -37,8 +37,9 @@ input_bg = "#1e293b" if is_dark else "#ffffff"
 input_text = "#ffffff" if is_dark else "#0f172a"
 expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
+dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa para caixas, bordas e menus suspensos (dropdowns)
+# Estilização CSS completa para corrigir dropdowns e botões de ação
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -58,13 +59,13 @@ st.markdown(f"""
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
     /* Botões gerais e barra lateral */
-    [data-testid="stSidebar"] button, .stDownloadButton button {{
+    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
     }}
-    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover {{
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover {{
         border-color: #38bdf8 !important;
         color: #38bdf8 !important;
     }}
@@ -95,19 +96,22 @@ st.markdown(f"""
         color: {input_text} !important;
     }}
     
-    /* Popover / Lista de opções aberta dos Selectboxes */
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"] {{
+    /* Correção absoluta para a lista/popover dos Selectboxes (Modo Escuro e Claro) */
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
         background-color: {dropdown_bg} !important;
-        color: {text_color} !important;
+        color: {dropdown_text} !important;
         border: 1px solid {border_color} !important;
     }}
-    li[data-baseweb="option"] {{
+    li[data-baseweb="option"], div[role="option"] {{
         background-color: {dropdown_bg} !important;
-        color: {text_color} !important;
+        color: {dropdown_text} !important;
     }}
-    li[data-baseweb="option"]:hover {{
+    li[data-baseweb="option"]:hover, div[role="option"]:hover {{
         background-color: #38bdf8 !important;
         color: #0f172a !important;
+    }}
+    div[data-baseweb="select"] * {{
+        color: {dropdown_text} !important;
     }}
 
     /* Cartões de Métricas */
@@ -257,7 +261,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
