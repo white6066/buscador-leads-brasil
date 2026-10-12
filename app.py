@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados blindado contra linhas de cabeçalho
+# Carregamento de dados seguro e sem exclusões acidentales
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -29,10 +29,8 @@ def load_data_from_sheet():
     for r in reader:
         if r and len(r) > 0:
             val0 = str(r[0]).strip().lower()
-            val1 = str(r[1]).strip().lower() if len(r) > 1 else ""
-            
-            # Filtro rigoroso para descartar o cabeçalho nominal e linhas vazias
-            if val0 == "" or "página" in val0 or "razão social" in val1 or "cnpj" in val1 or val0 == "cnpj":
+            # Ignorar apenas linhas de página em branco
+            if val0 == "" or "página1" in val0:
                 continue
             rows.append(r)
             
@@ -48,6 +46,10 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
+        # Descartar estritamente a linha de cabeçalho nominal se ela aparecer nos dados
+        if cnpj.lower() == "cnpj" or razao.lower() == "razão social":
+            continue
+            
         maps_url = ""
         telefone = ""
         for item in r:
