@@ -70,122 +70,84 @@ CNAES_ALVO = [
     "9609208",
 ]
 
-UFS_ALVO = [
-    "AC",
-    "AL",
-    "AP",
-    "AM",
-    "BA",
-    "CE",
-    "DF",
-    "ES",
-    "GO",
-    "MA",
-    "MT",
-    "MS",
-    "MG",
-    "PA",
-    "PB",
-    "PR",
-    "PE",
-    "PI",
-    "RJ",
-    "RN",
-    "RS",
-    "RO",
-    "RR",
-    "SC",
-    "SP",
-    "SE",
-    "TO",
-]
-
 
 def obter_empresas_recentes():
-  print(
-      "A pesquisar novas empresas em todos os segmentos (sem filtro de"
-      " telefone)..."
-  )
+  print("A pesquisar novas empresas (busca nacional otimizada)...")
   empresas_coletadas = []
 
   hoje = datetime.date.today()
   limite_data = hoje - datetime.timedelta(days=60)
 
-  for uf in UFS_ALVO:
-    for cnae_codigo in CNAES_ALVO:
-      try:
-        url = f"https://minhareceita.org/?cnae={cnae_codigo}&uf={uf}"
-        response = requests.get(url, timeout=12)
+  for cnae_codigo in CNAES_ALVO:
+    try:
+      # Busca nacional direta pelo CNAE (elimina o loop de estados e evita bloqueios)
+      url = f"https://minhareceita.org/?cnae={cnae_codigo}"
+      response = requests.get(url, timeout=15)
 
-        if response.status_code == 200:
-          dados_json = response.json()
-          lista_empresas = dados_json.get("data", [])
+      if response.status_code == 200:
+        dados_json = response.json()
+        lista_empresas = dados_json.get("data", [])
 
-          for dados in lista_empresas:
-            data_abertura_str = dados.get("data_inicio_atividade", "")
-            if data_abertura_str:
-              try:
-                data_abertura = datetime.datetime.strptime(
-                    data_abertura_str, "%Y-%m-%d"
-                ).date()
+        for dados in lista_empresas:
+          data_abertura_str = dados.get("data_inicio_atividade", "")
+          if data_abertura_str:
+            try:
+              data_abertura = datetime.datetime.strptime(
+                  data_abertura_str, "%Y-%m-%d"
+              ).date()
 
-                if data_abertura >= limite_data:
-                  # Telefone recolhido se existir, caso contrário fica em branco (sem descartar)
-                  telefone = (
-                      dados.get("ddd_telefone_1", "")
-                      or dados.get("telefone")
-                      or ""
-                  )
+              if data_abertura >= limite_data:
+                telefone = (
+                    dados.get("ddd_telefone_1", "")
+                    or dados.get("telefone")
+                    or ""
+                )
+                razao_social = dados.get("razao_social", "")
+                municipio = dados.get("municipio", "")
+                uf_emp = dados.get("uf", "")
 
-                  razao_social = dados.get("razao_social", "")
-                  municipio = dados.get("municipio", "")
-                  uf_emp = dados.get("uf", "")
+                logradouro = dados.get("logradouro", "")
+                numero = dados.get("numero", "")
+                bairro = dados.get("bairro", "")
+                cep = dados.get("cep", "")
+                endereco_completo = (
+                    f"{logradouro}, {numero} - {bairro}, {municipio} -"
+                    f" {uf_emp} (CEP: {cep})"
+                ).strip(" ,-")
 
-                  # Endereço completo
-                  logradouro = dados.get("logradouro", "")
-                  numero = dados.get("numero", "")
-                  bairro = dados.get("bairro", "")
-                  cep = dados.get("cep", "")
-                  endereco_completo = (
-                      f"{logradouro}, {numero} - {bairro}, {municipio} -"
-                      f" {uf_emp} (CEP: {cep})"
-                  ).strip(" ,-")
+                query_maps = f"{razao_social} {municipio} {uf_emp}"
+                maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
 
-                  # Link do Google Maps
-                  query_maps = f"{razao_social} {municipio} {uf_emp}"
-                  maps_link = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query_maps)}"
+                email_empresa = (
+                    dados.get("email")
+                    or dados.get("email_contato")
+                    or dados.get("correio_eletronico")
+                    or ""
+                )
 
-                  email_empresa = (
-                      dados.get("email")
-                      or dados.get("email_contato")
-                      or dados.get("correio_eletronico")
-                      or ""
-                  )
+                empresa = {
+                    "cnpj": dados.get("cnpj", ""),
+                    "razao_social": razao_social,
+                    "data_abertura": data_abertura_str,
+                    "cnae": cnae_codigo,
+                    "uf": uf_emp,
+                    "municipio": municipio,
+                    "endereco": endereco_completo,
+                    "telefone": telefone,
+                    "email": email_empresa,
+                    "maps_link": maps_link,
+                }
 
-                  empresa = {
-                      "cnpj": dados.get("cnpj", ""),
-                      "razao_social": razao_social,
-                      "data_abertura": data_abertura_str,
-                      "cnae": cnae_codigo,
-                      "uf": uf_emp,
-                      "municipio": municipio,
-                      "endereco": endereco_completo,
-                      "telefone": telefone,
-                      "email": email_empresa,
-                      "maps_link": maps_link,
-                  }
-
-                  if not any(
-                      e["cnpj"] == empresa["cnpj"] for e in empresas_coletadas
-                  ):
-                    empresas_coletadas.append(empresa)
-              except Exception:
-                pass
-      except Exception:
-        pass
+                if not any(
+                    e["cnpj"] == empresa["cnpj"] for e in empresas_coletadas
+                ):
+                  empresas_coletadas.append(empresa)
+            except Exception:
+              pass
+    except Exception:
+      pass
 
   print(
-      f"Total de empresas recolhidas (máximo volume):"
-      f" {len(empresas_coletadas)}"
+      f"Total de empresas recolhidas com sucesso: {len(empresas_coletadas)}"
   )
   return empresas_coletadas
