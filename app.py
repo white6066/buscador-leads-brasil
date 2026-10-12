@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS para unificar o fundo e remover faixas escuras indesejadas
+# Estilização CSS para unificar o fundo e manter o design corporativo limpo
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
@@ -118,7 +118,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Detalhes' para gerenciar cada lead.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Gerenciar' para ver detalhes e Instagram.</p>", unsafe_allow_html=True)
 
     # --- BANNER ---
     st.markdown("""
@@ -206,7 +206,7 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Principal em colunas alinhadas perfeitamente com o cabeçalho
+            # Linha Principal em colunas alinhadas perfeitamente com o cabeçalho (Apenas 3 ícones: WhatsApp, Maps, Lupa)
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             
             with r_cols[0]:
@@ -220,7 +220,6 @@ try:
             with r_cols[4]:
                 st.markdown(f"{cidade}")
             with r_cols[5]:
-                # WhatsApp, Google Maps e Instagram (com lupa mantida para pesquisa no Google e ícone oficial para o Instagram)
                 action_str = []
                 if tel:
                     clean_tel = "".join(filter(str.isdigit, str(tel)))
@@ -236,13 +235,12 @@ try:
                 nome_busca = str(razao).replace(' ', '+')
                 cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
                 action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
-                action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 
                 st.markdown(" ".join(action_str))
             with r_cols[6]:
                 st.markdown(f"🟢 `{current_status}`")
 
-            # Expander compacto discreto para detalhes e alteração de status por linha
+            # Expander compacto discreto contendo o Instagram e gestão do lead
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
