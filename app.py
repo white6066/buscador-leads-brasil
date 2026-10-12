@@ -4,11 +4,13 @@ import requests
 import io
 import csv
 import urllib.parse
-import hashlib
+import re
+import json
+from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Acompanhamento & Gerador LP Exclusivo",
+    page_title="Novas Empresas - Gerador LP com Inteligência Web Real",
     page_icon="🚀",
     layout="wide"
 )
@@ -92,92 +94,133 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- GERADOR MATEMÁTICO DE CORES ÚNICAS E VIBRANTES ---
-def generate_unique_color_palette(text_seed):
-    # Cria um hash hexadecimal único baseado no nome da empresa e CNPJ
-    h = hashlib.sha256(text_seed.encode('utf-8')).hexdigest()
-    
-    # Extrai valores para matiz (Hue de 0 a 360), saturação e luminosidade ideais para design web
-    hue = int(h[0:4], 16) % 360
-    saturation = 65 + (int(h[4:6], 16) % 25) # Entre 65% e 90% (cores vivas)
-    lightness = 45 + (int(h[6:8], 16) % 15)  # Entre 45% e 60% (bom contraste)
-    
-    # Converter HSL para HEX em Python puro
-    def hsl_to_hex(h, s, l):
-        s /= 100.0
-        l /= 100.0
-        c = (1 - abs(2 * l - 1)) * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = l - c / 2
-        r, g, b = 0, 0, 0
-        if 0 <= h < 60: r, g, b = c, x, 0
-        elif 60 <= h < 120: r, g, b = x, c, 0
-        elif 120 <= h < 180: r, g, b = 0, c, x
-        elif 180 <= h < 240: r, g, b = 0, x, c
-        elif 240 <= h < 300: r, g, b = x, 0, c
-        elif 300 <= h < 360: r, g, b = c, 0, x
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return f"#{r:02x}{g:02x}{b:02x}"
+# --- ANALISADOR DE PIXELS DE IMAGEM PARA EXTRAÇÃO DE CORES DO LOGO ---
+def extract_colors_from_logo(image_url):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    try:
+        response = requests.get(image_url, headers=headers, timeout=3)
+        if response.status_code == 200:
+            img = Image.open(io.BytesIO(response.content)).convert('RGB')
+            img = img.resize((50, 50))
+            colors = img.getcolors(50*50)
+            if colors:
+                colors.sort(key=lambda x: x[0], reverse=True)
+                valid_colors = []
+                for count, (r, g, b) in colors:
+                    # Ignorar brancos puros e pretos puros
+                    if not (r > 240 and g > 240 and b > 240) and not (r < 15 and g < 15 and b < 15):
+                        valid_colors.append(f"#{r:02x}{g:02x}{b:02x}")
+                        if len(valid_colors) >= 2:
+                            break
+                if valid_colors:
+                    return valid_colors[0], valid_colors[1] if len(valid_colors) > 1 else valid_colors[0]
+    except Exception:
+        pass
+    return None, None
 
-    primary_hex = hsl_to_hex(hue, saturation, lightness)
-    # Cor secundária complementar com matiz deslocada em 40 graus
-    secondary_hex = hsl_to_hex((hue + 45) % 360, saturation, max(30, lightness - 15))
+# --- ENGINE DE PESQUISA WEB REAL (DUCKDUCKGO INSTANT ANSWER & API) ---
+def real_web_osint_search(razao, cnpj, cidade, uf):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     
-    return primary_hex, secondary_hex
+    # Termos de busca avançada
+    queries = [
+        f"{razao} {cidade} {uf}",
+        f"CNPJ {cnpj} {razao}",
+        f"{razao} site:instagram.com",
+        f"{razao} cnpj biz"
+    ]
+    
+    found_snippets = []
+    found_logo = None
+    found_email = None
+    found_instagram = None
+    
+    for q in queries:
+        try:
+            encoded_q = urllib.parse.quote(q)
+            url = f"https://api.duckduckgo.com/?q={encoded_q}&format=json&no_html=1&skip_disambig=1"
+            res = requests.get(url, headers=headers, timeout=4)
+            if res.status_code == 200:
+                data = res.json()
+                
+                # Capturar imagem/logo se houver
+                if "Image" in data and data["Image"] and not found_logo:
+                    img_path = data["Image"]
+                    if img_path.startswith("http"):
+                        found_logo = img_path
+                    elif img_path.startswith("/"):
+                        found_logo = f"https://duckduckgo.com{img_path}"
+                
+                # Capturar abstract / snippets
+                if "Abstract" in data and data["Abstract"]:
+                    found_snippets.append(data["Abstract"])
+                    
+                for rel in data.get("RelatedTopics", []):
+                    if "Text" in rel:
+                        txt = rel["Text"]
+                        found_snippets.append(txt)
+                        # Tentar extrair email via Regex
+                        emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', txt)
+                        if emails and not found_email:
+                            found_email = emails[0]
+                        # Tentar extrair instagram
+                        if "instagram.com" in txt and not found_instagram:
+                            ig_match = re.search(r'instagram\.com/([a-zA-Z0-9_.]+)', txt)
+                            if ig_match:
+                                found_instagram = f"https://instagram.com/{ig_match.group(1)}"
+        except Exception:
+            continue
+            
+    # Se a API direta não trouxer o suficiente, consultar o HTML público
+    if not found_snippets:
+        try:
+            html_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(razao + ' ' + cidade + ' ' + uf)}"
+            html_res = requests.get(html_url, headers=headers, timeout=4)
+            if html_res.status_code == 200:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html_res.text, 'html.parser')
+                for a in soup.find_all('a', class_='result__snippet', limit=3):
+                    t = a.get_text().strip()
+                    if t: found_snippets.append(t)
+                for img in soup.find_all('img'):
+                    src = img.get('src', '')
+                    if 'http' in src and not found_logo:
+                        found_logo = src
+                        break
+        except Exception:
+            pass
 
-# --- ENGINE CRIATIVA DE LANDING PAGE EXCLUSIVA ---
-def generate_hyper_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj):
-    # Gerar cores 100% únicas para este lead
-    primary_color, secondary_color = generate_unique_color_palette(razao + cnpj)
-    
-    seg_lower = segmento.lower()
-    
-    # Lógica de negócios específica por ramo
-    if any(x in seg_lower for x in ['atacad', 'distribui', 'comercio', 'vestu', 'roupa', 'acessor']):
-        headline = f"Distribuição e Atacado de Excelência em {cidade} e Região"
-        subheadline = f"A <b>{razao}</b> é especialista em {segmento}, fornecendo produtos de alta qualidade, pontualidade e ótimas condições para lojistas e parceiros comerciais."
-        bullet_1 = "Portfólio Selecionado"
-        bullet_1_desc = "Produtos com rigoroso padrão de qualidade para o seu negócio."
-        bullet_2 = "Agilidade nas Entregas"
-        bullet_2_desc = "Logística estruturada para atender com rapidez."
-        bullet_3 = "Parceria Comercial"
-        bullet_3_desc = "Condições especiais e atendimento dedicado a lojistas."
-        hero_img = "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1400&q=80"
-    elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult']):
-        headline = f"Assessoria Estratégica e Segurança Jurídica"
-        subheadline = f"Atuação de alto nível no segmento de {segmento}, oferecendo suporte técnico rigoroso e focado na proteção dos seus interesses."
-        bullet_1 = "Atuação Estratégica"
-        bullet_1_desc = "Análise detalhada de cenários para tomadas de decisão seguras."
-        bullet_2 = "Sigilo Absoluto"
-        bullet_2_desc = "Compromisso ético e confidencialidade em todas as demandas."
-        bullet_3 = "Atendimento Ágil"
-        bullet_3_desc = "Canais diretos para esclarecimento rápido de dúvidas."
-        hero_img = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1400&q=80"
-    elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa']):
-        headline = f"Transforme sua Experiência de Beleza e Bem-Estar"
-        subheadline = f"Procedimentos exclusivos e atendimento personalizado em {cidade}/{uf} para realçar o que você tem de melhor."
-        bullet_1 = "Ambiente Exclusivo"
-        bullet_1_desc = "Espaço climatizado e preparado para o seu máximo conforto."
-        bullet_2 = "Profissionais Qualificados"
-        bullet_2_desc = "Técnicas modernas e produtos de altíssima qualidade."
-        bullet_3 = "Agendamento VIP"
-        bullet_3_desc = "Horários flexíveis reservados diretamente pelo WhatsApp."
-        hero_img = "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=1400&q=80"
-    else:
-        headline = f"Soluções Especializadas em {segmento}"
-        subheadline = f"A <b>{razao}</b> entrega excelência, agilidade e comprometimento em cada projeto realizado em {cidade} - {uf}."
-        bullet_1 = "Atendimento Personalizado"
-        bullet_1_desc = "Projetos desenhados sob medida para a sua necessidade."
-        bullet_2 = "Compromisso com Prazos"
-        bullet_2_desc = "Pontualidade e rigor técnico em todas as etapas."
-        bullet_3 = "Suporte Dedicado"
-        bullet_3_desc = "Equipe pronta para tirar dúvidas e prestar auxílio imediato."
-        hero_img = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80"
+    return {
+        "snippets": found_snippets,
+        "logo": found_logo,
+        "email": found_email,
+        "instagram": found_instagram
+    }
 
+# --- GERADOR DA LANDING PAGE COM DADOS REAIS & CORES DO LOGO ---
+def generate_osint_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj):
+    # 1. Realizar OSINT / Pesquisa Real na Web
+    osint_data = real_web_osint_search(razao, cnpj, cidade, uf)
+    
+    # 2. Tentar extrair cor real do logo encontrado
+    primary_color, secondary_color = None, None
+    if osint_data["logo"]:
+        primary_color, secondary_color = extract_colors_from_logo(osint_data["logo"])
+        
+    # Fallback cromático matemático caso o logo não tenha cor legível
+    if not primary_color:
+        import hashlib
+        h = hashlib.md5((razao + cnpj).encode()).hexdigest()
+        primary_color = f"#{h[:6]}"
+        secondary_color = f"#{h[6:12]}"
+
+    snippets_text = " ".join(osint_data["snippets"][:2]) if osint_data["snippets"] else f"Empresa especializada em {segmento} com atuação de destaque em {cidade} - {uf}."
+    
     clean_tel = "".join(filter(str.isdigit, str(tel))) if tel else ""
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
+    
+    email_display = osint_data["email"] if osint_data["email"] else "Contato via WhatsApp / Formulário"
+    ig_link = osint_data["instagram"] if osint_data["instagram"] else f"https://www.google.com/search?q={urllib.parse.quote(razao + ' instagram ' + cidade)}"
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -187,25 +230,28 @@ def generate_hyper_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_ab
     <title>{razao} | {segmento} em {cidade}/{uf}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .unique-bg {{ background-color: {primary_color}; }}
-        .unique-text {{ color: {primary_color}; }}
-        .unique-border {{ border-color: {primary_color}; }}
-        .unique-gradient {{ background: linear-gradient(135deg, {secondary_color}, {primary_color}); }}
+        .brand-primary {{ background-color: {primary_color}; }}
+        .brand-text {{ color: {primary_color}; }}
+        .brand-border {{ border-color: {primary_color}; }}
+        .brand-gradient {{ background: linear-gradient(135deg, {secondary_color}, {primary_color}); }}
     </style>
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
-    <!-- Top Notice -->
+    <!-- Top Notice Bar -->
     <div class="bg-slate-950 text-slate-300 text-xs py-2 px-4 text-center border-b border-slate-800">
-        📍 {cidade} - {uf} | Especialistas em <b>{segmento}</b>
+        📍 {cidade} - {uf} | CNPJ: {cnpj} | Segmento: <b>{segmento}</b>
     </div>
 
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="font-black text-xl tracking-tight text-slate-900 uppercase flex items-center gap-2">
-                <span class="w-4 h-4 rounded-full inline-block unique-bg"></span>
-                {razao}
+            <div class="font-black text-xl tracking-tight text-slate-900 uppercase flex items-center gap-3">
+                {f'<img src="{osint_data["logo"]}" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">' if osint_data["logo"] else f'<span class="w-4 h-4 rounded-full inline-block brand-primary"></span>'}
+                <div>
+                    <span>{razao}</span>
+                    {f'<span class="block text-xs font-normal text-slate-500">Instagram oficial detetado</span>' if osint_data["instagram"] else ''}
+                </div>
             </div>
             <a href="{whats_link}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg shadow transition flex items-center gap-2">
                 💬 Atendimento via WhatsApp
@@ -214,50 +260,64 @@ def generate_hyper_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_ab
     </header>
 
     <!-- Hero Section -->
-    <section class="relative text-white py-24 px-4" style="background-image: linear-gradient(rgba(15, 23, 42, 0.90), rgba(15, 23, 42, 0.90)), url('{hero_img}'); background-size: cover; background-position: center;">
+    <section class="relative text-white py-24 px-4 brand-gradient">
         <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-block unique-bg text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4">Referência em {segmento}</span>
-            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{headline}</h1>
-            <p class="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">{subheadline}</p>
+            <span class="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4 backdrop-blur-sm">Especialistas em {segmento}</span>
+            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">Excelência e Soluções Profissionais em {cidade}</h1>
+            <p class="text-base md:text-lg text-slate-100 mb-8 max-w-2xl mx-auto leading-relaxed">{snippets_text}</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="{whats_link}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
-                    🚀 Solicitar Orçamento no WhatsApp
+                    🚀 Falar Diretamente com a Equipe
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Quem Somos -->
+    <!-- Quem Somos & Dados OSINT -->
     <section class="py-16 px-4 bg-white border-b border-slate-200">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Quem Somos</h2>
-            <div class="w-16 h-1 unique-bg mx-auto mb-6 rounded"></div>
-            <p class="text-slate-600 leading-relaxed text-base mb-4">A <b>{razao}</b> iniciou suas atividades em <b>{data_abert}</b>, consolidando-se no setor de <b>{segmento}</b>. Nossa estrutura localizada em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para garantir excelência operacional e atendimento humanizado.</p>
-            <p class="text-slate-500 text-sm"><b>CNPJ:</b> {cnpj}</p>
+            <div class="w-16 h-1 brand-primary mx-auto mb-6 rounded"></div>
+            <p class="text-slate-600 leading-relaxed text-base mb-6">A <b>{razao}</b> iniciou suas atividades em <b>{data_abert}</b>, atuando com firmeza no mercado de <b>{segmento}</b>. Localizados estrategicamente em <i>{endereco if endereco else cidade + ' - ' + uf}</i>, unimos experiência e compromisso para entregar os melhores resultados.</p>
+            
+            <div class="grid sm:grid-cols-3 gap-4 text-left bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase">CNPJ Oficial</p>
+                    <p class="text-sm font-semibold text-slate-800">{cnpj}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase">E-mail Cadastrado</p>
+                    <p class="text-sm font-semibold text-slate-800">{email_display}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase">Redes Sociais</p>
+                    <p class="text-sm font-semibold text-slate-800"><a href="{ig_link}" target="_blank" class="brand-text underline">Verificar Perfil / Web</a></p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Diferenciais -->
+    <!-- Pilares de Atuação -->
     <section class="py-16 px-4 max-w-6xl mx-auto">
         <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Por que nos escolher?</h2>
-            <p class="text-slate-600 mt-2">Pilares que sustentam a qualidade dos nossos serviços</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Nossos Diferenciais</h2>
+            <p class="text-slate-600 mt-2">Compromisso total com a qualidade e satisfação</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 unique-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">{bullet_1}</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">{bullet_1_desc}</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Atendimento Personalizado</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Foco absoluto nas necessidades individuais de cada cliente em {cidade}.</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 unique-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">⚡</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">{bullet_2}</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">{bullet_2_desc}</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">⚡</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Agilidade Operacional</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Canais diretos via WhatsApp e processos sem burocracia.</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="w-10 h-10 unique-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">🛡️</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">{bullet_3}</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">{bullet_3_desc}</p>
+                <div class="w-10 h-10 brand-primary text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">🛡️</div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Qualidade Garantida</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">Rigores técnicos e transparência em todas as etapas da prestação de serviços.</p>
             </div>
         </div>
     </section>
@@ -265,11 +325,11 @@ def generate_hyper_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_ab
     <!-- Contato Final -->
     <section class="py-16 px-4 bg-slate-900 text-white">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-4">Entre em Contato Conosco</h2>
-            <p class="text-slate-400 mb-8">Nossa equipe em {cidade} está pronta para lhe atender diretamente.</p>
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">Fale Conosco</h2>
+            <p class="text-slate-400 mb-8">Nossa equipe está à disposição para esclarecer dúvidas e fechar parcerias.</p>
             <div class="inline-block bg-slate-800 p-6 rounded-2xl border border-slate-700 text-left mb-8 w-full max-w-md">
                 <p class="text-sm text-slate-300 mb-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
-                <p class="text-sm text-slate-300 mb-2"><b>📞 WhatsApp:</b> {tel if tel else 'Disponível no chat'}</p>
+                <p class="text-sm text-slate-300 mb-2"><b>📞 Telefone / WhatsApp:</b> {tel if tel else 'Disponível no chat'}</p>
                 <p class="text-sm text-slate-300"><b>🗓️ Abertura Oficial:</b> {data_abert}</p>
             </div>
             <br>
@@ -385,8 +445,8 @@ try:
     # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Acompanhamento & Gerador LP Exclusivo</div>
-            <div class="banner-subtitle">Gera Landing Pages com cores e copywriting exclusivos e dinâmicos para cada empresa.</div>
+            <div class="banner-title">🚀 Novas Empresas - OSINT & Gerador LP Real</div>
+            <div class="banner-subtitle">Realiza busca pública ativa na internet por razão social, CNPJ e nicho, extraindo logotipos, e-mails e cores oficiais.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -480,14 +540,14 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            with st.expander(f"⚙️ Gerenciar & Automação LP: {razao}"):
+            with st.expander(f"⚙️ Gerenciar & OSINT Web: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {tel if tel else 'Não informado'}")
-                    st.markdown(f"📸 [Perfil Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
+                    st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_busca}+{cidade_busca}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
                     c_idx = status_list.index(current_status) if current_status in status_list else 0
@@ -498,16 +558,16 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🔍 Analisar Web & Criar LP Exclusiva", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Gerando Landing Page com identidade cromática e copywriting exclusivo..."):
-                        lp_html = generate_hyper_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
+                if st.button("🌐 Executar Busca OSINT & Criar LP Exclusiva", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Varrendo dados públicos, procurando logotipo, redes sociais e extraindo cores da empresa..."):
+                        lp_html = generate_osint_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page exclusiva gerada com sucesso!")
+                        st.success("Busca OSINT concluída e Landing Page exclusiva gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
-                    st.markdown("#### ⚡ Pré-visualização da Landing Page Exclusiva")
+                    st.markdown("#### ⚡ Pré-visualização da Landing Page Baseada em OSINT")
                     
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
