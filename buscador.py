@@ -2,30 +2,72 @@ import datetime
 import urllib.parse
 import requests
 
-# Lista completa de CNAEs alvo (incluindo o novo de cosméticos e estética)
+# Lista completa com todos os 64 CNAEs alvo
 CNAES_ALVO = [
-    "8630504",
-    "8623300",
-    "3250706",
-    "8640205",  # Saúde / Odonto / Diagnóstico
-    "9313100",
-    "8591100",
-    "8592901",  # Esportes / Condicionamento / Dança
-    "8230002",
+    "4511101",
+    "4511102",
+    "4520001",
+    "4530703",
+    "4637199",
+    "4642701",
+    "4711302",
+    "4771701",
+    "4781400",
+    "6420300",
+    "6462000",
+    "6511101",
+    "6612600",
+    "6622300",
+    "6810201",
+    "6810202",
+    "6821801",
+    "6821802",
+    "6822600",
+    "6911701",
+    "6920601",
+    "7020400",
+    "7111100",
+    "7112000",
+    "7311400",
+    "7319002",
+    "7319003",
+    "7410202",
+    "7420001",
+    "7500100",
+    "7711000",
+    "7810800",
+    "7911200",
+    "8011101",
+    "8121400",
+    "8130300",
+    "8211000",
     "8230001",
-    "5620102",
-    "7739003",  # Eventos / Festas / Buffet / Estruturas
+    "8511000",
+    "8512100",
+    "8513900",
+    "8520100",
+    "8531700",
+    "8592901",
+    "8592902",
+    "8593700",
+    "8599603",
+    "8599604",
+    "8610101",
+    "8630503",
+    "8630504",
+    "8640202",
+    "8650002",
+    "8650003",
+    "8650004",
+    "8650006",
+    "8711501",
+    "8800600",
+    "9511800",
+    "9512600",
     "9602501",
-    "9602502",  # Beleza / Cabeleireiro / Estética
-    "8630501",
-    "8690901",
-    "8630502",  # Medicina / Práticas Integrativas
-    "8690904",  # Atividades de Podologia
-    "9609299",  # Outras Atividades de Serviços Pessoais
-    "8650003",  # Atividades de Psicologia e Psicanálise
-    "8630503",  # Atividade Médica Ambulatorial Restrita a Consultas
-    "8650005",  # Atividades de Terapia Ocupacional
-    "4772500",  # Comércio Varejista de Cosméticos e Perfumaria
+    "9602502",
+    "9609201",
+    "9609208",
 ]
 
 UFS_ALVO = [
@@ -60,7 +102,10 @@ UFS_ALVO = [
 
 
 def obter_empresas_recentes():
-  print("A pesquisar novas empresas com os CNAEs ampliados de beleza e estética...")
+  print(
+      "A pesquisar novas empresas em todos os segmentos (sem filtro de"
+      " telefone)..."
+  )
   empresas_coletadas = []
 
   hoje = datetime.date.today()
@@ -85,9 +130,12 @@ def obter_empresas_recentes():
                 ).date()
 
                 if data_abertura >= limite_data:
-                  telefone = dados.get("ddd_telefone_1", "") or ""
-                  if not telefone:
-                    continue  # Descarta se não tiver telefone
+                  # Telefone recolhido se existir, caso contrário fica em branco (sem descartar)
+                  telefone = (
+                      dados.get("ddd_telefone_1", "")
+                      or dados.get("telefone")
+                      or ""
+                  )
 
                   razao_social = dados.get("razao_social", "")
                   municipio = dados.get("municipio", "")
@@ -137,6 +185,7 @@ def obter_empresas_recentes():
         pass
 
   print(
-      f"Total de empresas qualificadas recolhidas: {len(empresas_coletadas)}"
+      f"Total de empresas recolhidas (máximo volume):"
+      f" {len(empresas_coletadas)}"
   )
   return empresas_coletadas
