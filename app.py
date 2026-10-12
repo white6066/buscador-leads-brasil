@@ -134,7 +134,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -206,7 +206,7 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Principal em colunas alinhadas com os 4 ícones exatos: Telefone (Whats), Maps, Pesquisa, Instagram
+            # Linha Principal em colunas alinhadas com os 4 ícones exatos: Telefone, Maps, Pesquisa, Instagram
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             
             with r_cols[0]:
