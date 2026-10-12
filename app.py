@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados 100% resiliente e sem exclusões agressivas
+# Carregamento de dados robusto e direto
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -28,7 +28,6 @@ def load_data_from_sheet():
     rows = []
     for r in reader:
         if r:
-            # Recolher todas as linhas que contenham algum conteúdo válido
             rows.append(r)
             
     processed = []
@@ -43,8 +42,8 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
-        # Ignorar apenas se for o cabeçalho nominal explícito da planilha
-        if cnpj.lower() == "cnpj" or "razão social" in razao.lower() or "página" in cnpj.lower():
+        # Ignorar apenas a linha de cabeçalho nominal se presente
+        if cnpj.lower() == "cnpj" or "razão social" in razao.lower():
             continue
             
         maps_url = ""
@@ -96,13 +95,13 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com correspondência flexível e segura
+    # Aplicar Filtros de forma segura (só filtra se explicitamente selecionado)
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todos":
+    if cidade_selecionada != "Todas" and cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
