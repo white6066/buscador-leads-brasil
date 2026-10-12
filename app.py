@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import requests
+import io
 
 # Configuração da página
 st.set_page_config(
@@ -11,11 +13,14 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados via link publicado na Web em formato CSV
+# 1. Carregamento de dados via requests com User-Agent para evitar bloqueio 404
 @st.cache_data(ttl=300)
 def load_data():
     url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRfRtLoR2wvrELschL2RmD_OELrqNZb1FNdqdQPtpVrywBPpPGyU36LkCCHZvrLlxl7ch6LQYqh/pub?gid=0&single=true&output=csv"
-    df = pd.read_csv(url)
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    df = pd.read_csv(io.StringIO(response.text))
     if "Status" not in df.columns:
         df["Status"] = "Pendente"
     df["Status"] = df["Status"].fillna("Pendente")
