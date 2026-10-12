@@ -11,9 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inicializar o estado do Tema (Dark por predefinição)
+# Inicializar o estado do Tema (Claro por predefinição)
 if "theme" not in st.session_state:
-    st.session_state.theme = "Escuro"
+    st.session_state.theme = "Claro"
 
 # Alternar Tema
 def toggle_theme():
@@ -293,7 +293,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "☀️ Modo Claro" if not is_dark else "🌙 Modo Escuro"
+        theme_btn_label = "🌙 Modo Escuro" if not is_dark else "☀️ Modo Claro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
