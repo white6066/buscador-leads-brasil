@@ -219,14 +219,20 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
-def generate_ai_contextual_image(segmento, razao, explicit_image_instruction=""):
+def generate_smart_image(segmento, razao, specific_instruction=""):
+    """Constrói prompt otimizado, interpretando com precisão absoluta termos como carros populares, frotas, etc."""
     seg_lower = (segmento + " " + razao).lower()
     
-    if explicit_image_instruction and any(w in explicit_image_instruction.lower() for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar', 'varios carros']):
-        prompt = f"professional commercial photography of {explicit_image_instruction}, photorealistic, 4k resolution, high quality business display"
+    if specific_instruction:
+        inst_l = specific_instruction.lower()
+        # Tratamento avançado para pedidos específicos de veículos populares
+        if any(w in inst_l for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
+            prompt = "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
+        else:
+            prompt = f"professional commercial photography of {specific_instruction}, photorealistic, 4k resolution, high quality business display"
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
-            prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
+            prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern affordable sedans and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
         elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
             prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k"
         elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
@@ -243,9 +249,8 @@ def generate_ai_contextual_image(segmento, razao, explicit_image_instruction="")
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + explicit_image_instruction).encode()).hexdigest(), 16) % 10000
-    ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
-    return ai_image_url
+    seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 10000
+    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -270,7 +275,7 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         return palettes[h % len(palettes)], "Paleta Exclusiva"
 
 def apply_accumulated_modifications(html_content, instructions_list):
-    """Interpreta e acumula todas as instruções do usuário mantendo as alterações anteriores"""
+    """Interpreta e acumula todas as instruções de cor e estilo"""
     custom_primary_color = None
     css_injections = []
     
@@ -313,11 +318,21 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
 # --- GERADOR DA LP MASTERPIECE ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
-    latest_img_instruction = ""
+    # Analisa comandos independentes para imagem 1 (superior/hero) e imagem 2 (inferior/sobre)
+    img1_inst = ""
+    img2_inst = ""
+    
     for inst in instructions_list:
         inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar foto', 'mudar foto', 'exibir', 'colocar', 'varios carros']):
-            latest_img_instruction = inst
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular']):
+            if "2" in inst_l or "inferior" in inst_l or "segunda" in inst_l or "sobre" in inst_l:
+                img2_inst = inst
+            elif "1" in inst_l or "superior" in inst_l or "primeira" in inst_l or "topo" in inst_l:
+                img1_inst = inst
+            else:
+                # Se não especificado o número, assume por padrão a imagem superior (hero)
+                if not img1_inst:
+                    img1_inst = inst
 
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
@@ -368,7 +383,9 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature = generate_ai_contextual_image(segmento, razao, latest_img_instruction)
+    # Geração independente das duas imagens
+    img_feature_1 = generate_smart_image(segmento, razao, img1_inst)
+    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -453,7 +470,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         <div class="relative mx-auto w-full max-w-xl">
           <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
             <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-900">
-              <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="eager">
+              <img src="{img_feature_1}" alt="{display_name} - Destaque" class="h-full w-full object-cover object-center" loading="eager">
             </div>
           </div>
         </div>
@@ -492,7 +509,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
           <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-xl">
-            <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="lazy">
+            <img src="{img_feature_2}" alt="{display_name} - Sobre" class="h-full w-full object-cover object-center" loading="lazy">
           </div>
           <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fundação Oficial</p>
@@ -833,7 +850,7 @@ try:
                 with col_inst_txt:
                     st.text_input(
                         "O que mudar na LP", 
-                        placeholder="Ex: trocar cor principal para azul marinho", 
+                        placeholder="Ex: na imagem 1, quero vários carros populares novos", 
                         key=input_key,
                         label_visibility="collapsed"
                     )
