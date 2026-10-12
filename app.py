@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados limpo e direto sem filtragem agressiva
+# Carregamento de dados 100% resiliente e sem exclusões agressivas
 @st.cache_data(ttl=15)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -27,11 +27,8 @@ def load_data_from_sheet():
     reader = csv.reader(io.StringIO(response.text))
     rows = []
     for r in reader:
-        if r and len(r) > 0:
-            val0 = str(r[0]).strip()
-            # Ignorar apenas linhas estritamente vazias ou rótulos de sistema da planilha
-            if val0 == "" or "página" in val0.lower():
-                continue
+        if r:
+            # Recolher todas as linhas que contenham algum conteúdo válido
             rows.append(r)
             
     processed = []
@@ -46,6 +43,10 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
+        # Ignorar apenas se for o cabeçalho nominal explícito da planilha
+        if cnpj.lower() == "cnpj" or "razão social" in razao.lower() or "página" in cnpj.lower():
+            continue
+            
         maps_url = ""
         telefone = ""
         for item in r:
@@ -95,7 +96,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros com correspondência segura e flexível
+    # Aplicar Filtros com correspondência flexível e segura
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
