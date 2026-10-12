@@ -4,18 +4,76 @@ import requests
 import io
 import csv
 
-# Configuração da página
+# 1. Configuração da página e Layout Moderno
 st.set_page_config(
-    page_title="Painel de Prospecção & Inteligência Comercial",
+    page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-st.title("🚀 Central de Leads & Novas Empresas")
-st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
+# Estilização CSS personalizada para injetar o visual corporativo moderno
+st.markdown("""
+<style>
+    /* Estilo geral de fundo e fontes */
+    .stApp {
+        background-color: #f8fafc;
+    }
+    
+    /* Barra lateral escura */
+    [data-testid="stSidebar"] {
+        background-color: #1e293b;
+        color: #ffffff;
+    }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
+        color: #e2e8f0 !important;
+    }
 
-# Carregamento de dados com cache de alta performance
-@st.cache_data(ttl=300, show_spinner="A carregar base de dados de leads...")
+    /* Cartões de Métricas Estilizados */
+    div[data-testid="metric-container"] {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    div[data-testid="metric-container"] label {
+        color: #64748b !important;
+        font-weight: 600;
+    }
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
+        color: #0f172a !important;
+        font-size: 1.8rem !important;
+    }
+
+    /* Cabeçalho de banners e títulos */
+    .banner-box {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 28px 36px;
+        border-radius: 16px;
+        color: white;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .banner-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .banner-subtitle {
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    /* Ajuste de inputs e filtros */
+    .stSelectbox label, .stTextInput label {
+        font-weight: 600 !important;
+        color: #334155 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# 2. Carregamento de dados com cache de alta performance
+@st.cache_data(ttl=300, show_spinner="A carregar painel corporativo...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -39,7 +97,6 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
-        # Ignorar linha de cabeçalho nominal da planilha se existir
         if cnpj.lower() == "cnpj" or "razão social" in razao.lower():
             continue
             
@@ -66,7 +123,7 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização de status na sessão otimizada
+    # Sincronização de status na sessão
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -74,51 +131,83 @@ try:
 
     current_df = st.session_state.df_status
 
-    # 2. Barra Lateral - Filtros Dinâmicos
-    st.sidebar.header("🎯 Filtros de Prospecção")
+    # --- BARRA LATERAL ESTILO CORPORATIVO ---
+    with st.sidebar:
+        st.markdown("### 🚀 Central de Leads")
+        st.markdown("<p style='color: #94a3b8; font-size: 0.85rem;'>Painel de Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
+        st.divider()
+        
+        st.markdown("#### 🎯 Filtros de Prospecção")
+        
+        segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
+        seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
 
-    segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().unique().astype(str)))
-    seg_selecionado = st.sidebar.selectbox("Segmento / Nicho:", segmentos)
+        ufs = ["Todos"] + sorted(list(current_df["UF"].dropna().unique().astype(str)))
+        uf_selecionada = st.selectbox("Estado (UF):", ufs)
 
-    ufs = ["Todos"] + sorted(list(current_df["UF"].dropna().unique().astype(str)))
-    uf_selecionada = st.sidebar.selectbox("Estado (UF):", ufs)
+        if uf_selecionada != "Todos":
+            cidades = ["Todas"] + sorted(list(current_df[current_df["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]["Cidade"].dropna().unique().astype(str)))
+        else:
+            cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().unique().astype(str)))
+        cidade_selecionada = st.selectbox("Cidade:", cidades)
 
-    if uf_selecionada != "Todos":
-        cidades = ["Todas"] + sorted(list(current_df[current_df["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]["Cidade"].dropna().unique().astype(str)))
-    else:
-        cidades = ["Todas"] + sorted(list(current_df["Cidade"].dropna().unique().astype(str)))
-    cidade_selecionada = st.sidebar.selectbox("Cidade:", cidades)
+        status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
+        status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
+        
+        st.divider()
+        st.info("💡 **Dica:** Utilize os expanders na tabela principal para gerenciar cada lead individualmente.")
 
-    status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
-    status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
+    # --- BANNER PRINCIPAL DO TOPO ---
+    st.markdown("""
+        <div class="banner-box">
+            <div class="banner-title">🚀 Central de Leads & Novas Empresas</div>
+            <div class="banner-subtitle">Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # Aplicar Filtros de forma rápida e vetorizada
+    # --- APLICAR FILTROS ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas" and cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # Métricas
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total de Leads Exibidos", len(df_filtered))
-    col2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
-    col3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
-    col4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
+    # --- CARTÕES DE MÉTRICAS MODERNOS ---
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total de Leads Exibidos", len(df_filtered), "100% visível")
+    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]), "Aguardando contato")
+    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]), "Propostas prontas")
+    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]), "Conversões")
 
     st.divider()
+
+    # --- BARRA DE PESQUISA RÁPIDA DE EMPRESAS ---
+    col_search, col_export = st.columns([5, 1])
+    with col_search:
+        search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
+    with col_export:
+        csv_export = df_filtered.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Exportar CSV", data=csv_export, file_name="leads_prospeccao.csv", mime="text/csv", use_container_width=True)
+
+    if search_query:
+        query_lower = search_query.lower()
+        df_filtered = df_filtered[
+            df_filtered["Razao Social"].str.lower().str.contains(query_lower) |
+            df_filtered["CNPJ"].str.lower().str.contains(query_lower) |
+            df_filtered["Cidade"].str.lower().str.contains(query_lower)
+        ]
 
     st.subheader("📋 Lista de Empresas Extraídas")
 
     if df_filtered.empty:
-        st.info("Nenhum lead encontrado com os filtros selecionados. Tente redefinir os filtros na barra lateral.")
+        st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        # Cabeçalho da Tabela Estilo Planilha Corporativa
-        cols_header = st.columns([2.5, 1.4, 1.0, 0.5, 1.1, 1.2, 1.3])
+        # Cabeçalho da Tabela Estilo Corporativo Moderno
+        cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
         cols_header[1].markdown("**CNPJ**")
         cols_header[2].markdown("**Abertura**")
@@ -127,7 +216,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 2px 0px 8px 0px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 4px 0px 10px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
 
         for idx, row in df_filtered.iterrows():
             razao = row["Razao Social"]
@@ -140,6 +229,9 @@ try:
             tel = row["Telefone"]
             maps_link = row["Maps"]
             current_status = row["Status"]
+
+            # Cor do badge baseada no status
+            badge_color = "#f59e0b" if current_status == "Pendente" else ("#3b82f6" if current_status == "Em Análise" else "#10b981")
 
             with st.expander(f"🏢 **{razao}**  |  {cnpj}  |  {data_abert}  |  {uf}  |  {cidade}  |  `Status: {current_status}`"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
@@ -189,7 +281,7 @@ try:
                     if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada para {razao}!")
 
-            st.markdown("<hr style='margin: 1px 0px 4px 0px; border-color: #f0f2f6;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
