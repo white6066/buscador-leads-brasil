@@ -42,7 +42,7 @@ else:
     bg_sidebar = "#ffffff"
     text_color = "#0f172a"
     text_muted = "#475569"
-    border_color = "#cbd5e1"
+    border_color = "#e2e8f0"
     hr_color = "#cbd5e1"
     btn_bg = "#f1f5f9"
     btn_text = "#0f172a"
@@ -50,17 +50,15 @@ else:
     input_text = "#0f172a"
     header_bg = "#f8fafc"
 
-# Estilização CSS completa e rigorosa para toda a página e cabeçalho superior
+# Estilização CSS completa e rigorosa para toda a página
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
     
-    /* Forçar a parte superior / cabeçalho nativo do Streamlit a acompanhar o tema */
     header[data-testid="stHeader"] {{
         background-color: {header_bg} !important;
     }
     
-    /* Barra lateral */
     [data-testid="stSidebar"] {{ 
         background-color: {bg_sidebar}; 
         color: {text_color} !important; 
@@ -74,7 +72,6 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botão da barra lateral */
     [data-testid="stSidebar"] button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -88,7 +85,6 @@ st.markdown(f"""
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
 
-    /* Caixas de Texto / Pesquisa Rápida e Inputs */
     input[type="text"] {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
@@ -107,14 +103,12 @@ st.markdown(f"""
         border-color: {border_color} !important;
     }}
 
-    /* Cartões de Métricas */
     div[data-testid="metric-container"] {{
         background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.85rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.4rem !important; font-weight: 800 !important; }}
 
-    /* Banner Superior */
     .banner-box {{
         background-color: {bg_card}; padding: 20px 28px; border-radius: 14px; color: {text_color}; margin-bottom: 16px; border: 1px solid {border_color}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }}
