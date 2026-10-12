@@ -14,7 +14,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados robusto e limpo direto da planilha
+# Carregamento de dados 100% flexível e direto da planilha
 @st.cache_data(ttl=30)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -27,21 +27,25 @@ def load_data_from_sheet():
     reader = csv.reader(io.StringIO(response.text))
     rows = []
     for r in reader:
-        if r and len(r) >= 5:
+        if r:
             val0 = str(r[0]).strip().lower()
-            # Ignorar cabeçalho e títulos iniciais
-            if val0 == "" or "página" in val0 or "cnpj" in val0 or "razão" in val0:
+            # Ignorar cabeçalhos e linhas de título da planilha
+            if val0 == "" or "página" in val0 or "cnpj" in val0 or "razão" in val0 or "titulo" in val0:
                 continue
             rows.append(r)
             
     processed = []
     for r in rows:
-        cnpj = str(r[0]).strip() if len(r) > 0 else ""
-        razao = str(r[1]).strip() if len(r) > 1 else "Empresa"
-        data_abert = str(r[2]).strip() if len(r) > 2 else ""
-        segmento = str(r[3]).strip() if len(r) > 3 else "N/A"
-        uf = str(r[4]).strip().upper() if len(r) > 4 else "N/A"
-        cidade = str(r[5]).strip().upper() if len(r) > 5 else "N/A"
+        # Preenchimento dinâmico seguro para evitar erros de índice
+        while len(r) < 10:
+            r.append("")
+            
+        cnpj = str(r[0]).strip()
+        razao = str(r[1]).strip() if str(r[1]).strip() != "" else "Empresa"
+        data_abert = str(r[2]).strip()
+        segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
+        uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
+        cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
         maps_url = ""
         telefone = ""
@@ -56,7 +60,7 @@ def load_data_from_sheet():
                 break
                 
         addr_parts = [p.strip() for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
-        endereco = ", ".join(addr_parts) if addr_parts else (str(r[6]).strip() if len(r) > 6 else "")
+        endereco = ", ".join(addr_parts) if addr_parts else str(r[6]).strip()
         
         processed.append([cnpj, razao, data_abert, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
         
