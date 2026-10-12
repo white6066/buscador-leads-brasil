@@ -14,8 +14,8 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração diária de Landing Pages.")
 
-# Carregamento de dados robusto e direto
-@st.cache_data(ttl=15)
+# Carregamento de dados com cache de alta performance
+@st.cache_data(ttl=300, show_spinner="A carregar base de dados de leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -25,10 +25,7 @@ def load_data_from_sheet():
     response.raise_for_status()
     
     reader = csv.reader(io.StringIO(response.text))
-    rows = []
-    for r in reader:
-        if r:
-            rows.append(r)
+    rows = [r for r in reader if r]
             
     processed = []
     for r in rows:
@@ -42,7 +39,7 @@ def load_data_from_sheet():
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = str(r[5]).strip().upper() if str(r[5]).strip() != "" else "N/A"
         
-        # Ignorar apenas a linha de cabeçalho nominal se presente
+        # Ignorar linha de cabeçalho nominal da planilha se existir
         if cnpj.lower() == "cnpj" or "razão social" in razao.lower():
             continue
             
@@ -69,7 +66,7 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização de status na sessão mantendo estabilidade total
+    # Sincronização de status na sessão otimizada
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -95,7 +92,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros de forma segura (só filtra se explicitamente selecionado)
+    # Aplicar Filtros de forma rápida e vetorizada
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
