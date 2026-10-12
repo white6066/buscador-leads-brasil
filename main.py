@@ -24,7 +24,7 @@ NOME_PLANILHA = "Novas Empresas - Segmentos Alvo"
 spreadsheet = client.open(NOME_PLANILHA)
 sheet = spreadsheet.sheet1
 
-# Dicionário para traduzir o código do CNAE para a descrição amigável na planilha
+# Dicionário completo com os significados descritivos de todos os CNAEs alvo
 DICIONARIO_CNAES = {
     "8630504": "Atividade Odontológica",
     "8623300": "Atividade Médica Ambulatorial",
@@ -42,6 +42,11 @@ DICIONARIO_CNAES = {
     "8630501": "Atividade Médica com Cirurgia",
     "8690901": "Práticas Integrativas em Saúde",
     "8630502": "Atividade Médica com Exames",
+    "8690904": "Atividades de Podologia",
+    "9609299": "Outras Atividades de Serviços Pessoais",
+    "8650003": "Atividades de Psicologia e Psicanálise",
+    "8630503": "Atividade Médica Ambulatorial Restrita a Consultas",
+    "8650005": "Atividades de Terapia Ocupacional",
 }
 
 
@@ -51,7 +56,6 @@ def limpar_cnpj(cnpj):
 
 all_values = sheet.get_all_values()
 
-# Cabeçalho com a coluna "Segmento"
 cabecalhos_desejados = [
     "CNPJ",
     "Razão Social",
@@ -82,7 +86,6 @@ if novas_empresas:
     cnpj_limpo = limpar_cnpj(cnpj_raw)
 
     if cnpj_limpo and cnpj_limpo not in existing_cnpjs:
-      # Traduz o código CNAE para a descrição escrita
       cnae_codigo = str(emp.get("cnae", ""))
       segmento_descritivo = DICIONARIO_CNAES.get(cnae_codigo, cnae_codigo)
 
@@ -90,7 +93,7 @@ if novas_empresas:
           cnpj_raw,
           emp.get("razao_social", ""),
           emp.get("data_abertura", ""),
-          segmento_descritivo,  # Aqui já vai escrito o significado
+          segmento_descritivo,
           emp.get("uf", ""),
           emp.get("municipio", ""),
           emp.get("endereco", ""),
@@ -103,8 +106,8 @@ if novas_empresas:
   if linhas_para_adicionar:
     sheet.append_rows(linhas_para_adicionar)
     print(
-        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com o"
-        " segmento descritivo à planilha!"
+        f"Adicionadas {len(linhas_para_adicionar)} novas empresas com os"
+        " segmentos atualizados à planilha!"
     )
   else:
     print(
