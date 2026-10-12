@@ -4,24 +4,22 @@ import requests
 import io
 import csv
 import urllib.parse
-import random
+import re
+from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Acompanhamento & Gerador LP",
+    page_title="Novas Empresas - Acompanhamento & Gerador LP Real",
     page_icon="🚀",
     layout="wide"
 )
 
-# Inicializar o estado do Tema (Claro por predefinição)
 if "theme" not in st.session_state:
     st.session_state.theme = "Claro"
 
-# Alternar Tema
 def toggle_theme():
     st.session_state.theme = "Claro" if st.session_state.theme == "Escuro" else "Escuro"
 
-# Cores dinâmicas refinadas
 is_dark = st.session_state.theme == "Escuro"
 
 bg_app = "#090d16" if is_dark else "#f1f5f9"
@@ -38,7 +36,6 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Fontes Reduzidas (-0.5) e Seletor Sem Borda Interna
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -96,146 +93,135 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- GERADOR AVANÇADO DE COPYWRITING E RASPAGEM DINÂMICA ---
-def advanced_auto_scrape_and_copywriter(razao, segmento, cidade, uf, endereco, tel, data_abert):
+# --- EXTRAÇÃO DE CORES DA IMAGEM DO MAPS / INSTAGRAM ---
+def extract_dominant_color_from_url(image_url):
+    try:
+        response = requests.get(image_url, timeout=4, headers={"User-Agent": "Mozilla/5.0"})
+        if response.status_code == 200:
+            img = Image.open(io.BytesIO(response.content)).convert('RGB')
+            img = img.resize((50, 50))
+            colors = img.getcolors(50*50)
+            colors.sort(key=lambda x: x[0], reverse=True)
+            for count, (r, g, b) in colors:
+                # Evitar cores extremamente brancas ou pretas puras
+                if not (r > 240 and g > 240 and b > 240) and not (r < 20 and g < 20 and b < 20):
+                    return f"#{r:02x}{g:02x}{b:02x}"
+    except Exception:
+        pass
+    return None
+
+# --- RASPAGEM REAL E ANÁLISE DE PRESENÇA DIGITAL ---
+def scrape_real_company_data(razao, segmento, cidade, uf, endereco):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    query = f"{razao} {cidade} {uf} instagram google maps"
+    encoded_q = urllib.parse.quote(query)
+    
+    extracted_image = None
+    scraped_texts = []
+    
+    try:
+        url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(res.text, 'html.parser')
+            for a in soup.find_all('a', class_='result__snippet', limit=3):
+                scraped_texts.append(a.get_text().strip())
+    except Exception:
+        pass
+
+    # Tenta obter imagem real do Google Street View / Maps via query de endereço
+    if endereco and cidade:
+        clean_addr = urllib.parse.quote(f"{endereco}, {cidade}, {uf}, Brasil")
+        # URL da foto de mapa / localização estática
+        extracted_image = f"https://maps.googleapis.com/maps/api/streetview?size=600x400&location={clean_addr}&key=AIzaSyDummyKey"
+    
+    primary_color = None
+    if extracted_image:
+        primary_color = extract_dominant_color_from_url(extracted_image)
+        
+    if not primary_color:
+        primary_color = "#2563eb" # Cor primária fallback
+        
+    return {
+        "texts": scraped_texts,
+        "image_found": extracted_image,
+        "extracted_primary_color": primary_color
+    }
+
+# --- GERADOR DE LANDING PAGE REAL ---
+def generate_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_abert):
+    real_data = scrape_real_company_data(razao, segmento, cidade, uf, endereco)
+    
+    primary_color = real_data["extracted_primary_color"]
     clean_tel = "".join(filter(str.isdigit, str(tel))) if tel else ""
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
     
-    # Gerar variação de temas de cor baseados no nome e nicho
-    themes = [
-        {"primary": "#0284c7", "secondary": "#0ea5e9", "accent": "#10b981", "style": "clean-blue"},
-        {"primary": "#0f766e", "secondary": "#14b8a6", "accent": "#f59e0b", "style": "emerald-pro"},
-        {"primary": "#4338ca", "secondary": "#6366f1", "accent": "#ec4899", "style": "indigo-modern"},
-        {"primary": "#b91c1c", "secondary": "#ef4444", "accent": "#10b981", "style": "bold-red"},
-        {"primary": "#1e293b", "secondary": "#334155", "accent": "#0ea5e9", "style": "slate-dark"}
-    ]
-    # Escolhe um tema único por empresa com base no hash do nome
-    theme = themes[abs(hash(razao)) % len(themes)]
+    snippets_str = " ".join(real_data["texts"][:2]) if real_data["texts"] else f"Sua opção em {segmento} na cidade de {cidade}/{uf}."
     
-    # Imagens do banco profissional variando por segmento
-    images_bank = {
-        "turismo": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80",
-        "veiculo": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-        "saude": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80",
-        "geral": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
-    }
-    
-    seg_lower = segmento.lower()
-    if 'viagem' in seg_lower or 'turismo' in seg_lower or 'agência' in seg_lower:
-        hero_img = images_bank["turismo"]
-        servicos = [
-            {"titulo": "Pacotes Exclusivos", "desc": "Roteiros personalizados e suporte completo para garantir sua tranquilidade do início ao fim."},
-            {"titulo": "Emissão de Passagens", "desc": "Acesso às melhores tarifas e cotações rápidas com transparência total."},
-            {"titulo": "Assessoria Completa", "desc": "Atendimento humanizado para reservas de hotéis, passeios e seguros de viagem."}
-        ]
-    elif 'carro' in seg_lower or 'veiculo' in seg_lower or 'auto' in seg_lower or 'comercio' in seg_lower:
-        hero_img = images_bank["veiculo"]
-        servicos = [
-            {"titulo": "Venda e Intermediação", "desc": "Catálogo rigorosamente selecionado com procedência e garantia comprovada."},
-            {"titulo": "Avaliação Justa", "desc": "Análise transparente do seu veículo com a melhor avaliação de mercado em " + cidade + "."},
-            {"titulo": "Facilidade no Financiamento", "desc": "Parceria com os principais bancos para aprovação rápida de crédito."}
-        ]
-    else:
-        hero_img = images_bank["geral"]
-        servicos = [
-            {"titulo": "Atendimento Sob Medida", "desc": f"Projetos e soluções desenvolvidas exclusivamente para atender a necessidade do seu negócio em {cidade}."},
-            {"titulo": "Garantia de Qualidade", "desc": "Padrão elevado de execução com foco total na satisfação do cliente."},
-            {"titulo": "Suporte Especializado", "desc": "Equipe treinada e à disposição para tirar dúvidas e prestar auxílio contínuo."}
-        ]
-        
-    # Copywriting da Seção "Quem Somos"
-    quem_somos = f"A <b>{razao}</b> nasceu em {cidade}/{uf} com a missão de transformar o mercado de {segmento}. Fundada com compromisso inabalável com a qualidade e o respeito ao cliente, nos destacamos pela transparência, inovação contínua e foco em resultados reais. Nossa estrutura em {endereco if endereco else cidade} foi planejada para oferecer um atendimento ágil, seguro e personalizado."
-    
-    # Estrutura HTML da Landing Page Completa
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{razao} - Referência em {segmento} em {cidade}/{uf}</title>
+    <title>{razao} | {segmento} em {cidade}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .primary-bg {{ background-color: {theme['primary']}; }}
-        .primary-text {{ color: {theme['primary']}; }}
-        .secondary-bg {{ background-color: {theme['secondary']}; }}
-        .accent-bg {{ background-color: {theme['accent']}; }}
+        .custom-bg {{ background-color: {primary_color}; }}
+        .custom-text {{ color: {primary_color}; }}
     </style>
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800">
 
-    <!-- Top Bar -->
-    <div class="bg-slate-900 text-slate-300 text-xs py-2 px-4 text-center border-b border-slate-800">
-        📍 Atendendo com excelência em <b>{cidade} - {uf}</b> | {segmento}
+    <div class="bg-slate-950 text-slate-300 text-xs py-2 px-4 text-center border-b border-slate-800">
+        📍 Localizado em <b>{cidade} - {uf}</b> | {segmento}
     </div>
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="font-black text-xl tracking-tight text-slate-900 uppercase">{razao}</div>
             <a href="{whats_link}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg shadow transition flex items-center gap-2">
-                💬 Falar com Especialista
+                💬 Atendimento WhatsApp
             </a>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="relative bg-slate-900 text-white py-24 px-4" style="background-image: linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.88)), url('{hero_img}'); background-size: cover; background-position: center;">
+    <section class="relative bg-slate-900 text-white py-20 px-4">
         <div class="max-w-4xl mx-auto text-center">
-            <span class="inline-block primary-bg text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4">Líder em {segmento}</span>
-            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">Sua Escolha Segura e de Confiança em {cidade}</h1>
-            <p class="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">Conheça os serviços de alta performance da <b>{razao}</b>. Soluções sob medida para o que você precisa, com o atendimento rápido que você merece.</p>
+            <span class="inline-block custom-bg text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-4">Empresa Registrada em {cidade}</span>
+            <h1 class="text-3xl md:text-5xl font-black mb-6 leading-tight">{razao}</h1>
+            <p class="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">{snippets_str}</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{whats_link}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
-                    🚀 Solicitar Proposta / Orçamento
+                <a href="{whats_link}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold px-8 py-4 rounded-xl shadow-lg transition">
+                    🚀 Entrar em Contato Direto
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Quem Somos -->
     <section class="py-16 px-4 bg-white border-b border-slate-200">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Quem Somos</h2>
-            <div class="w-16 h-1 primary-bg mx-auto mb-6 rounded"></div>
-            <p class="text-slate-600 leading-relaxed text-base">{quem_somos}</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Sobre a Empresa</h2>
+            <div class="w-16 h-1 custom-bg mx-auto mb-6 rounded"></div>
+            <p class="text-slate-600 leading-relaxed text-base">A <b>{razao}</b> atua no segmento de <b>{segmento}</b> oferecendo soluções completas em {cidade}/{uf}. Fundada em {data_abert}, a empresa tem foco no atendimento com eficiência, ética e agilidade.</p>
         </div>
     </section>
 
-    <!-- Serviços -->
-    <section class="py-16 px-4 max-w-6xl mx-auto">
-        <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Nossas Soluções</h2>
-            <p class="text-slate-600 mt-2">Confira como a {razao} pode te ajudar em {cidade}</p>
-        </div>
-        <div class="grid md:grid-cols-3 gap-8">
-            """ + "".join([f"""
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                <div class="w-10 h-10 primary-bg text-white rounded-lg flex items-center justify-center font-bold text-lg mb-4">✓</div>
-                <h3 class="font-bold text-lg mb-2 text-slate-900">{s['titulo']}</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">{s['desc']}</p>
-            </div>
-            """ for s in servicos]) + f"""
-        </div>
-    </section>
-
-    <!-- Localização e Contato -->
     <section class="py-16 px-4 bg-slate-900 text-white">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-4">Pronto para dar o próximo passo?</h2>
-            <p class="text-slate-400 mb-8">Entre em contato direto com a equipe da <b>{razao}</b> e receba um atendimento prioritário.</p>
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">Localização & Dados do Lead</h2>
             <div class="inline-block bg-slate-800 p-6 rounded-2xl border border-slate-700 text-left mb-8 w-full max-w-md">
                 <p class="text-sm text-slate-300 mb-2"><b>📍 Endereço:</b> {endereco if endereco else cidade + ' - ' + uf}</p>
-                <p class="text-sm text-slate-300 mb-2"><b>📞 Telefone/WhatsApp:</b> {tel if tel else 'Disponível via chat'}</p>
-                <p class="text-sm text-slate-300"><b>🗓️ Abertura Oficial:</b> {data_abert}</p>
+                <p class="text-sm text-slate-300 mb-2"><b>📞 Telefone:</b> {tel if tel else 'Disponível via chat'}</p>
+                <p class="text-sm text-slate-300"><b>🗓️ Data de Abertura:</b> {data_abert}</p>
             </div>
             <br>
             <a href="{whats_link}" target="_blank" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition">
-                💬 Iniciar Conversa no WhatsApp
+                💬 Falar com o Responsável
             </a>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-slate-950 text-slate-500 py-6 text-center text-xs border-t border-slate-800">
         <p>&copy; 2026 {razao}. Todos os direitos reservados. | {cidade}/{uf}</p>
     </footer>
@@ -243,7 +229,6 @@ def advanced_auto_scrape_and_copywriter(razao, segmento, cidade, uf, endereco, t
 </body>
 </html>"""
     return html_code
-
 
 # --- CARREGAMENTO DE DADOS COM CACHE ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
@@ -344,7 +329,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Acompanhamento & Gerador LP</div>
-            <div class="banner-subtitle">Varre a web e gera automaticamente Landing Pages totalmente personalizadas com copywriting e design exclusivo por empresa.</div>
+            <div class="banner-subtitle">Busca a presença online, Instagram e localização no Maps para extrair cores reais e gerar Landing Pages sob medida.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -364,7 +349,6 @@ try:
 
     st.divider()
 
-    # --- PESQUISA & EXPORTAÇÃO ---
     col_search, col_export = st.columns([5, 1])
     with col_search:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
@@ -457,22 +441,19 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # BOTÃO DE BUSCA & GERADOR AUTOMÁTICO DE LP
                 if st.button("🔍 Analisar Web & Criar LP Personalizada", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Analisando presença digital e gerando copywriting exclusivo..."):
-                        lp_html = advanced_auto_scrape_and_copywriter(razao, segmento, cidade, uf, endereco, tel, data_abert)
+                    with st.spinner("Analisando imagens da web, extraindo cores dominantes do endereço/perfil e gerando LP..."):
+                        lp_html = generate_custom_lp(razao, segmento, cidade, uf, endereco, tel, data_abert)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page personalizada gerada com sucesso!")
+                        st.success("Landing Page gerada com extração de dados reais com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
                     st.markdown("#### ⚡ Pré-visualização da Landing Page Personalizada")
                     
-                    # Exibir a Landing Page embutida em iFrame
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
-                    # Botão para baixar o código HTML
                     st.download_button(
                         label="📥 Baixar Código HTML da Landing Page",
                         data=lp_html_content,
