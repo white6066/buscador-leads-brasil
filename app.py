@@ -212,7 +212,7 @@ def advanced_branding_search(razao, cnpj, cidade, uf, segmento):
         "images": found_images
     }
 
-# --- SELEÇÃO DE IMAGENS REALISTAS E SÍMBOLOS DO RAMO (POR ÚLTIMO) ---
+# --- SELEÇÃO DE IMAGENS REALISTAS (POR ÚLTIMO) ---
 def get_realistic_niche_image(display_name, segmento, osint_images):
     if osint_images and len(osint_images) > 0:
         return osint_images[0]
@@ -233,19 +233,18 @@ def get_realistic_niche_image(display_name, segmento, osint_images):
     else:
         return f"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85&sig={seed}"
 
-# --- GERAÇÃO DA LANDING PAGE COM PADRÃO PREMIUM E HARMONIOSO ---
+# --- GERAÇÃO DA LANDING PAGE PREMIUM E ABRANGENTE ---
 def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
-    # 1. Varredura feita primeiro
+    # 1. Varredura executada primeiro
     osint = advanced_branding_search(razao, cnpj, cidade, uf, segmento)
     
-    # 2. Paleta de cores refinada (Gera tons corporativos sóbrios e harmoniosos baseados na marca)
+    # 2. Paleta de cores refinada
     primary_color = None
     if osint["logo"]:
         primary_color = extract_colors_from_logo(osint["logo"])
     
     if not primary_color:
         h = hashlib.md5((razao + cnpj).encode()).hexdigest()
-        # Tons modernos (ex: Verde floresta profundo / Azul executivo / Grafite nobre)
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#113f48", "#2c3e50"]
         primary_color = palettes[int(h, 16) % len(palettes)]
 
@@ -256,9 +255,12 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     whats_link = f"https://wa.me/55{clean_tel}" if clean_tel else "#"
 
     display_name = osint["fantasia"]
+    custom_slogan = osint["slogan"] if osint["slogan"] else f"Compromisso, dedicação e excelência em {segmento} para nossos clientes e parceiros."
 
-    # Slogan inteligente ou frase de efeito corporativa
-    custom_slogan = osint["slogan"] if osint["slogan"] else f"Compromisso, responsabilidade e atenção em cada contato com nossos clientes e parceiros em {cidade}."
+    # Link dinâmico do Google Maps baseado no endereço e cidade
+    full_address = endereco if endereco else f"{cidade} - {uf}"
+    maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
+    maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
 
     # Links Sociais & Site Oficial
     social_links_html = ""
@@ -270,7 +272,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="text-emerald-700 underline font-semibold">{osint["site"]}</a></p>'
 
-    # 3. Imagem realista de altíssima qualidade gerada estritamente por último
+    # 3. Imagem realista gerada estritamente por último
     img_feature = get_realistic_niche_image(display_name, segmento, osint["images"])
 
     html_code = f"""<!DOCTYPE html>
@@ -278,7 +280,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{display_name} | {cidade} – {uf}</title>
+    <title>{display_name} | {segmento}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -295,12 +297,12 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
 </head>
 <body class="bg-[#f7f9f7] antialiased">
 
-    <!-- Top Notice Bar -->
+    <!-- Top Notice Bar Abrangente -->
     <div class="brand-bg text-white text-xs py-2.5 px-4 text-center font-semibold tracking-wide">
-        📍 {cidade} · {uf} | Atendimento Especializado em {segmento}
+        ✨ Soluções Profissionais em {segmento} · {cidade} / {uf}
     </div>
 
-    <!-- Header Harmonioso e Profissional -->
+    <!-- Header Harmonioso -->
     <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
             <a href="#inicio" class="flex items-center gap-3 rounded-lg focus:outline-none">
@@ -309,7 +311,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 </span>
                 <span>
                     <span class="block display text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
-                    <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Atendimento em {cidade} · {uf}</span>
+                    <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Excelência e Qualidade</span>
                 </span>
             </a>
             <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
@@ -328,7 +330,7 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 <div class="max-w-2xl">
                     <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-white/90">
                         <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
-                        PRESENÇA LOCAL · {cidade}, {uf}
+                        REFERÊNCIA EM {segmento.upper()}
                     </div>
                     <h1 class="display text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
                     <p class="mt-6 text-base leading-8 text-white/80 sm:text-lg">"{custom_slogan}"</p>
@@ -354,17 +356,17 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                     <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
                         <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">✓</div>
                         <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento atencioso</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Escuta e comunicação objetiva para entender sua solicitação e orientar os próximos passos em {cidade}.</p>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Escuta e comunicação objetiva para entender sua solicitação e orientar os próximos passos com total dedicação.</p>
                     </article>
                     <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
                         <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">⚡</div>
                         <h3 class="display mt-5 text-lg font-bold text-slate-900">Comunicação direta</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Um canal de contato simples para tirar dúvidas e solicitar informações sem complicação.</p>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Um canal de contato simples para tirar dúvidas e solicitar informações sem complicação, ágil e eficiente.</p>
                     </article>
                     <article class="lift rounded-2xl border border-slate-200/80 bg-[#fbfcfb] p-7 shadow-sm">
                         <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold text-xl">🛡️</div>
                         <h3 class="display mt-5 text-lg font-bold text-slate-900">Responsabilidade</h3>
-                        <p class="mt-2 text-sm leading-6 text-slate-600">Compromisso com informações claras e uma relação profissional transparente em cada etapa.</p>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Compromisso com informações claras e uma relação profissional transparente em cada etapa de atuação.</p>
                     </article>
                 </div>
             </div>
@@ -376,21 +378,21 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                 <div class="relative">
                     <img src="{img_feature}" alt="Estrutura Profissional" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
                     <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Atuação local</p>
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Localização</p>
                         <p class="display mt-1 font-extrabold brand-text">{cidade} · {uf}</p>
                     </div>
                 </div>
                 <div class="pt-4 lg:pt-0">
                     <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Sobre a empresa</p>
                     <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Conheça a {display_name}.</h2>
-                    <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura em <i>{endereco if endereco else cidade + ' - ' + uf}</i> foi planejada para oferecer excelência e suporte completo.</p>
+                    <p class="mt-5 leading-8 text-slate-600">Constituída oficialmente em <b>{data_abert}</b>, a <b>{display_name}</b> (Razão Social: <i>{razao}</i>) destaca-se no segmento de <b>{segmento}</b>. Nossa estrutura foi planejada para oferecer excelência, agilidade e suporte completo aos nossos parceiros.</p>
                     <p class="mt-4 leading-8 text-slate-600">Para confirmar disponibilidade ou esclarecer dúvidas, fale diretamente com a equipe pelos nossos canais de atendimento.</p>
                     {f'<a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex items-center gap-2 rounded-xl brand-bg px-6 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow">Conversar pelo WhatsApp ↗</a>' if clean_tel else ''}
                 </div>
             </div>
         </section>
 
-        <!-- Seção de Contato Harmoniosa -->
+        <!-- Seção de Contato com Endereço Clicável para o Google Maps -->
         <section id="contato" class="bg-[#eaf0eb] py-16 sm:py-20">
             <div class="mx-auto max-w-7xl px-5 lg:px-8">
                 <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
@@ -406,7 +408,13 @@ def generate_perfect_landing_page(razao, segmento, cidade, uf, endereco, tel_pla
                             <div class="mt-6 space-y-5">
                                 <div class="flex gap-4">
                                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📍</span>
-                                    <div><p class="text-sm font-bold text-slate-900">Endereço</p><p class="mt-1 text-sm leading-6 text-slate-600">{endereco if endereco else cidade + ' - ' + uf}</p></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900">Endereço</p>
+                                        <p class="mt-1 text-sm leading-6 text-slate-600">{full_address}</p>
+                                        <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold brand-text hover:underline">
+                                            Ver localização no Google Maps ↗
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="flex gap-4">
                                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 brand-text font-bold">📞</span>
@@ -539,7 +547,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP Premium & Harmonioso</div>
-            <div class="banner-subtitle">Landing pages modernas, com fontes DM Sans/Manrope, nomes fantasia destacados, slogans corporativos e imagens realistas por último.</div>
+            <div class="banner-subtitle">Landing pages modernas, textos abrangentes, endereço interativo com link direto para o Google Maps e imagens realistas por último.</div>
         </div>
     """, unsafe_allow_html=True)
 
