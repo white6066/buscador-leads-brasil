@@ -17,9 +17,9 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Instalar dependências
+      - - name: Instalar dependências
         run: |
-          pip install requests gspread google-auth
+          pip install requests gspread google-auth aiohttp
 
       - name: Rodar Automação
         env:
