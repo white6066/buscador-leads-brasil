@@ -11,12 +11,12 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados da planilha pública
+# 1. Carregamento de dados da planilha via link público do Google Sheets (gviz)
 @st.cache_data(ttl=300)
 def load_data():
     sheet_id = "11FwBk_p5VK7OxR8LiPeTFZ_HuX1opMrZrX2fCxcX8pQ"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
-    df = pd.read_csv(url, encoding='utf-8')
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv"
+    df = pd.read_csv(url)
     if "Status" not in df.columns:
         df["Status"] = "Pendente"
     df["Status"] = df["Status"].fillna("Pendente")
