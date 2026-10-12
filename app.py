@@ -24,6 +24,7 @@ def toggle_theme():
 
 is_dark = st.session_state.theme == "Escuro"
 
+# Cores refinadas para perfeito contraste em ambos os temas
 bg_app = "#090d16" if is_dark else "#f1f5f9"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
@@ -31,12 +32,12 @@ text_muted = "#9ca3af" if is_dark else "#64748b"
 border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
-btn_text = "#f3f4f6" if is_dark else "#f3f4f6"
-input_bg = "#111827" if is_dark else "#ffffff"
+btn_text = "#f3f4f6" if is_dark else "#0f172a"
+input_bg = "#1f2937" if is_dark else "#ffffff"
 input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
-dropdown_text = "#f3f4f6" if is_dark else "#f3f4f6"
+dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
 st.markdown(f"""
 <style>
@@ -71,12 +72,17 @@ st.markdown(f"""
     a {{ text-decoration: none !important; }}
 
     input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
-    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
+    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
+    div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
     
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
+    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
+    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
+
     div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
     div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
@@ -626,9 +632,9 @@ try:
     """, unsafe_allow_html=True)
 
     df_filtered = current_df.copy()
-    if filtro_data_inicio:
+    if filtro_data_inicio and "DataAberturaParsed" in df_filtered.columns:
         df_filtered = df_filtered[df_filtered["DataAberturaParsed"] >= filtro_data_inicio.strftime("%Y-%m-%d")]
-    if filtro_data_fim:
+    if filtro_data_fim and "DataAberturaParsed" in df_filtered.columns:
         df_filtered = df_filtered[df_filtered["DataAberturaParsed"] <= filtro_data_fim.strftime("%Y-%m-%d")]
 
     if seg_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
@@ -648,7 +654,8 @@ try:
     with col_search:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
     with col_export:
-        csv_export = df_filtered.drop(columns=["DataAberturaParsed"]).to_csv(index=False).encode('utf-8')
+        cols_to_export = [c for c in df_filtered.columns if c != "DataAberturaParsed"]
+        csv_export = df_filtered[cols_to_export].to_csv(index=False).encode('utf-8')
         st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv")
 
     if search_query:
