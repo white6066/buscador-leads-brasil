@@ -206,7 +206,7 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Principal em colunas alinhadas com os 4 ícones solicitados: WhatsApp, Maps, Pesquisa, Instagram
+            # Linha Principal em colunas alinhadas com os 4 ícones exatos: WhatsApp, Google Maps, Pesquisa, Instagram
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             
             with r_cols[0]:
@@ -242,7 +242,7 @@ try:
                 # 4. Instagram
                 action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 
-                st.markdown(" ".join(action_str))
+                st.markdown("  ".join(action_str))
             with r_cols[6]:
                 st.markdown(f"🟢 `{current_status}`")
 
