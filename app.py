@@ -39,7 +39,7 @@ expander_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_bg = "#1e293b" if is_dark else "#ffffff"
 dropdown_text = "#f8fafc" if is_dark else "#0f172a"
 
-# Estilização CSS completa (incluindo remoção do sublinhado azul dos links)
+# Estilização CSS completa
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -59,20 +59,19 @@ st.markdown(f"""
     [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
     
     /* Botões gerais e barra lateral */
-    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button {{
+    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
     }}
-    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover {{
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover {{
         border-color: #38bdf8 !important;
         color: #38bdf8 !important;
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
 
-    /* Remover sublinhado azul de todos os links de ações rápidas */
     a, a:hover, a:focus, a:active {{
         text-decoration: none !important;
     }}
@@ -101,7 +100,6 @@ st.markdown(f"""
         color: {input_text} !important;
     }}
     
-    /* Lista de opções flutuante dos Selectboxes */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
@@ -223,7 +221,11 @@ try:
 
     current_df = st.session_state.df_status
 
-    # --- BARRA LATERAL (Filtros totalmente independentes e combináveis) ---
+    # Inicializar número da página no session_state se não existir
+    if "page_num" not in st.session_state:
+        st.session_state.page_num = 1
+
+    # --- BARRA LATERAL (Filtros Independentes) ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
@@ -260,7 +262,7 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- APLICAR FILTRAGEM COMBINADA LIVRE ---
+    # --- APLICAR FILTRAGEM COMBINADA ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
@@ -304,6 +306,10 @@ try:
         items_per_page = 25
         total_items = len(df_filtered)
         total_pages = max(1, (total_items - 1) // items_per_page + 1)
+        
+        # Garantir que a página atual não ultrapasse o total
+        if st.session_state.page_num > total_pages:
+            st.session_state.page_num = total_pages
 
         cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
@@ -316,7 +322,7 @@ try:
         
         st.markdown(f"<hr style='margin: 2px 0px 6px 0px; border-color: {hr_color};'>", unsafe_allow_html=True)
 
-        start_idx = (st.session_state.get('page_num', 1) - 1) * items_per_page
+        start_idx = (st.session_state.page_num - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
         end_idx = start_idx + items_per_page
         df_paginated = df_filtered.iloc[start_idx:end_idx]
@@ -389,11 +395,30 @@ try:
 
             st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
-        # --- SELETOR DE PÁGINA NO FUNDO DA TABELA ---
+        # --- PAGINAÇÃO COMPACTA COM BOTÕES ---
         st.divider()
-        col_p1, col_p2, col_p3 = st.columns([3, 2, 3])
-        with col_p2:
-            current_page = st.number_input(f"📄 Página (Total: {total_pages})", min_value=1, max_value=total_pages, value=min(st.session_state.get('page_num', 1), total_pages), step=1, key="page_num")
+        p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
+        
+        with p_col1:
+            if st.button("⏮️ Início", use_container_width=True):
+                st.session_state.page_num = 1
+                st.rerun()
+        with p_col2:
+            if st.button("◀️", use_container_width=True):
+                if st.session_state.page_num > 1:
+                    st.session_state.page_num -= 1
+                    st.rerun()
+        with p_col3:
+            st.markdown(f"<div style='text-align: center; padding-top: 6px; font-weight: 700;'>Página {st.session_state.page_num} de {total_pages}</div>", unsafe_allow_html=True)
+        with p_col4:
+            if st.button("▶️", use_container_width=True):
+                if st.session_state.page_num < total_pages:
+                    st.session_state.page_num += 1
+                    st.rerun()
+        with p_col5:
+            if st.button("Fim ⏭️", use_container_width=True):
+                st.session_state.page_num = total_pages
+                st.rerun()
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
