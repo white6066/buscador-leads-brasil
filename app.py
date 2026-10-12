@@ -39,7 +39,7 @@ expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS Moderna com Selectbox Unificado e Sem Borda Interna
+# Estilização CSS Moderna com Botão de Análise de LP
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -128,7 +128,6 @@ st.markdown(f"""
         color: {input_text} !important;
         font-size: 0.9rem !important;
     }}
-    /* Remover bordas ou divisões internas do botão da seta */
     div[data-baseweb="select"] div[role="button"] {{
         border-left: none !important;
         box-shadow: none !important;
@@ -457,8 +456,33 @@ try:
                     if novo_status != current_status:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
-                    if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
-                        st.success(f"LP gerada!")
+                
+                st.markdown("<hr style='margin: 8px 0px 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
+                
+                # Botão de Analisar & Criar Amostra LP
+                col_btn1, col_btn2 = st.columns([1.5, 3.5])
+                with col_btn1:
+                    analisar_clicked = st.button("🔍 Analisar & Criar Amostra LP", key=f"btn_analisar_{idx}")
+                
+                if analisar_clicked:
+                    st.session_state[f"show_analysis_{idx}"] = True
+
+                if st.session_state.get(f"show_analysis_{idx}", False):
+                    st.markdown(f"""
+                        <div style="background-color: {bg_card}; padding: 16px; border-radius: 8px; border: 1px solid {border_color}; margin-top: 10px;">
+                            <h4 style="margin-bottom: 8px; color: #0ea5e9;">📊 Relatório de Inteligência & Amostra LP: {razao}</h4>
+                            <p><b>Localização:</b> {cidade} - {uf} | {endereco if endereco else 'Endereço Comercial'}</p>
+                            <p><b>Segmento:</b> {segmento}</p>
+                            <hr style="border-color: {border_color}; margin: 8px 0px;">
+                            <p><b>🔗 Links de Pesquisa de Identidade Visual e Fotos:</b></p>
+                            <ul>
+                                <li><a href="https://www.google.com/search?q={nome_busca}+{cidade_busca}&tbm=isch" target="_blank">🔍 Buscar Fotos e Logotipo no Google Imagens</a></li>
+                                <li><a href="https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca}" target="_blank">📸 Identificar Perfil e Cores no Instagram</a></li>
+                                <li><a href="https://www.google.com/search?q={nome_busca}+{cidade_busca}+servicos" target="_blank">💼 Levantar Principais Serviços Oferecidos</a></li>
+                            </ul>
+                            <p style="margin-top: 10px; font-size: 0.85rem; color: {text_muted};">💡 <i>Dica: Utilize as fotos e cores identificadas para gerar o rascunho da Landing Page e enviar o link de amostra via WhatsApp ao cliente.</i></p>
+                        </div>
+                    """, unsafe_allow_html=True)
 
             st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
 
