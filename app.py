@@ -337,7 +337,6 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         if any(w in inst_l for w in ['2', 'inferior', 'segunda', 'sobre']):
             img2_inst = inst
 
-    # Se apenas uma instrução foi dada sem especificar o número, aplica na imagem 1 por padrão se estiver vazia
     if not img1_inst and instructions_list:
         img1_inst = instructions_list[-1]
     if not img2_inst and len(instructions_list) > 1:
@@ -377,15 +376,10 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     full_address = formatted_address if formatted_address else f"{cidade} - {uf}"
     maps_query = urllib.parse.quote(f"{display_name}, {full_address}")
     maps_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
+    embed_maps_url = f"https://maps.google.com/maps?q={maps_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
 
-    social_links_html = ""
-    if osint["instagram"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2"><b>📸 Instagram:</b> <a href="{osint["instagram"]}" target="_blank" class="brand-text underline font-semibold">Aceder ao Perfil</a></p>'
-    else:
-        social_links_html += f'<p class="text-sm text-slate-500 flex items-center gap-2 italic"><b>📸 Instagram:</b> <span class="text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Não informado</span></p>'
-
-    if osint["site"]:
-        social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
+    active_email = osint["email"] if osint["email"] else f"contato@{str(display_name).lower().replace(' ', '')}.com.br"
+    active_instagram = osint["instagram"] if osint["instagram"] else f"https://instagram.com/{str(display_name).lower().replace(' ', '')}"
 
     img_feature_1 = generate_superior_ai_image(segmento, razao, img1_inst, seed_offset_1)
     img_feature_2 = generate_superior_ai_image(segmento, razao, img2_inst if img2_inst else img1_inst, seed_offset_2)
@@ -531,46 +525,70 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
-          <div class="grid lg:grid-cols-[.85fr_1.15fr]">
-            <div class="brand-bg p-8 text-white sm:p-10 lg:p-12">
-              <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>
-              <h2 class="display mt-3 text-3xl font-extrabold leading-tight">Estamos à sua disposição.</h2>
-              <p class="mt-4 leading-7 text-white/85">Entre em contato instantaneamente através do nosso canal oficial de atendimento.</p>
+          <div class="grid lg:grid-cols-2">
+            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO -->
+            <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
+              <div>
+                <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-400">Canais de Atendimento</p>
+                <h2 class="display mt-2 text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
+                <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+              </div>
+              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
+                <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+              </div>
+              <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
+                <span>📍 {full_address}</span>
+                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="brand-text font-bold hover:underline text-emerald-400">Ampliar no Maps ↗</a>
+              </div>
             </div>
-            <div class="p-8 sm:p-10 lg:p-12">
-              <h3 class="display text-xl font-extrabold text-slate-900">Informações Cadastrais & Contato</h3>
-              <div class="mt-6 space-y-6">
-                <div class="flex gap-4">
-                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📍</span>
-                  <div>
-                    <p class="text-sm font-bold text-slate-900">Localização</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-600">{full_address}</p>
-                    <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold brand-text hover:underline">
-                      Ver no Google Maps ↗
+
+            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO -->
+            <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
+              <div>
+                <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
+                <p class="mt-1 text-sm text-slate-500">Fale diretamente com nossa equipe por nossos canais oficiais:</p>
+                
+                <div class="mt-6 space-y-5">
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold">💬</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
+                      <p class="text-sm font-bold text-slate-900">{display_phone_text}</p>
+                    </div>
+                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg brand-bg px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
+                      <span>Conversar ↗</span>
+                    </a>
+                  </div>
+
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 font-bold">📧</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
+                      <p class="text-sm font-bold text-slate-900 truncate">{active_email}</p>
+                    </div>
+                    <a href="mailto:{active_email}" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                      <span>Enviar ↗</span>
+                    </a>
+                  </div>
+
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pink-100 text-pink-700 font-bold">📸</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
+                      <p class="text-sm font-bold text-slate-900 truncate">{active_instagram}</p>
+                    </div>
+                    <a href="{active_instagram}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                      <span>Aceder ↗</span>
                     </a>
                   </div>
                 </div>
-                <div class="flex gap-4 items-center">
-                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">📞</span>
-                  <div>
-                    <p class="text-sm font-bold text-slate-900">Telefone / WhatsApp</p>
-                    <div class="mt-1.5 flex flex-wrap items-center gap-3">
-                      <span class="text-sm font-bold text-slate-800">{display_phone_text}</span>
-                      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg brand-bg px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
-                        <span>Clique aqui para iniciar contato ↗</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex gap-4">
-                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold">🏛️</span>
-                  <div>
-                    <p class="text-sm font-bold text-slate-900">Dados Oficiais</p>
-                    <p class="mt-1 text-sm text-slate-600">Razão Social: {razao}</p>
-                    <p class="text-xs text-slate-500 mt-0.5">CNPJ: {formatted_cnpj} ({color_rationale})</p>
-                    <div class="mt-2">{social_links_html}</div>
-                  </div>
-                </div>
+              </div>
+
+              <!-- ENDEREÇO POR ESCRITO ABAIXO -->
+              <div class="mt-8 pt-6 border-t border-slate-100">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Endereço Oficial da Sede</p>
+                <p class="mt-1 text-sm font-medium text-slate-700 leading-relaxed">{full_address}</p>
+                <p class="mt-1 text-xs text-slate-500">Razão Social: {razao} · CNPJ: {formatted_cnpj}</p>
               </div>
             </div>
           </div>
@@ -908,7 +926,6 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                            # Verifica se mexeu na imagem 1 ou 2 para dar variação correta de seed
                             c_lower = current_val.lower()
                             if "2" in c_lower or "inferior" in c_lower or "sobre" in c_lower:
                                 st.session_state[seed2_key] += 1
@@ -922,8 +939,6 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            
-                            # Limpa completamente a barra de texto e o estado do input para sumir o placeholder/exemplo digitado
                             st.session_state[input_key] = ""
                             st.success("Alteração aplicada com sucesso!")
                             st.rerun()
