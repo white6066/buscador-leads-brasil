@@ -11,10 +11,10 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados via link oficial publicado na Web em formato CSV
+# 1. Carregamento de dados via link publicado na Web em formato CSV
 @st.cache_data(ttl=300)
 def load_data():
-    url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRfRtLoR2wvrELschL2RmD_OELrqNZb1FNdqdQPtpVrywBPpPGyU36LkCCHZvrLlxl7ch6LQYqh/pub?output=csv"
+    url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRfRtLoR2wvrELschL2RmD_OELrqNZb1FNdqdQPtpVrywBPpPGyU36LkCCHZvrLlxl7ch6LQYqh/pub?gid=0&single=true&output=csv"
     df = pd.read_csv(url)
     if "Status" not in df.columns:
         df["Status"] = "Pendente"
