@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilização CSS para unificar o fundo e manter o design corporativo limpo
+# Estilização CSS para unificar o fundo e garantir clareza visual
 st.markdown("""
 <style>
     .stApp { background-color: #f8fafc; }
@@ -118,7 +118,7 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Gerenciar' para ver detalhes e Instagram.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Clique em 'Gerenciar' para alterar status.</p>", unsafe_allow_html=True)
 
     # --- BANNER ---
     st.markdown("""
@@ -206,7 +206,7 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Linha Principal em colunas alinhadas perfeitamente com o cabeçalho (Apenas 3 ícones: WhatsApp, Maps, Lupa)
+            # Linha Principal em colunas alinhadas com os 4 ícones solicitados: WhatsApp, Maps, Pesquisa, Instagram
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             
             with r_cols[0]:
@@ -221,26 +221,32 @@ try:
                 st.markdown(f"{cidade}")
             with r_cols[5]:
                 action_str = []
+                # 1. WhatsApp
                 if tel:
                     clean_tel = "".join(filter(str.isdigit, str(tel)))
                     action_str.append(f"[🟢](https://wa.me/55{clean_tel})")
                 else:
                     action_str.append("🟢")
                 
+                # 2. Google Maps
                 if maps_link:
                     action_str.append(f"[📍]({maps_link})")
                 else:
                     action_str.append("📍")
                 
+                # 3. Pesquisa Google
                 nome_busca = str(razao).replace(' ', '+')
                 cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
                 action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
+                
+                # 4. Instagram
+                action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 
                 st.markdown(" ".join(action_str))
             with r_cols[6]:
                 st.markdown(f"🟢 `{current_status}`")
 
-            # Expander compacto discreto contendo o Instagram e gestão do lead
+            # Expander compacto discreto para gestão do lead
             with st.expander(f"⚙️ Gerenciar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
