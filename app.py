@@ -11,32 +11,29 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Base de dados oficial sincronizada com a planilha
-def load_data():
-    data = [
-        ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226 - ALTO DA SAUDADE", "8293904127", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL"],
-        ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103 - CENTRO", "8132741010", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL"],
-        ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258 - CENTRO", "8293885886", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL"],
-        ["63324700000232", "SILVA NERES IMPORTACAO E EXPORTACAO LTDA", "2026-09-08", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "LOURIVAL MELO MOTA, 15159 - SANTOS DUMONT", "1199370549", "https://www.google.com/maps/search/?api=1&query=SILVA%20NERES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
-        ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
-        ["46531865000347", "LA SETTE IMPORTADORA E DISTRIBUIDORA LTDA", "2026-09-02", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "PAULO HENRIQUE MENDES, 75 - TABULEIRO DO MARTINS", "2138609696", "https://www.google.com/maps/search/?api=1&query=LA%20SETTE%20IMPORTADORA%20E%20DISTRIBUIDORA%20LTDA%20MACEIO%20AL"],
-        ["20799483000224", "C. DANTAS DE LIMA BARBOSA & CIA LTDA", "2026-08-26", "Supermercados", "AL", "DELMIRO GOUVEIA", "TEOTONIO VILELA, SN - NOVO", "8299622243", "https://www.google.com/maps/search/?api=1&query=C.%20DANTAS%20DE%20LIMA%20BARBOSA%20%26%20CIA%20LTDA%20DELMIRO%20GOUVEIA%20AL"],
-        ["68656601000190", "MANA HOLDING PARTICIPACOES PATRIMONIAIS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "ARAPIRACA", "SANTOS DUMONT, 378 - BAIXÃO", "8299999999", "https://www.google.com/maps/search/?api=1&query=MANA%20HOLDING%20PARTICIPACOES%20PATRIMONIAIS%20LTDA%20ARAPIRACA%20AL"],
-        ["50264359000578", "MD NE NEGOCIOS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "COMENDADOR GUSTAVO PAIVA, 2789 - MANGABEIRAS", "8130870000", "https://www.google.com/maps/search/?api=1&query=MD%20NE%20NEGOCIOS%20LTDA%20MACEIO%20AL"],
-        ["68690371000186", "VCX CAPITAL LTDA", "2026-08-19", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "ÁLVARO OTACÍLIO, 3731 - JATIÚCA", "8230284221", "https://www.google.com/maps/search/?api=1&query=VCX%20CAPITAL%20LTDA%20MACEIO%20AL"],
-        ["69041024000195", "LEIVA E ALMEIDA LTDA", "2026-09-09", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "FERNANDES LIMA, 8 - FAROL", "8296637867", "https://www.google.com/maps/search/?api=1&query=LEIVA%20E%20ALMEIDA%20LTDA%20MACEIO%20AL"],
-        ["68848678000162", "HELAIS CALHEIROS CORRETORA DE SEGUROS LTDA", "2026-08-28", "Corretores e Agentes de Seguros", "AL", "MARECHAL DEODORO", "MANOEL PEREIRA DA SILVA, 284 - FRANCÊS", "8299320190", "https://www.google.com/maps/search/?api=1&query=HELAIS%20CALHEIROS%20CORRETORA%20DE%20SEGUROS%20LTDA%20MARECHAL%20DEODORO%20AL"],
-        ["68753584000100", "GENILSON SANTOS DE OLIVEIRA", "2026-08-24", "Reparação de Equipamentos de Comunicação", "AL", "MESSIAS", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=68.753.584%20GENILSON%20SANTOS%20DE%20OLIVEIRA%20MESSIAS%20AL"],
-        ["68809605000161", "B GALVAO DOS SANTOS", "2026-08-26", "Reparação de Equipamentos de Comunicação", "AL", "UNIAO DOS PALMARES", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=B%20GALVAO%20DOS%20SANTOS%20UNIAO%20DOS%20PALMARES%20AL"],
-        ["68820635000179", "F. LOPES BARBOSA LTDA", "2026-08-22", "Comércio Varejista de Automóveis Usados", "AP", "MACAPA", "PADRE JULIO MARIA LOMBAERD, 1326 - CENTRAL", "9681320032", "https://www.google.com/maps/search/?api=1&query=F.%20LOPES%20BARBOSA%20LTDA%20MACAPA%20AP"],
-        ["37379766000724", "DELICIAS DA OCI LTDA", "2026-08-25", "Supermercados", "AP", "MACAPA", "HILDEMAR MAIA, 2626 - BURITIZAL", "9699999999", "https://www.google.com/maps/search/?api=1&query=DELICIAS%20DA%20OCI%20LTDA%20MACAPA%20AP"],
-        ["68886658000186", "ATENA LTDA", "2026-08-30", "Holdings de Instituições Não-Financeiras", "AP", "MACAPA", "CANDIDO MENDES, 1420 - CENTRAL", "9691660945", "https://www.google.com/maps/search/?api=1&query=ATENA%20LTDA%20MACAPA%20AP"]
-    ]
-    df = pd.DataFrame(data, columns=["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps"])
-    df["Status"] = "Pendente"
-    return df
+# Base de dados direta sem cache para forçar a atualização imediata
+data = [
+    ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226 - ALTO DA SAUDADE", "8293904127", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL"],
+    ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103 - CENTRO", "8132741010", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL"],
+    ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258 - CENTRO", "8293885886", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL"],
+    ["63324700000232", "SILVA NERES IMPORTACAO E EXPORTACAO LTDA", "2026-09-08", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "LOURIVAL MELO MOTA, 15159 - SANTOS DUMONT", "1199370549", "https://www.google.com/maps/search/?api=1&query=SILVA%20NERES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
+    ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL"],
+    ["46531865000347", "LA SETTE IMPORTADORA E DISTRIBUIDORA LTDA", "2026-09-02", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "PAULO HENRIQUE MENDES, 75 - TABULEIRO DO MARTINS", "2138609696", "https://www.google.com/maps/search/?api=1&query=LA%20SETTE%20IMPORTADORA%20E%20DISTRIBUIDORA%20LTDA%20MACEIO%20AL"],
+    ["20799483000224", "C. DANTAS DE LIMA BARBOSA & CIA LTDA", "2026-08-26", "Supermercados", "AL", "DELMIRO GOUVEIA", "TEOTONIO VILELA, SN - NOVO", "8299622243", "https://www.google.com/maps/search/?api=1&query=C.%20DANTAS%20DE%20LIMA%20BARBOSA%20%26%20CIA%20LTDA%20DELMIRO%20GOUVEIA%20AL"],
+    ["68656601000190", "MANA HOLDING PARTICIPACOES PATRIMONIAIS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "ARAPIRACA", "SANTOS DUMONT, 378 - BAIXÃO", "8299999999", "https://www.google.com/maps/search/?api=1&query=MANA%20HOLDING%20PARTICIPACOES%20PATRIMONIAIS%20LTDA%20ARAPIRACA%20AL"],
+    ["50264359000578", "MD NE NEGOCIOS LTDA", "2026-08-18", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "COMENDADOR GUSTAVO PAIVA, 2789 - MANGABEIRAS", "8130870000", "https://www.google.com/maps/search/?api=1&query=MD%20NE%20NEGOCIOS%20LTDA%20MACEIO%20AL"],
+    ["68690371000186", "VCX CAPITAL LTDA", "2026-08-19", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "ÁLVARO OTACÍLIO, 3731 - JATIÚCA", "8230284221", "https://www.google.com/maps/search/?api=1&query=VCX%20CAPITAL%20LTDA%20MACEIO%20AL"],
+    ["69041024000195", "LEIVA E ALMEIDA LTDA", "2026-09-09", "Holdings de Instituições Não-Financeiras", "AL", "MACEIO", "FERNANDES LIMA, 8 - FAROL", "8296637867", "https://www.google.com/maps/search/?api=1&query=LEIVA%20E%20ALMEIDA%20LTDA%20MACEIO%20AL"],
+    ["68848678000162", "HELAIS CALHEIROS CORRETORA DE SEGUROS LTDA", "2026-08-28", "Corretores e Agentes de Seguros", "AL", "MARECHAL DEODORO", "MANOEL PEREIRA DA SILVA, 284 - FRANCÊS", "8299320190", "https://www.google.com/maps/search/?api=1&query=HELAIS%20CALHEIROS%20CORRETORA%20DE%20SEGUROS%20LTDA%20MARECHAL%20DEODORO%20AL"],
+    ["68753584000100", "GENILSON SANTOS DE OLIVEIRA", "2026-08-24", "Reparação de Equipamentos de Comunicação", "AL", "MESSIAS", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=68.753.584%20GENILSON%20SANTOS%20DE%20OLIVEIRA%20MESSIAS%20AL"],
+    ["68809605000161", "B GALVAO DOS SANTOS", "2026-08-26", "Reparação de Equipamentos de Comunicação", "AL", "UNIAO DOS PALMARES", "CENTRO", "", "https://www.google.com/maps/search/?api=1&query=B%20GALVAO%20DOS%20SANTOS%20UNIAO%20DOS%20PALMARES%20AL"],
+    ["68820635000179", "F. LOPES BARBOSA LTDA", "2026-08-22", "Comércio Varejista de Automóveis Usados", "AP", "MACAPA", "PADRE JULIO MARIA LOMBAERD, 1326 - CENTRAL", "9681320032", "https://www.google.com/maps/search/?api=1&query=F.%20LOPES%20BARBOSA%20LTDA%20MACAPA%20AP"],
+    ["37379766000724", "DELICIAS DA OCI LTDA", "2026-08-25", "Supermercados", "AP", "MACAPA", "HILDEMAR MAIA, 2626 - BURITIZAL", "9699999999", "https://www.google.com/maps/search/?api=1&query=DELICIAS%20DA%20OCI%20LTDA%20MACAPA%20AP"],
+    ["68886658000186", "ATENA LTDA", "2026-08-30", "Holdings de Instituições Não-Financeiras", "AP", "MACAPA", "CANDIDO MENDES, 1420 - CENTRAL", "9691660945", "https://www.google.com/maps/search/?api=1&query=ATENA%20LTDA%20MACAPA%20AP"]
+]
 
-df = load_data()
+df = pd.DataFrame(data, columns=["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps"])
+df["Status"] = "Pendente"
 
 # 2. Barra Lateral - Filtros Dinâmicos
 st.sidebar.header("🎯 Filtros de Prospecção")
