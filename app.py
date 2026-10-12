@@ -271,7 +271,7 @@ try:
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada]
-    if cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
@@ -366,7 +366,6 @@ try:
                 nome_busca = str(razao).replace(' ', '+')
                 cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
                 action_str.append(f"[🔍](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
-                action_str.append(f"[📸](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
                 
                 st.markdown("  ".join(action_str))
             with r_cols[6]:
