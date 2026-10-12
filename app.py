@@ -22,24 +22,24 @@ def toggle_theme():
     else:
         st.session_state.theme = "Escuro"
 
-# Cores dinâmicas completas baseadas no tema selecionado
+# Cores dinâmicas refinadas para um visual moderno
 is_dark = st.session_state.theme == "Escuro"
 
-bg_app = "#0f172a" if is_dark else "#f8fafc"
-bg_card = "#1e293b" if is_dark else "#ffffff"
-text_color = "#f8fafc" if is_dark else "#0f172a"
-text_muted = "#94a3b8" if is_dark else "#475569"
-border_color = "#334155" if is_dark else "#cbd5e1"
-hr_color = "#334155" if is_dark else "#cbd5e1"
-btn_bg = "#1e293b" if is_dark else "#ffffff"
-btn_text = "#ffffff" if is_dark else "#0f172a"
-input_bg = "#1e293b" if is_dark else "#ffffff"
-input_text = "#ffffff" if is_dark else "#0f172a"
-expander_bg = "#1e293b" if is_dark else "#ffffff"
-dropdown_bg = "#1e293b" if is_dark else "#ffffff"
-dropdown_text = "#f8fafc" if is_dark else "#0f172a"
+bg_app = "#090d16" if is_dark else "#f1f5f9"
+bg_card = "#111827" if is_dark else "#ffffff"
+text_color = "#f3f4f6" if is_dark else "#0f172a"
+text_muted = "#9ca3af" if is_dark else "#64748b"
+border_color = "#1f2937" if is_dark else "#e2e8f0"
+hr_color = "#1f2937" if is_dark else "#e2e8f0"
+btn_bg = "#1f2937" if is_dark else "#ffffff"
+btn_text = "#f3f4f6" if is_dark else "#0f172a"
+input_bg = "#111827" if is_dark else "#ffffff"
+input_text = "#f3f4f6" if is_dark else "#0f172a"
+expander_bg = "#111827" if is_dark else "#ffffff"
+dropdown_bg = "#111827" if is_dark else "#ffffff"
+dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
-# Estilização CSS completa
+# Estilização CSS Moderna e Consistente
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
@@ -53,7 +53,7 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
     
-    /* Barra lateral */
+    /* Barra lateral moderna */
     [data-testid="stSidebar"] {{ 
         background-color: {bg_app}; 
         color: {text_color} !important; 
@@ -65,28 +65,30 @@ st.markdown(f"""
         font-weight: 500 !important; 
     }}
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
-    [data-testid="stSidebar"] hr {{ margin: 10px 0px !important; border-color: {border_color} !important; }}
+    [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botões gerais, barra lateral, expander e paginação */
+    /* Botões gerais, barra lateral, expander e paginação harmonizados */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        border-radius: 10px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: all 0.2s ease-in-out;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
         background-color: {btn_bg} !important;
-        border-color: #38bdf8 !important;
-        color: #38bdf8 !important;
+        border-color: #0ea5e9 !important;
+        color: #0ea5e9 !important;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
     }}
     [data-testid="stSidebar"] button:focus, .stDownloadButton button:focus, div[data-testid="stExpander"] button:focus, div.row-widget.stButton button:focus, button:focus {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
-        border-color: #38bdf8 !important;
+        border-color: #0ea5e9 !important;
     }}
     
-    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
+    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
 
     a, a:hover, a:focus, a:active {{
         text-decoration: none !important;
@@ -102,7 +104,8 @@ st.markdown(f"""
     div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }}
 
     /* Selectbox Geral e Caixas de Filtro */
@@ -110,7 +113,7 @@ st.markdown(f"""
         background-color: {input_bg} !important;
         color: {input_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
     }}
     div[data-baseweb="select"] span {{
         color: {input_text} !important;
@@ -120,37 +123,49 @@ st.markdown(f"""
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
         border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
     }}
     li[data-baseweb="option"], div[role="option"] {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
     }}
     li[data-baseweb="option"]:hover, div[role="option"]:hover {{
-        background-color: #38bdf8 !important;
-        color: #0f172a !important;
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
     }}
     div[data-baseweb="select"] * {{
         color: {dropdown_text} !important;
     }}
 
-    /* Cartões de Métricas */
+    /* Cartões de Métricas Modernos */
     div[data-testid="metric-container"] {{
-        background-color: {bg_card}; border: 1px solid {border_color}; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background-color: {bg_card}; 
+        border: 1px solid {border_color}; 
+        padding: 16px 20px; 
+        border-radius: 14px; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }}
-    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.85rem !important; }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.85rem !important; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"], 
     div[data-testid="metric-container"] [data-testid="stMetricValue"] > div {{ 
         color: {text_color} !important; 
-        font-size: 1.4rem !important; 
+        font-size: 1.6rem !important; 
         font-weight: 800 !important; 
     }}
 
-    /* Banner Superior */
+    /* Banner Superior Estilizado */
     .banner-box {{
-        background-color: {bg_card}; padding: 20px 28px; border-radius: 14px; color: {text_color}; margin-bottom: 16px; border: 1px solid {border_color}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background-color: {bg_card}; 
+        padding: 24px 32px; 
+        border-radius: 16px; 
+        color: {text_color}; 
+        margin-bottom: 20px; 
+        border: 1px solid {border_color}; 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     }}
-    .banner-title {{ font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: {text_color} !important; }}
-    .banner-subtitle {{ color: {text_muted}; font-size: 0.9rem; }}
+    .banner-title {{ font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; color: {text_color} !important; }}
+    .banner-subtitle {{ color: {text_muted}; font-size: 0.95rem; line-height: 1.4; }}
     
     .stSelectbox label, .stTextInput label {{ font-weight: 700 !important; color: {text_color} !important; }}
 
@@ -158,11 +173,13 @@ st.markdown(f"""
     div[data-testid="stExpander"] {{
         background-color: {expander_bg} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }}
     div[data-testid="stExpander"] summary {{
         background-color: {expander_bg} !important;
         color: {text_color} !important;
+        border-radius: 12px !important;
     }}
     div[data-testid="stExpander"] summary span {{
         color: {text_color} !important;
