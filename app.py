@@ -10,7 +10,7 @@ from PIL import Image
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com IA de Imagem",
+    page_title="Novas Empresas - Gerador LP com IA de Imagem Realista",
     page_icon="🚀",
     layout="wide"
 )
@@ -195,19 +195,19 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": extra_activities[:3]
     }
 
-# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL (POLLINATIONS.AI) ---
+# --- GERADOR DE IMAGENS POR INTELIGÊNCIA ARTIFICIAL REALISTA E PROPORCIONAL ---
 def generate_ai_contextual_image(segmento, razao):
     seg_lower = (segmento + " " + razao).lower()
     
-    # Criação de Prompt em Inglês altamente preciso para a IA de Imagem
-    if any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
-        prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k, commercial interior design"
+    # Prompts altamente realistas, comerciais e focados em carros novos/seminovos comuns do mercado brasileiro
+    if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
+        prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern new and pre-owned sedans, SUVs and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
+    elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
+        prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k"
     elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
         prompt = "modern high-end medical clinic interior, clean professional healthcare environment, advanced medical equipment, bright welcoming lighting, photorealistic, 4k"
-    elif any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica']):
-        prompt = "luxury modern car dealership showroom with polished clean floors, elegant contemporary automobiles on display, soft studio spotlighting, photorealistic, 4k"
     elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'comercio']):
-        prompt = "high-end modern supermarket interior, beautifully organized shelves with gourmet products, bright clean aisles, commercial retail photography, 4k"
+        prompt = "high-end modern supermarket interior, beautifully organized shelves with grocery products, bright clean aisles, commercial retail photography, 4k"
     elif any(x in seg_lower for x in ['cafe', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
         prompt = "modern agricultural business office and sustainable agribusiness landscape, professional corporate environment, high resolution, photorealistic"
     elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
@@ -219,7 +219,6 @@ def generate_ai_contextual_image(segmento, razao):
 
     encoded_prompt = urllib.parse.quote(prompt)
     seed = int(hashlib.md5((segmento + razao).encode()).hexdigest(), 16) % 10000
-    # URL da API pública de IA geradora de imagens
     ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
     return ai_image_url
 
@@ -231,7 +230,9 @@ def determine_harmonious_palette(razao, segmento, logo_url):
             return extracted, "Identidade Visual Oficial (Logo)"
             
     seg_lower = segmento.lower()
-    if any(w in seg_lower for w in ['hospital', 'saude', 'medico', 'odont', 'estet', 'clinica']):
+    if any(w in seg_lower for w in ['veiculo', 'carro', 'automov', 'seminovo', 'auto']):
+        return "#1e293b", "Azul Grafite (Automotivo & Confiança)"
+    elif any(w in seg_lower for w in ['hospital', 'saude', 'medico', 'odont', 'estet', 'clinica']):
         return "#0f766e", "Verde Teal (Saúde & Bem-Estar)"
     elif any(w in seg_lower for w in ['financeiro', 'contab', 'direito', 'advoc', 'consult']):
         return "#1e3a8a", "Azul Executivo (Seriedade & Confiança)"
@@ -244,7 +245,7 @@ def determine_harmonious_palette(razao, segmento, logo_url):
         palettes = ["#173f32", "#1e3a8a", "#0f172a", "#3b2f2f", "#4338ca", "#047857", "#581c87"]
         return palettes[h % len(palettes)], "Paleta Exclusiva"
 
-# --- GERADOR DA LP MASTERPIECE COM IA DE IMAGEM ---
+# --- GERADOR DA LP MASTERPIECE COM CORREÇÃO DE PROPORÇÃO DE IMAGEM ---
 def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj):
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
@@ -289,7 +290,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    # Imagem gerada por Inteligência Artificial sob medida para o negócio
+    # Imagem realista gerada por IA com proporção perfeita
     img_feature = generate_ai_contextual_image(segmento, razao)
 
     html_code = f"""<!DOCTYPE html>
@@ -371,7 +372,10 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
         </div>
         <div class="relative mx-auto w-full max-w-xl">
           <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
-            <img src="{img_feature}" alt="{display_name}" class="h-64 w-full rounded-2xl object-cover sm:h-80 lg:h-[390px]" loading="eager">
+            <!-- Imagem proporcional sem distorção -->
+            <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-900">
+              <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="eager">
+            </div>
           </div>
         </div>
       </div>
@@ -408,7 +412,10 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     <section id="sobre" class="py-16 sm:py-24">
       <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
         <div class="relative">
-          <img src="{img_feature}" alt="{display_name}" class="relative h-72 w-full rounded-2xl object-cover shadow-xl sm:h-[420px]" loading="lazy">
+          <!-- Imagem proporcional sem distorção na seção Sobre -->
+          <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-xl">
+            <img src="{img_feature}" alt="{display_name}" class="h-full w-full object-cover object-center" loading="lazy">
+          </div>
           <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fundação Oficial</p>
             <p class="display mt-1 font-extrabold brand-text">{data_abert}</p>
@@ -586,8 +593,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem</div>
-            <div class="banner-subtitle">Sistema inteligente com varredura OSINT, IA de geração de imagens customizadas por nicho e alta conversão.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
+            <div class="banner-subtitle">Sistema inteligente com correção de proporção visual e imagens geradas por IA rigorosamente contextuais (sem carros esportivos fictícios).</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -697,12 +704,12 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                if st.button("🌐 Executar IA de Imagem & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
-                    with st.spinner("Gerando imagem por inteligência artificial, criando copywriting e montando Landing Page..."):
+                if st.button("🌐 Executar IA Realista & Gerar LP Masterpiece", key=f"btn_auto_lp_{idx}"):
+                    with st.spinner("Gerando imagem realista na proporção perfeita, refinando copywriting e montando Landing Page..."):
                         lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj)
                         st.session_state[f"lp_data_{idx}"] = lp_html
                         st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                        st.success("Landing Page com IA gerada com sucesso!")
+                        st.success("Landing Page Masterpiece gerada com sucesso!")
 
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
