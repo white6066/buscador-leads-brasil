@@ -218,17 +218,25 @@ def load_data_from_sheet():
         cnpj = str(r[0]).strip()
         razao = str(r[1]).strip() if str(r[1]).strip() != "" else "Empresa"
         
-        # Formatar data para DD/MM/AAAA
+        # Conversão robusta da data de Abertura para DD/MM/AAAA
         raw_date = str(r[2]).strip()
         data_abert = raw_date
-        try:
-            if "-" in raw_date:
-                dt_obj = datetime.strptime(raw_date.split("T")[0], "%Y-%m-%d")
-                data_abert = dt_obj.strftime("%d/%m/%Y")
-            elif "/" in raw_date and len(raw_date.split("/")[-1]) == 4:
+        if raw_date:
+            try:
+                # Remove partes de hora se existirem
+                clean_date_str = raw_date.split("T")[0].split(" ")[0]
+                if "-" in clean_date_str:
+                    parts = clean_date_str.split("-")
+                    if len(parts) == 3 and len(parts[0]) == 4:
+                        # Formato YYYY-MM-DD -> DD/MM/YYYY
+                        data_abert = f"{parts[2]}/{parts[1]}/{parts[0]}"
+                elif "/" in clean_date_str:
+                    parts = clean_date_str.split("/")
+                    if len(parts) == 3 and len(parts[2]) == 2:
+                        # Formato DD/MM/YY -> DD/MM/20YY
+                        data_abert = f"{parts[0]}/{parts[1]}/20{parts[2]}"
+            except Exception:
                 data_abert = raw_date
-        except:
-            data_abert = raw_date
 
         segmento = str(r[3]).strip() if str(r[3]).strip() != "" else "N/A"
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
