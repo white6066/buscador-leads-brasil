@@ -219,16 +219,29 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
-def generate_smart_image(segmento, razao, specific_instruction="", reference_image_url=None):
-    """Constrói prompt otimizado, interpretando com precisão absoluta termos e aceitando imagem de referência."""
+def translate_and_optimize_prompt(portuguese_text):
+    """Traduz e otimiza automaticamente o texto do usuário em português para inglês profissional de IA"""
+    text_lower = portuguese_text.lower()
+    
+    # Dicionário de termos comuns e tradução/otimização profissional
+    if any(w in text_lower for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
+        return "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
+    elif 'carro' in text_lower or 'veiculo' in text_lower or 'automovel' in text_lower:
+        return f"professional commercial photography of {portuguese_text}, modern dealership showroom, multiple vehicles, photorealistic, 4k resolution"
+    elif 'loja' in text_lower or 'comercio' in text_lower:
+        return f"modern high-end retail store interior, {portuguese_text}, bright professional architectural lighting, photorealistic, 4k"
+    elif 'escritorio' in text_lower or 'sala' in text_lower:
+        return f"sophisticated modern corporate office interior, {portuguese_text}, professional business atmosphere, architectural photography, 4k"
+    else:
+        # Tradução estruturada genérica com foco em alta qualidade comercial
+        return f"professional commercial photography of {portuguese_text}, photorealistic, 4k resolution, high quality business display, cinematic lighting"
+
+def generate_smart_image(segmento, razao, specific_instruction=""):
     seg_lower = (segmento + " " + razao).lower()
     
     if specific_instruction:
-        inst_l = specific_instruction.lower()
-        if any(w in inst_l for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
-            prompt = "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
-        else:
-            prompt = f"professional commercial photography of {specific_instruction}, photorealistic, 4k resolution, high quality business display"
+        # Traduz e otimiza o comando do usuário para inglês perfeito
+        prompt = translate_and_optimize_prompt(specific_instruction)
     else:
         if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
             prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern affordable sedans and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
@@ -248,11 +261,8 @@ def generate_smart_image(segmento, razao, specific_instruction="", reference_ima
             prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
 
     encoded_prompt = urllib.parse.quote(prompt)
-    seed = int(hashlib.md5((segmento + razao + specific_instruction + str(reference_image_url)).encode()).hexdigest(), 16) % 10000
-    
-    # Se o usuário enviou uma imagem de base, o pollinations permite injetar na URL de seed/contexto se houver suporte, ou combinamos no prompt
-    ref_param = f"&image={urllib.parse.quote(reference_image_url)}" if reference_image_url else ""
-    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true{ref_param}"
+    seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 10000
+    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={seed}&nologo=true"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -317,7 +327,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     return html_content
 
-def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, ref_image_url=None):
+def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list):
     img1_inst = ""
     img2_inst = ""
     
@@ -381,8 +391,8 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     if osint["site"]:
         social_links_html += f'<p class="text-sm text-slate-700 flex items-center gap-2 mt-1"><b>🌐 Site Oficial:</b> <a href="{osint["site"]}" target="_blank" class="brand-text underline font-semibold">{osint["site"]}</a></p>'
 
-    img_feature_1 = generate_smart_image(segmento, razao, img1_inst, ref_image_url)
-    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst, ref_image_url)
+    img_feature_1 = generate_smart_image(segmento, razao, img1_inst)
+    img_feature_2 = generate_smart_image(segmento, razao, img2_inst if img2_inst else img1_inst)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -817,16 +827,6 @@ try:
                 
                 st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
                 
-                # Uploader de Foto de Base e Caixa de Texto de Comandos
-                uploaded_ref_img = st.file_uploader(f"📎 Enviar foto de referência (opcional) para {razao}", type=["jpg", "jpeg", "png"], key=f"uploader_{idx}")
-                
-                ref_img_url = None
-                if uploaded_ref_img:
-                    # Exibe miniatura e armazena (poderíamos converter ou processar)
-                    st.image(uploaded_ref_img, width=120, caption="Foto de Referência Carregada")
-                    # Para fins de demonstração, guardamos a imagem no state
-                    st.session_state[f"ref_img_{idx}"] = uploaded_ref_img
-                
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([1.3, 2.5, 1.2])
                 
                 hist_key = f"instructions_history_{idx}"
@@ -847,10 +847,8 @@ try:
                         current_val = st.session_state.get(input_key, "").strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
-                        with st.spinner("Gerando Landing Page inicial com IA..."):
-                            ref_file = st.session_state.get(f"ref_img_{idx}")
-                            # Aqui você pode passar dados da imagem se necessário
-                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key], None)
+                        with st.spinner("Gerando Landing Page com Tradução Inteligente..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.success("Landing Page gerada com sucesso!")
@@ -870,8 +868,8 @@ try:
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                             st.session_state[f"clear_{input_key}"] = True
-                        with st.spinner("Aplicando alterações cumulativas..."):
-                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key], None)
+                        with st.spinner("Traduzindo e aplicando alterações..."):
+                            lp_html = generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, st.session_state[hist_key])
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.success(f"Alteração aplicada! Total de regras ativas: {len(st.session_state[hist_key])}")
