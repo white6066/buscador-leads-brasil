@@ -13,7 +13,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# 1. Carregamento de dados com fallback inteligente e resiliente
+# 1. Carregamento de dados com leitura integral (header=None)
 @st.cache_data(ttl=300)
 def load_data():
     urls = [
@@ -27,28 +27,22 @@ def load_data():
         try:
             response = requests.get(url, headers=headers, timeout=5)
             if response.status_code == 200:
-                df = pd.read_csv(io.StringIO(response.text))
+                df = pd.read_csv(io.StringIO(response.text), header=None)
                 if not df.empty:
-                    if "Status" not in df.columns:
-                        df["Status"] = "Pendente"
-                    df["Status"] = df["Status"].fillna("Pendente")
+                    df["Status"] = "Pendente"
                     return df
         except Exception:
             continue
             
-    # Fallback com os dados reais para o painel abrir imediatamente sem erros
+    # Fallback de segurança com dados reais
     data = [
         ["68822545000117", "GOMES AUTO CENTER LTDA", "2026-08-27", "Comércio Varejista de Automóveis Usados", "AL", "CORURIPE", "ENGENHEIRO GUTTEMBERG BREDA NETO, 1226 - ALTO DA SAUDADE", "8293904127", "", "https://www.google.com/maps/search/?api=1&query=GOMES%20AUTO%20CENTER%20LTDA%20CORURIPE%20AL", "Pendente"],
         ["35482768000204", "FBS COMERCIO E SERVICOS LTDA", "2026-08-31", "Comércio Atacadista de Produtos Alimentícios", "AL", "MURICI", "MILITAO VIEIRA SAPUCAIA, 103 - CENTRO", "8132741010", "", "https://www.google.com/maps/search/?api=1&query=FBS%20COMERCIO%20E%20SERVICOS%20LTDA%20MURICI%20AL", "Pendente"],
         ["68806510000194", "LILY PRESENTES LTDA", "2026-08-26", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DA ALEGRIA, 258 - CENTRO", "8293885886", "", "https://www.google.com/maps/search/?api=1&query=LILY%20PRESENTES%20LTDA%20MACEIO%20AL", "Pendente"],
         ["63324700000232", "SILVA NERES IMPORTACAO E EXPORTACAO LTDA", "2026-09-08", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "LOURIVAL MELO MOTA, 15159 - SANTOS DUMONT", "1199370549", "", "https://www.google.com/maps/search/?api=1&query=SILVA%20NERES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL", "Pendente"],
-        ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL", "Pendente"],
-        ["68820635000179", "F. LOPES BARBOSA LTDA", "2026-08-22", "Comércio Varejista de Automóveis Usados", "AP", "MACAPA", "PADRE JULIO MARIA LOMBAERD, 1326 - CENTRAL", "9681320032", "", "https://www.google.com/maps/search/?api=1&query=F.%20LOPES%20BARBOSA%20LTDA%20MACAPA%20AP", "Pendente"],
-        ["37379766000724", "DELICIAS DA OCI LTDA", "2026-08-25", "Supermercados", "AP", "MACAPA", "HILDEMAR MAIA, 2626 - BURITIZAL", "9699999999", "", "https://www.google.com/maps/search/?api=1&query=DELICIAS%20DA%20OCI%20LTDA%20MACAPA%20AP", "Pendente"],
-        ["68886658000186", "ATENA LTDA", "2026-08-30", "Holdings de Instituições Não-Financeiras", "AP", "MACAPA", "CANDIDO MENDES, 1420 - CENTRAL", "9691660945", "", "https://www.google.com/maps/search/?api=1&query=ATENA%20LTDA%20MACAPA%20AP", "Pendente"]
+        ["68632169000106", "SETE MARES IMPORTACAO E EXPORTACAO LTDA", "2026-08-13", "Comércio Atacadista de Vestuário e Acessórios", "AL", "MACEIO", "DESEMBARGADOR ARTUR JUCÁ, 250 - CENTRO", "8232411988", "", "https://www.google.com/maps/search/?api=1&query=SETE%20MARES%20IMPORTACAO%20E%20EXPORTACAO%20LTDA%20MACEIO%20AL", "Pendente"]
     ]
-    cols = ["CNPJ", "Razao Social", "Data Abertura", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Extra", "Maps", "Status"]
-    return pd.DataFrame(data, columns=cols)
+    return pd.DataFrame(data)
 
 try:
     df = load_data()
