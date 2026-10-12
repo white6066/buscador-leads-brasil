@@ -13,7 +13,7 @@ st.set_page_config(
 st.title("🚀 Central de Leads & Novas Empresas")
 st.markdown("Filtre as empresas recém-criadas diretamente da sua planilha, pesquise presença digital e gerencie a geração de Landing Pages.")
 
-# Carregamento de dados em tempo real direto da planilha com tratamento de cabeçalho
+# Carregamento de dados em tempo real direto da planilha com tratamento robusto
 @st.cache_data(ttl=60)
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -25,20 +25,18 @@ def load_data_from_sheet():
     
     df = pd.read_csv(io.StringIO(response.text), header=None)
     
-    # Remover linha de cabeçalho ou título inicial (ex: '# Página1') se existir
+    # Limpar linhas totalmente vazias ou cabeçalhos inválidos
+    df = df.dropna(how='all').reset_index(drop=True)
     if not df.empty:
         primeiro_valor = str(df.iloc[0, 0])
-        if "Página" in primeiro_valor or not primeiro_valor.isdigit() or len(primeiro_valor) != 14:
+        if "Página" in primeiro_valor or not primeiro_valor.replace('.', '').isdigit() or len(primeiro_valor.replace('.', '')) < 10:
             df = df.iloc[1:].reset_index(drop=True)
             
     # Garantir colunas suficientes
     while df.shape[1] < 10:
         df[df.shape[1]] = ""
         
-    if "Status" not in df.columns:
-        df["Status"] = "Pendente"
-    df["Status"] = df["Status"].fillna("Pendente")
-    
+    df["Status"] = "Pendente"
     return df
 
 try:
@@ -73,7 +71,7 @@ try:
     status_opcoes = ["Todos", "Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
     status_selecionado = st.sidebar.selectbox("Status do Lead:", status_opcoes)
 
-    # Aplicar Filtros
+    # Aplicar Filtros com segurança
     df_filtered = df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered[col_seg].astype(str) == seg_selecionado]
@@ -100,7 +98,7 @@ try:
         st.info("Nenhum lead encontrado com os filtros selecionados.")
     else:
         for idx, row in df_filtered.iterrows():
-            razao = str(row[col_razao]) if pd.notnull(row[col_razao]) else "Empresa"
+            razao = str(row[col_razao]) if pd.notnull(row[col_razao]) and str(row[col_razao]).strip() != "" else "Empresa"
             segmento = str(row[col_seg]) if pd.notnull(row[col_seg]) else "N/A"
             cidade = str(row[col_cidade]) if pd.notnull(row[col_cidade]) else "N/A"
             uf = str(row[col_uf]) if pd.notnull(row[col_uf]) else "N/A"
