@@ -4,99 +4,40 @@ import requests
 import io
 import csv
 
-# 1. Configuração da página e Layout Moderno Compacto
+# 1. Configuração da página e Layout Moderno Rápido
 st.set_page_config(
     page_title="Central de Leads & Novas Empresas",
     page_icon="🚀",
     layout="wide"
 )
 
-# Estilização CSS personalizada para compactar espaçamentos na barra lateral
+# Estilização CSS otimizada
 st.markdown("""
 <style>
-    /* Estilo geral de fundo */
-    .stApp {
-        background-color: #f8fafc;
-    }
-    
-    /* Barra lateral escura compactada */
-    [data-testid="stSidebar"] {
-        background-color: #0f172a;
-        color: #ffffff !important;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-    [data-testid="stSidebar"] label, 
-    [data-testid="stSidebar"] .stMarkdown,
-    [data-testid="stSidebar"] p,
-    [data-testid="stSidebar"] span {
-        color: #f8fafc !important;
-        font-weight: 500 !important;
-    }
+    .stApp { background-color: #f8fafc; }
+    [data-testid="stSidebar"] { background-color: #0f172a; color: #ffffff !important; padding-top: 1rem; }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p { color: #f8fafc !important; font-weight: 500 !important; }
+    [data-testid="stSidebar"] div.stSelectbox { margin-bottom: -10px !important; }
+    [data-testid="stSidebar"] hr { margin: 10px 0px !important; border-color: #334155 !important; }
+    h1, h2, h3, h4, h5, h6 { color: #0f172a !important; }
 
-    /* Reduzir margens e espaçamentos entre widgets na barra lateral */
-    [data-testid="stSidebar"] div.stSelectbox {
-        margin-bottom: -10px !important;
-    }
-    [data-testid="stSidebar"] hr {
-        margin: 10px 0px !important;
-        border-color: #334155 !important;
-    }
-    
-    /* Cor dos títulos e textos principais do painel */
-    h1, h2, h3, h4, h5, h6 {
-        color: #0f172a !important;
-    }
-
-    /* Cartões de Métricas Estilizados */
     div[data-testid="metric-container"] {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        padding: 12px 16px;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background-color: #ffffff; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    div[data-testid="metric-container"] label {
-        color: #475569 !important;
-        font-weight: 700 !important;
-        font-size: 0.9rem !important;
-    }
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-        color: #0f172a !important;
-        font-size: 1.6rem !important;
-        font-weight: 800 !important;
-    }
+    div[data-testid="metric-container"] label { color: #475569 !important; font-weight: 700 !important; font-size: 0.9rem !important; }
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] { color: #0f172a !important; font-size: 1.6rem !important; font-weight: 800 !important; }
 
-    /* Banner Principal */
     .banner-box {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 20px 28px;
-        border-radius: 16px;
-        color: white;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px 28px; border-radius: 16px; color: white; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    .banner-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #ffffff !important;
-    }
-    .banner-subtitle {
-        color: #cbd5e1;
-        font-size: 0.9rem;
-    }
-
-    /* Rótulos dos filtros principais do corpo da página */
-    .stSelectbox label, .stTextInput label {
-        font-weight: 700 !important;
-        color: #1e293b !important;
-    }
+    .banner-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff !important; }
+    .banner-subtitle { color: #cbd5e1; font-size: 0.9rem; }
+    .stSelectbox label, .stTextInput label { font-weight: 700 !important; color: #1e293b !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Carregamento de dados com cache de alta performance
-@st.cache_data(ttl=300, show_spinner="A carregar painel corporativo...")
+# Carregamento de dados otimizado com cache
+@st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
@@ -146,7 +87,6 @@ def load_data_from_sheet():
 try:
     df = load_data_from_sheet()
 
-    # Sincronização de status na sessão
     if "df_status" not in st.session_state or len(st.session_state.df_status) != len(df):
         st.session_state.df_status = df.copy()
     else:
@@ -154,10 +94,10 @@ try:
 
     current_df = st.session_state.df_status
 
-    # --- BARRA LATERAL COMPACTA ---
+    # --- BARRA LATERAL ---
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
-        st.markdown("<p style='color: #cbd5e1; font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência Comercial</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #cbd5e1; font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
         st.markdown("#### 🎯 Filtros")
@@ -178,9 +118,9 @@ try:
         status_selecionado = st.selectbox("Status do Lead:", status_opcoes)
         
         st.divider()
-        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Dica: Use os expanders para gerenciar cada lead.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.75rem; color: #94a3b8;'>💡 Use os expanders para gerenciar cada lead.</p>", unsafe_allow_html=True)
 
-    # --- BANNER PRINCIPAL DO TOPO ---
+    # --- BANNER ---
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Central de Leads & Novas Empresas</div>
@@ -188,40 +128,40 @@ try:
         </div>
     """, unsafe_allow_html=True)
 
-    # --- APLICAR FILTROS DE FORMA ROBUSTA ---
+    # --- FILTRAGEM ---
     df_filtered = current_df.copy()
     if seg_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Segmento"].astype(str).str.strip() == seg_selecionado.strip()]
     if uf_selecionada != "Todos":
         df_filtered = df_filtered[df_filtered["UF"].astype(str).str.strip().str.upper() == uf_selecionada.strip().upper()]
-    if cidade_selecionada != "Todas" and cidade_selecionada != "Todas":
+    if cidade_selecionada != "Todas":
         df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada.strip().upper()]
     if status_selecionado != "Todos":
         df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # --- CARTÕES DE MÉTRICAS MODERNOS ---
+    # --- MÉTRICAS ---
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total de Leads Exibidos", len(df_filtered), "100% visível")
-    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]), "Aguardando")
-    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]), "Prontas")
-    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]), "Conversões")
+    m1.metric("Total Exibidos", len(df_filtered))
+    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
+    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
+    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
     st.divider()
 
-    # --- BARRA DE PESQUISA RÁPIDA DE EMPRESAS ---
+    # --- PESQUISA & EXPORTAÇÃO ---
     col_search, col_export = st.columns([5, 1])
     with col_search:
         search_query = st.text_input("🔍 Pesquisa Rápida", placeholder="Digite o nome da empresa, CNPJ ou cidade...", label_visibility="collapsed")
     with col_export:
         csv_export = df_filtered.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Exportar CSV", data=csv_export, file_name="leads_prospeccao.csv", mime="text/csv", use_container_width=True)
+        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv", use_container_width=True)
 
     if search_query:
-        query_lower = search_query.lower()
+        ql = search_query.lower()
         df_filtered = df_filtered[
-            df_filtered["Razao Social"].str.lower().str.contains(query_lower) |
-            df_filtered["CNPJ"].str.lower().str.contains(query_lower) |
-            df_filtered["Cidade"].str.lower().str.contains(query_lower)
+            df_filtered["Razao Social"].str.lower().str.contains(ql) |
+            df_filtered["CNPJ"].str.lower().str.contains(ql) |
+            df_filtered["Cidade"].str.lower().str.contains(ql)
         ]
 
     st.subheader("📋 Lista de Empresas Extraídas")
@@ -229,7 +169,20 @@ try:
     if df_filtered.empty:
         st.warning("Nenhum lead encontrado com os filtros ou termo de pesquisa selecionados.")
     else:
-        # Cabeçalho da Tabela Estilo Corporativo Moderno
+        # --- PAGINAÇÃO DE ALTA PERFORMANCE (20 por página) ---
+        items_per_page = 20
+        total_items = len(df_filtered)
+        total_pages = max(1, (total_items - 1) // items_per_page + 1)
+        
+        c_p1, c_p2, c_p3 = st.columns([2, 4, 2])
+        with c_p2:
+            page_num = st.number_input(f"Página (Total de registos: {total_items})", min_value=1, max_value=total_pages, value=1, step=1)
+        
+        start_idx = (page_num - 1) * items_per_page
+        end_idx = start_idx + items_per_page
+        df_paginated = df_filtered.iloc[start_idx:end_idx]
+
+        # Cabeçalho
         cols_header = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
         cols_header[0].markdown("**Razão Social**")
         cols_header[1].markdown("**CNPJ**")
@@ -241,7 +194,7 @@ try:
         
         st.markdown("<hr style='margin: 4px 0px 10px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
 
-        for idx, row in df_filtered.iterrows():
+        for idx, row in df_paginated.iterrows():
             razao = row["Razao Social"]
             segmento = row["Segmento"]
             cidade = row["Cidade"]
@@ -269,18 +222,18 @@ try:
                     
                     if tel:
                         clean_tel = "".join(filter(str.isdigit, str(tel)))
-                        st.markdown(f"💬 [Abrir Conversa no WhatsApp](https://wa.me/55{clean_tel})")
+                        st.markdown(f"💬 [WhatsApp](https://wa.me/55{clean_tel})")
                     
                     if maps_link:
-                        st.markdown(f"🗺️ [Ver no Google Maps]({maps_link})")
+                        st.markdown(f"🗺️ [Google Maps]({maps_link})")
                         
                     nome_busca = str(razao).replace(' ', '+')
                     cidade_busca = f"{cidade}+{uf}".replace(' ', '+')
-                    st.markdown(f"🔍 [Pesquisar no Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
+                    st.markdown(f"🔍 [Pesquisar Google](https://www.google.com/search?q={nome_busca}+{cidade_busca})")
                     st.markdown(f"📸 [Buscar Instagram](https://www.google.com/search?q=site:instagram.com+{nome_busca}+{cidade_busca})")
 
                 with c3:
-                    st.markdown("### Gestão do Lead")
+                    st.markdown("### Gestão")
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
                     try:
                         c_idx = status_list.index(current_status)
@@ -288,7 +241,7 @@ try:
                         c_idx = 0
                         
                     novo_status = st.selectbox(
-                        "Atualizar Status:",
+                        "Status:",
                         status_list,
                         index=c_idx,
                         key=f"status_exp_{idx}"
@@ -298,7 +251,7 @@ try:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
                         
-                    if st.button("🚀 Gerar Landing Page", key=f"btn_lp_{idx}"):
+                    if st.button("🚀 Gerar LP", key=f"btn_lp_{idx}"):
                         st.success(f"LP gerada para {razao}!")
 
             st.markdown("<hr style='margin: 2px 0px 6px 0px; border-color: #f1f5f9;'>", unsafe_allow_html=True)
