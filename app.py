@@ -172,6 +172,21 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
+
+    /* O tema nativo do menu do Streamlit é independente do estado Python.
+       Oculta somente a seção de seleção de tema nativa, quando identificável,
+       para que o botão lateral seja o controle de tema da aplicação. */
+    [data-testid="stThemeSection"],
+    [data-testid="stThemeSelector"],
+    [data-testid="stThemeToggle"],
+    section[data-testid="stThemeSection"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
