@@ -591,9 +591,9 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1200 
+          windowWidth: 1400 
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
+        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape' }}
       }};
 
       html2pdf().from(element).set(opt).save().then(() => {{
