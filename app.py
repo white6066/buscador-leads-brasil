@@ -23,11 +23,9 @@ st.markdown("""
     
     [data-testid="stSidebar"] { 
         padding-top: 1.5rem; 
-        background-color: #fafbfc;
-        border-right: 1px solid #e2e8f0;
     }
     [data-testid="stSidebar"] div.stSelectbox { margin-bottom: 2px !important; }
-    [data-testid="stSidebar"] hr { margin: 16px 0px !important; border-color: #e2e8f0 !important; }
+    [data-testid="stSidebar"] hr { margin: 16px 0px !important; }
     
     .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {
         border-radius: 6px !important;
@@ -629,17 +627,17 @@ try:
         st.session_state.page_num = 1
 
     with st.sidebar:
-        st.markdown("<h3 style='font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 2px;'>🚀 Central de Leads</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='font-size: 0.78rem; color: #64748b; margin-bottom: 12px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
+        st.markdown("### 🚀 Central de Leads")
+        st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
 
-        st.markdown("<p style='font-size: 0.82rem; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em;'>📅 Filtros por Período</p>", unsafe_allow_html=True)
+        st.markdown("#### 🎯 Filtros por Período")
         
         filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None, format="DD/MM/YYYY")
         filtro_data_fim = st.date_input("Data Abertura (Fim):", value=None, format="DD/MM/YYYY")
 
         st.divider()
-        st.markdown("<p style='font-size: 0.82rem; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em;'>🔍 Filtros Gerais</p>", unsafe_allow_html=True)
+        st.markdown("#### 🎯 Filtros Gerais")
         
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().astype(str).str.strip().unique()))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
@@ -671,54 +669,19 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # CONTADORES MODERNOS E HARMONIOSOS
+    # CONTADORES COM CORES ADAPTÁVEIS AO TEMA NATIVO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
-        st.markdown(f"""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9; font-size: 1.2rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
-                <div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 2px;">{len(df_filtered)}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Total Exibidos", len(df_filtered))
     with tot_2:
-        st.markdown(f"""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; font-size: 1.2rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
-                <div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
     with tot_3:
-        st.markdown(f"""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 1.2rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
-                <div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
     with tot_4:
-        st.markdown(f"""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(99, 102, 241, 0.1); color: #6366f1; font-size: 1.2rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
-                <div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
-    st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
@@ -726,7 +689,7 @@ try:
     with col_export:
         cols_to_export = [c for c in df_filtered.columns if c != "DataAberturaParsed"]
         csv_export = df_filtered[cols_to_export].to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv", use_container_width=True)
+        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv")
 
     if search_query:
         ql = search_query.lower()
@@ -736,7 +699,6 @@ try:
             df_filtered["Cidade"].str.lower().str.contains(ql)
         ]
 
-    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
     st.subheader("📋 Lista de Empresas Localizadas na Busca")
 
     if df_filtered.empty:
@@ -757,7 +719,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 4px 0px 8px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 2px 0px 6px 0px;'>", unsafe_allow_html=True)
 
         start_idx = (st.session_state.page_num - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
@@ -817,7 +779,7 @@ try:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
                 
-                st.markdown("<hr style='margin: 10px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin: 8px 0px;'>", unsafe_allow_html=True)
                 
                 img1_key = f"saved_img1_{idx}"
                 img2_key = f"saved_img2_{idx}"
@@ -934,7 +896,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 2px 0px 4px 0px; border-color: #e2e8f0;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 1px 0px 3px 0px;'>", unsafe_allow_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
