@@ -221,11 +221,9 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
-# --- BUSCA INTELIGENTE DE FOTOGRAFIAS REAIS NA WEB POR COMANDO ---
 def search_real_photo_by_query(query_text, segmento, index_offset=0):
     query_lower = query_text.lower()
     
-    # Se o usuário pediu algo específico na barra de comando, tentamos buscar via Unsplash com termos refinados
     if any(w in query_lower for w in ['esportivo', 'esporte', 'luxo', 'mercedes', 'bmw', 'audi', 'porsche', 'ranger']):
         cars = [
             "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop",
@@ -238,7 +236,6 @@ def search_real_photo_by_query(query_text, segmento, index_offset=0):
     elif any(w in query_lower for w in ['fachada', 'loja', 'frente', 'comercio', 'predio']):
         return "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
     
-    # Fallback por segmento padrão
     seg_l = segmento.lower()
     if 'veiculo' in seg_l or 'carro' in seg_l or 'auto' in seg_l:
         default_cars = [
@@ -286,26 +283,12 @@ def apply_accumulated_modifications(html_content, instructions_list):
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        # Cor principal
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
                     break
 
-        # Alterações estruturais e posicionamento de texto ("mudar o nome para parte superior")
-        if "nome" in inst_lower and ("superior" in inst_lower or "topo" in inst_lower):
-            # Move o título principal para cima da imagem no hero
-            html_content = html_content.replace(
-                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr]',
-                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-1 text-center'
-            )
-            html_content = html_content.replace(
-                'class="max-w-2xl"',
-                'class="max-w-4xl mx-auto text-center mb-8"'
-            )
-
-        # Ajuste de Dimensionamento / Largura de Imagem via Comando
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
             html_content = html_content.replace('max-w-xl', 'max-w-3xl')
             html_content = html_content.replace('aspect-[4/3]', 'aspect-[16/9]')
@@ -367,7 +350,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     else:
         logo_header_html = f'<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">{display_name[0].upper()}</span>'
 
-    # Análise de comando para imagens se o usuário especificou algo na barra de texto
     img1_query = ""
     img2_query = ""
     for inst in instructions_list:
@@ -524,7 +506,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO -->
             <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
@@ -539,7 +520,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
               </div>
             </div>
 
-            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO -->
             <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
               <div>
                 <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
@@ -587,7 +567,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                 </div>
               </div>
 
-              <!-- ENDEREÇO POR ESCRITO ABAIXO -->
               <div class="mt-8 pt-6 border-t border-slate-100">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Endereço Oficial da Sede</p>
                 <p class="mt-1 text-sm font-medium text-slate-700 leading-relaxed">{full_address}</p>
@@ -728,7 +707,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
-            <div class="banner-subtitle">Modifique textos, posições, dimensão de imagens e busque fotos reais através da barra de comandos sem avisos.</div>
+            <div class="banner-subtitle">Gerencie leads, aplique alterações de imagens, redimensionamentos, cores e textos mantendo o padrão visual original.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -906,7 +885,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: mudar o nome para parte superior, cor vermelha, foto de carro esportivo", 
+                        placeholder="Ex: trocar cor para azul, buscar foto de carro esportivo, aumentar imagem...", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -929,15 +908,14 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
-                            # Se o comando pediu busca de imagem por texto
                             inst_l = typed_instruction.lower()
-                            if "foto" in inst_l or "imagem" in inst_l:
+                            if "foto" in inst_l or "imagem" in inst_l or "carro" in inst_l or "esportivo" in inst_l:
                                 if "2" in inst_l or "inferior" in inst_l or "sobre" in inst_l:
                                     st.session_state[img2_key] = search_real_photo_by_query(typed_instruction, segmento, 1)
                                 else:
                                     st.session_state[img1_key] = search_real_photo_by_query(typed_instruction, segmento, 0)
 
-                        with st.spinner("Aplicando alterações e comandos..."):
+                        with st.spinner("Aplicando alterações..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
