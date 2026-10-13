@@ -587,22 +587,22 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       if (btnContainer) btnContainer.style.display = 'none';
 
       const originalStyle = element.getAttribute('style') || '';
-      element.style.width = '1024px';
+      element.style.width = '1440px';
       element.style.margin = '0 auto';
 
       const opt = {{
         margin:       [10, 10, 10, 10],
         filename:     'landing_page_{cnpj}.pdf',
-        image:        {{ type: 'jpeg', quality: 0.98 }},
+        image:        {{ type: 'jpeg', quality: 0.99 }},
         html2canvas:  {{ 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1024,
+          windowWidth: 1440,
           scrollX: 0,
           scrollY: 0
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }}
+        jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
