@@ -32,7 +32,6 @@ text_muted = "#9ca3af" if is_dark else "#64748b"
 border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 
-# Cores de botões e inputs dinâmicos
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
 btn_border = "#374151" if is_dark else "#cbd5e1"
@@ -56,7 +55,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* FIX DOS BOTÕES E ÍCONES */
+    /* BOTÕES */
     [data-testid="stSidebar"] button,
     .stDownloadButton button, 
     div[data-testid="stExpander"] button, 
@@ -106,7 +105,10 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* FIX DAS SETAS DOS SELECTBOXES E DROPDOWNS */
+    /* FIX EXCLUSIVO DAS SETAS PARA BAIXO E CAIXAS DE SELEÇÃO (SELECTBOX) */
+    div[data-baseweb="select"] {{
+        background-color: transparent !important;
+    }}
     div[data-baseweb="select"] > div {{ 
         background-color: {input_bg} !important; 
         color: {input_text} !important; 
@@ -114,8 +116,8 @@ st.markdown(f"""
         border-radius: 6px !important; 
     }}
     div[data-baseweb="select"] * {{ 
+        background-color: transparent !important;
         color: {input_text} !important; 
-        fill: {input_text} !important; 
     }}
     div[data-baseweb="select"] svg {{ 
         fill: {input_text} !important; 
@@ -138,7 +140,7 @@ st.markdown(f"""
         color: #ffffff !important; 
     }}
 
-    /* FIX DOS CAMPOS DE ENTRADA DE TEXTO E DATA */
+    /* CAMPOS DE ENTRADA DE TEXTO E DATA */
     input[type="text"], input[type="date"] {{ 
         background-color: {input_bg} !important; 
         color: {input_text} !important; 
@@ -170,7 +172,7 @@ st.markdown(f"""
         background-color: transparent !important; 
     }}
 
-    /* FIX COMPLETO DO FILE UPLOADER */
+    /* FILE UPLOADER */
     div[data-testid="stFileUploader"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
