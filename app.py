@@ -253,7 +253,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
         elif any(w in inst_lower for w in ["cor", "tema", "mudar", "trocar", "deixar"]):
             for c_name in sorted(color_map.keys(), key=len, reverse=True):
                 if c_name in inst_lower:
-                    custom_primary_color = color_map[c_name]
+                    custom_primary_color = c_name
                     break
 
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
@@ -337,14 +337,14 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1200, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="{primary_color}">
   <title>{display_name} | {segmento}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Biblioteca html2pdf para exportação fiel em PDF -->
+  <!-- Biblioteca html2pdf para exportação em PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
@@ -353,7 +353,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       --ink: #111816;
     }}
     html {{ scroll-behavior: smooth; }}
-    body {{ font-family: "DM Sans", sans-serif; color: var(--ink); background-color: #fafbf9; width: 100%; min-width: 1120px; }}
+    body {{ font-family: "DM Sans", sans-serif; color: var(--ink); background-color: #fafbf9; margin: 0; padding: 0; }}
     h1, h2, h3, .display {{ font-family: "Manrope", sans-serif; }}
     .brand-bg {{ background: var(--primary); }}
     .brand-text {{ color: var(--primary); }}
@@ -371,13 +371,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 </head>
 <body class="bg-[#fafbf9] antialiased">
   <!-- Botão Flutuante de Download em PDF -->
-  <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+  <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
     </button>
   </div>
 
-  <div id="conteudo-lp" style="width: 1120px; margin: 0 auto; background: #ffffff;">
+  <div id="conteudo-lp" class="w-full bg-white">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
         ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
@@ -578,10 +578,20 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 
     function gerarPDF() {{
       const element = document.getElementById('conteudo-lp');
+      const btnContainer = document.getElementById('btn-pdf-container');
       const btn = event.currentTarget;
       const textoOriginal = btn.innerHTML;
+      
       btn.innerHTML = '⏳ A gerar PDF...';
       btn.disabled = true;
+      if (btnContainer) btnContainer.style.display = 'none';
+
+      // Salva estilo original para restaurar depois
+      const originalStyle = element.getAttribute('style') || '';
+      
+      // Força a largura desktop durante a captura do PDF
+      element.style.width = '1200px';
+      element.style.margin = '0 auto';
 
       const opt = {{
         margin:       [0, 0, 0, 0],
@@ -599,10 +609,14 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
+        element.setAttribute('style', originalStyle);
+        if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
       }}).catch(err => {{
         console.error(err);
+        element.setAttribute('style', originalStyle);
+        if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
         alert('Erro ao gerar PDF. Tente novamente.');
