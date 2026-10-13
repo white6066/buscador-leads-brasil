@@ -77,7 +77,6 @@ st.markdown(f"""
     div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
     div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
-    /* CORREÇÃO DO INPUT DE DATA E DO CALENDÁRIO FLUTUANTE (POPOVER) */
     div[data-testid="stDateInput"] input,
     div[data-testid="stDateInput"] div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
@@ -89,15 +88,16 @@ st.markdown(f"""
         fill: {input_text} !important;
         color: {input_text} !important;
     }}
-    div[data-baseweb="popover"], div[data-baseweb="calendar"] {{
+
+    /* CORREÇÃO ROBUSTA DO CALENDÁRIO FLUTUANTE (BASEWEB) */
+    div[data-baseweb="popover"], div[data-baseweb="calendar"], div[class*="datepicker"] {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 6px !important;
     }}
-    div[data-baseweb="popover"] *, div[data-baseweb="calendar"] * {{
-        color: {input_text} !important;
+    div[data-baseweb="calendar"] div, div[data-baseweb="calendar"] span, div[data-baseweb="calendar"] section {{
         background-color: transparent !important;
+        color: {input_text} !important;
     }}
     div[data-baseweb="calendar"] button {{
         background-color: transparent !important;
