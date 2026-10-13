@@ -28,27 +28,28 @@ st.markdown("""
     [data-testid="stSidebar"] hr { margin: 16px 0px !important; }
     
     .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {
-        border-radius: 6px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        border-radius: 8px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         transition: all 0.2s ease-in-out;
-        font-size: 0.8rem !important;
-        padding: 4px 10px !important;
-        min-height: 36px !important;
+        font-size: 0.82rem !important;
+        padding: 6px 12px !important;
+        min-height: 38px !important;
+        font-weight: 600 !important;
     }
     
     h1, h2, h3, h4, h5, h6 { font-family: system-ui, -apple-system, sans-serif; }
     a { text-decoration: none !important; }
 
     .banner-box { 
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
         color: #ffffff;
-        padding: 24px 32px; 
-        border-radius: 12px; 
+        padding: 26px 34px; 
+        border-radius: 14px; 
         margin-bottom: 24px; 
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
     }
-    .banner-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; color: #ffffff; }
-    .banner-subtitle { font-size: 0.88rem; line-height: 1.5; color: #94a3b8; }
+    .banner-title { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff; }
+    .banner-subtitle { font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.85); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -631,13 +632,13 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
 
-        st.markdown("#### 🎯 Filtros por Período")
+        st.markdown("#### 📅 Filtros por Período")
         
         filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None, format="DD/MM/YYYY")
         filtro_data_fim = st.date_input("Data Abertura (Fim):", value=None, format="DD/MM/YYYY")
 
         st.divider()
-        st.markdown("#### 🎯 Filtros Gerais")
+        st.markdown("#### 🔍 Filtros Gerais")
         
         segmentos = ["Todos"] + sorted(list(current_df["Segmento"].dropna().astype(str).str.strip().unique()))
         seg_selecionado = st.selectbox("Segmento / Nicho:", segmentos)
@@ -669,19 +670,19 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # CONTADORES COM CORES ADAPTÁVEIS AO TEMA NATIVO
+    # CONTADORES NATIVOS COM DESIGN ESTILIZADO E SUPORTE A TEMA CLARO/ESCURO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
-        st.metric("Total Exibidos", len(df_filtered))
+        st.metric(label="📊 Total Exibidos", value=len(df_filtered))
     with tot_2:
-        st.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
+        st.metric(label="⏳ Pendentes", value=len(current_df[current_df["Status"] == "Pendente"]))
     with tot_3:
-        st.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
+        st.metric(label="⚡ LPs Geradas", value=len(current_df[current_df["Status"] == "LP Gerada"]))
     with tot_4:
-        st.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
+        st.metric(label="🏆 Vendas Fechadas", value=len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
@@ -689,7 +690,7 @@ try:
     with col_export:
         cols_to_export = [c for c in df_filtered.columns if c != "DataAberturaParsed"]
         csv_export = df_filtered[cols_to_export].to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/csv")
+        st.download_button("📥 Exportar", data=csv_export, file_name="leads.csv", mime="text/html", use_container_width=True)
 
     if search_query:
         ql = search_query.lower()
@@ -699,6 +700,7 @@ try:
             df_filtered["Cidade"].str.lower().str.contains(ql)
         ]
 
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
     st.subheader("📋 Lista de Empresas Localizadas na Busca")
 
     if df_filtered.empty:
@@ -719,7 +721,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown("<hr style='margin: 2px 0px 6px 0px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 6px 0px 10px 0px;'>", unsafe_allow_html=True)
 
         start_idx = (st.session_state.page_num - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
@@ -779,7 +781,7 @@ try:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
                 
-                st.markdown("<hr style='margin: 8px 0px;'>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
                 
                 img1_key = f"saved_img1_{idx}"
                 img2_key = f"saved_img2_{idx}"
@@ -896,7 +898,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 1px 0px 3px 0px;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
