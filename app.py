@@ -179,13 +179,13 @@ st.markdown(f"""
     [data-testid="stThemeSection"],
     [data-testid="stThemeSelector"],
     [data-testid="stThemeToggle"],
-    section[data-testid="stThemeSection"] {
+    section[data-testid="stThemeSection"] {{
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
         min-height: 0 !important;
         overflow: hidden !important;
-    }
+    }}
 
 </style>
 """, unsafe_allow_html=True)
