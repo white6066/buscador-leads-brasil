@@ -384,9 +384,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </span>
       </a>
       <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
-        <a class="hover:brand-text transition" href="#inicio">Início</a>
-        <a class="hover:brand-text transition" href="#sobre">Sobre Nós</a>
         <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
+        <a class="hover:brand-text transition" href="#sobre">Sobre Nós</a>
         <a class="hover:brand-text transition" href="#contato">Contato</a>
       </nav>
       <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2.5 rounded-xl brand-bg px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90">
