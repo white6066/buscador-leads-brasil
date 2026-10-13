@@ -17,83 +17,29 @@ st.set_page_config(
     layout="wide"
 )
 
-if "theme" not in st.session_state:
-    st.session_state.theme = "Claro"
-
-def toggle_theme():
-    st.session_state.theme = "Claro" if st.session_state.theme == "Escuro" else "Escuro"
-
-is_dark = st.session_state.theme == "Escuro"
-
-bg_app = "#090d16" if is_dark else "#f1f5f9"
-bg_card = "#111827" if is_dark else "#ffffff"
-text_color = "#f3f4f6" if is_dark else "#0f172a"
-text_muted = "#9ca3af" if is_dark else "#64748b"
-border_color = "#1f2937" if is_dark else "#cbd5e1"
-hr_color = "#1f2937" if is_dark else "#cbd5e1"
-btn_bg = "#1f2937" if is_dark else "#ffffff"
-btn_text = "#f3f4f6" if is_dark else "#0f172a"
-input_bg = "#111827" if is_dark else "#ffffff"
-input_text = "#f3f4f6" if is_dark else "#0f172a"
-expander_bg = "#111827" if is_dark else "#ffffff"
-dropdown_bg = "#111827" if is_dark else "#ffffff"
-dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
-
-st.markdown(f"""
+st.markdown("""
 <style>
-    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
-    html, body, [class*="st-"] {{ font-size: 0.92rem !important; }}
+    html, body, [class*="st-"] { font-size: 0.92rem !important; }
     
-    [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
-    [data-testid="stHeader"] * {{ color: {text_color} !important; }}
+    [data-testid="stSidebar"] { padding-top: 1rem; }
+    [data-testid="stSidebar"] div.stSelectbox { margin-bottom: -10px !important; }
+    [data-testid="stSidebar"] hr { margin: 12px 0px !important; }
     
-    [data-testid="stSidebar"] {{ background-color: {bg_app}; color: {text_color} !important; padding-top: 1rem; border-right: 1px solid {border_color}; }}
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{ color: {text_color} !important; font-weight: 500 !important; font-size: 0.9rem !important; }}
-    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
-    [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
-    
-    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
-        background-color: {btn_bg} !important;
-        color: {btn_text} !important;
-        border: 1px solid {border_color} !important;
+    .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {
         border-radius: 4px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
         font-size: 0.78rem !important;
         padding: 3px 6px !important;
         min-height: 32px !important;
-    }}
-    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
-        background-color: {btn_bg} !important;
-        border-color: #0ea5e9 !important;
-        color: #0ea5e9 !important;
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
-    }}
+    }
     
-    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
-    a {{ text-decoration: none !important; }}
+    h1, h2, h3, h4, h5, h6 { font-family: system-ui, -apple-system, sans-serif; }
+    a { text-decoration: none !important; }
 
-    div[data-testid="stDateInput"] input {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border-color: {border_color} !important;
-    }}
-
-    div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
-    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
-    div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
-    
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
-    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
-    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
-
-    .banner-box {{ background-color: {bg_card}; padding: 20px 28px; border-radius: 6px; color: {text_color}; margin-bottom: 20px; border: 1px solid {border_color}; }}
-    .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
-    .banner-subtitle {{ color: {text_muted}; font-size: 0.85rem; line-height: 1.4; }}
-    
-    div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; }}
-    div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 6px !important; font-size: 0.9rem !important; }}
-    p, span, div {{ color: {text_color}; font-size: 0.9rem !important; }}
+    .banner-box { padding: 20px 28px; border-radius: 6px; margin-bottom: 20px; }
+    .banner-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; }
+    .banner-subtitle { font-size: 0.85rem; line-height: 1.4; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -675,13 +621,7 @@ try:
         st.markdown("### 🚀 Central de Leads")
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
-        
-        theme_btn_label = "☀️ Modo Claro" if is_dark else "🌙 Modo Escuro"
-        if st.button(theme_btn_label, use_container_width=True):
-            toggle_theme()
-            st.rerun()
 
-        st.divider()
         st.markdown("#### 🎯 Filtros por Período")
         
         filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None, format="DD/MM/YYYY")
@@ -723,48 +663,13 @@ try:
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(df_filtered)}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Total Exibidos", len(df_filtered))
     with tot_2:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
     with tot_3:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
+        st.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
     with tot_4:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(99, 102, 241, 0.12); color: #6366f1; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
@@ -804,7 +709,7 @@ try:
         cols_header[5].markdown("**Ações Rápidas**")
         cols_header[6].markdown("**Status**")
         
-        st.markdown(f"<hr style='margin: 2px 0px 6px 0px; border-color: {hr_color};'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 2px 0px 6px 0px;'>", unsafe_allow_html=True)
 
         start_idx = (st.session_state.page_num - 1) * items_per_page
         start_idx = max(0, min(start_idx, total_items - 1)) if total_items > 0 else 0
@@ -864,7 +769,7 @@ try:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
                 
-                st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin: 8px 0px;'>", unsafe_allow_html=True)
                 
                 img1_key = f"saved_img1_{idx}"
                 img2_key = f"saved_img2_{idx}"
@@ -981,7 +886,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown(f"<hr style='margin: 1px 0px 3px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 1px 0px 3px 0px;'>", unsafe_allow_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
