@@ -586,26 +586,23 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      // Salva estilo original para restaurar depois
       const originalStyle = element.getAttribute('style') || '';
-      
-      // Força a largura desktop durante a captura do PDF
-      element.style.width = '1200px';
+      element.style.width = '1280px';
       element.style.margin = '0 auto';
 
       const opt = {{
-        margin:       [0, 0, 0, 0],
+        margin:       [5, 5, 5, 5],
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
         html2canvas:  {{ 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1200,
+          windowWidth: 1280,
           scrollX: 0,
           scrollY: 0
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }}
+        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }}
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
