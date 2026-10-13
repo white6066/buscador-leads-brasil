@@ -31,11 +31,8 @@ text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
 border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
-
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
-btn_border = "#374151" if is_dark else "#cbd5e1"
-
 input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
@@ -55,154 +52,44 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* BOTÕES */
-    [data-testid="stSidebar"] button,
-    .stDownloadButton button, 
-    div[data-testid="stExpander"] button, 
-    div.row-widget.stButton button, 
-    button {{
+    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
-        border: 1px solid {btn_border} !important;
-        border-radius: 6px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border: 1px solid {border_color} !important;
+        border-radius: 4px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        padding: 5px 10px !important;
-        min-height: 36px !important;
+        font-size: 0.78rem !important;
+        padding: 3px 6px !important;
+        min-height: 32px !important;
     }}
-    
-    [data-testid="stSidebar"] button *,
-    .stDownloadButton button *, 
-    div[data-testid="stExpander"] button *, 
-    div.row-widget.stButton button *, 
-    button * {{
-        color: {btn_text} !important;
-        fill: {btn_text} !important;
-    }}
-
-    [data-testid="stSidebar"] button:hover,
-    .stDownloadButton button:hover, 
-    div[data-testid="stExpander"] button:hover, 
-    div.row-widget.stButton button:hover, 
-    button:hover {{
-        background-color: #0ea5e9 !important;
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
+        background-color: {btn_bg} !important;
         border-color: #0ea5e9 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
-    }}
-
-    [data-testid="stSidebar"] button:hover *,
-    .stDownloadButton button:hover *, 
-    div[data-testid="stExpander"] button:hover *, 
-    div.row-widget.stButton button:hover *, 
-    button:hover * {{
-        color: #ffffff !important;
-        fill: #ffffff !important;
+        color: #0ea5e9 !important;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* REMOÇÃO DEFINITIVA DO QUADRADO PRETO DA SETA (SELECTBOX) */
-    div[data-baseweb="select"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 6px !important;
-    }}
-    div[data-baseweb="select"] > div {{ 
-        background-color: transparent !important; 
-        color: {input_text} !important; 
-        border: none !important; 
-    }}
-    /* Zera qualquer fundo de div interna da seta e isola o ícone */
-    div[data-baseweb="select"] div[data-testid="stSelectbox"] div,
-    div[data-baseweb="select"] div[role="button"],
-    div[data-baseweb="select"] div[aria-hidden="true"],
-    div[data-baseweb="select"] span {{
-        background-color: transparent !important;
-        background: transparent !important;
-    }}
-    /* Deixa a seta limpa na cor correta */
-    div[data-baseweb="select"] svg {{ 
-        fill: {input_text} !important; 
-        color: {input_text} !important; 
-    }}
+    input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
+    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
+    div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
+
+    div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
+    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
+    div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
     
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ 
-        background-color: {dropdown_bg} !important; 
-        color: {dropdown_text} !important; 
-        border: 1px solid {border_color} !important; 
-        border-radius: 6px !important; 
-    }}
-    li[data-baseweb="option"], div[role="option"] {{ 
-        background-color: {dropdown_bg} !important; 
-        color: {dropdown_text} !important; 
-        font-size: 0.9rem !important; 
-    }}
-    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ 
-        background-color: #0ea5e9 !important; 
-        color: #ffffff !important; 
-    }}
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
+    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
+    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
 
-    /* CAMPOS DE ENTRADA DE TEXTO E DATA */
-    input[type="text"], input[type="date"] {{ 
-        background-color: {input_bg} !important; 
-        color: {input_text} !important; 
-        border: 1px solid {border_color} !important; 
-        border-radius: 6px !important;
-        font-size: 0.9rem !important; 
-    }}
-    
-    div[data-testid="stDateInput"] input,
-    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 6px !important;
-    }}
-    div[data-testid="stDateInput"] svg {{
-        fill: {input_text} !important;
-        color: {input_text} !important;
-    }}
+    div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
 
-    div[data-baseweb="input"] {{ 
-        background-color: {input_bg} !important; 
-        border: 1px solid {border_color} !important; 
-        border-radius: 6px !important; 
-        color: {input_text} !important; 
-    }}
-    div[data-baseweb="input"] input {{ 
-        color: {input_text} !important; 
-        background-color: transparent !important; 
-    }}
-
-    /* FILE UPLOADER */
-    div[data-testid="stFileUploader"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 6px !important;
-        padding: 10px !important;
-    }}
-    div[data-testid="stFileUploader"] section {{
-        background-color: {input_bg} !important;
-        border: 2px dashed {border_color} !important;
-        border-radius: 6px !important;
-    }}
-    div[data-testid="stFileUploader"] section * {{
-        color: {text_color} !important;
-        fill: {text_color} !important;
-    }}
-
-    .banner-box {{ 
-        background-color: {bg_card}; 
-        padding: 20px 28px; 
-        border-radius: 8px; 
-        color: {text_color}; 
-        margin-bottom: 20px; 
-        border: 1px solid {border_color}; 
-    }}
+    .banner-box {{ background-color: {bg_card}; padding: 20px 28px; border-radius: 6px; color: {text_color}; margin-bottom: 20px; border: 1px solid {border_color}; }}
     .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
     .banner-subtitle {{ color: {text_muted}; font-size: 0.85rem; line-height: 1.4; }}
     
@@ -401,16 +288,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
                     break
-
-        if "nome" in inst_lower and ("superior" in inst_lower or "topo" in inst_lower):
-            html_content = html_content.replace(
-                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr]',
-                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-1 text-center'
-            )
-            html_content = html_content.replace(
-                'class="max-w-2xl"',
-                'class="max-w-4xl mx-auto text-center mb-8"'
-            )
 
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
             html_content = html_content.replace('max-w-xl', 'max-w-3xl')
@@ -629,17 +506,17 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <div class="p-6 sm:p-8 lg:p-10 brand-bg text-white flex flex-col justify-between">
+            <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
-                <p class="mt-2 text-sm text-white/90">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+                <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
               </div>
-              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-black/20">
+              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
                 <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
               </div>
-              <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
+              <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
                 <span>📍 {full_address}</span>
-                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold underline text-white hover:opacity-80">Ampliar no Maps ↗</a>
+                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="brand-text font-bold hover:underline text-emerald-400">Ampliar no Maps ↗</a>
               </div>
             </div>
 
@@ -702,15 +579,15 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </section>
   </main>
 
-  <footer class="brand-bg px-5 py-8 text-white/90 border-t border-white/10">
+  <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
     <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
       <div>
         <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
-        <p class="mt-1 text-xs text-white/80">{razao} · {cidade}/{uf}</p>
+        <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
       </div>
       <div class="text-xs sm:text-right">
         <p>CNPJ: {formatted_cnpj}</p>
-        <p class="mt-1 text-white/70">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
+        <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
       </div>
     </div>
   </footer>
@@ -721,6 +598,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
+# --- CARREGAMENTO DA PLANILHA ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -800,7 +678,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "☀️ Modo Claro" if is_dark else "🌙 Modo Escuro"
+        theme_btn_label = "🌙 Modo Escuro" if not is_dark else "☀️ Modo Claro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
@@ -829,7 +707,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
-            <div class="banner-subtitle">Painel de Prospecção Pro: Edição de fotos, ajuste de cores, dimensões e sincronização visual do mapa.</div>
+            <div class="banner-subtitle">Gerencie leads, aplique alterações de imagens, redimensionamentos, cores e textos mantendo o padrão visual original.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -844,54 +722,13 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # PAINEL DE CONTADORES MODERNOS
-    tot_1, tot_2, tot_3, tot_4 = st.columns(4)
-    
-    with tot_1:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(df_filtered)}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Exibidos", len(df_filtered))
+    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
+    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
+    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
-    with tot_2:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with tot_3:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with tot_4:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(99, 102, 241, 0.12); color: #6366f1; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
-                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+    st.divider()
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
@@ -973,7 +810,7 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            with st.expander(f"⚙️ Gerenciar, criar e alterar: {razao}"):
+            with st.expander(f"⚙️ Gerenciar & Criar LP Masterpiece: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
