@@ -73,42 +73,6 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
-    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
-    div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
-
-    div[data-testid="stDateInput"] input,
-    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 4px !important;
-    }}
-    div[data-testid="stDateInput"] svg {{
-        fill: {input_text} !important;
-        color: {input_text} !important;
-    }}
-
-    /* CORREÇÃO ROBUSTA DO CALENDÁRIO FLUTUANTE (BASEWEB) */
-    div[data-baseweb="popover"], div[data-baseweb="calendar"], div[class*="datepicker"] {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-    }}
-    div[data-baseweb="calendar"] div, div[data-baseweb="calendar"] span, div[data-baseweb="calendar"] section {{
-        background-color: transparent !important;
-        color: {input_text} !important;
-    }}
-    div[data-baseweb="calendar"] button {{
-        background-color: transparent !important;
-        color: {input_text} !important;
-        border: none !important;
-    }}
-    div[data-baseweb="calendar"] button:hover {{
-        background-color: #0ea5e9 !important;
-        color: #ffffff !important;
-    }}
-
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
