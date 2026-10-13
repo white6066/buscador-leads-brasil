@@ -25,16 +25,16 @@ def toggle_theme():
 
 is_dark = st.session_state.theme == "Escuro"
 
-bg_app = "#090d16" if is_dark else "#f8fafc"
+bg_app = "#0b0f19" if is_dark else "#f8fafc"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
-border_color = "#1f2937" if is_dark else "#e2e8f0"
-hr_color = "#1f2937" if is_dark else "#e2e8f0"
+border_color = "#1f2937" if is_dark else "#cbd5e1"
+hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
-input_bg = "#111827" if is_dark else "#ffffff"
-input_text = "#f3f4f6" if is_dark else "#0f172a"
+input_bg = "#1f2937" if is_dark else "#ffffff"
+input_text = "#ffffff" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
 dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
@@ -47,13 +47,12 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* SIDEBAR MODERNA */
+    /* SIDEBAR */
     [data-testid="stSidebar"] {{
         background: {bg_card} !important;
         color: {text_color} !important;
         padding-top: 1.2rem;
         border-right: 1px solid {border_color};
-        box-shadow: 4px 0 24px rgba(0,0,0,0.03);
     }}
     [data-testid="stSidebar"] label {{
         color: {text_color} !important;
@@ -91,6 +90,7 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
+    /* CAMPOS DE TEXTO E INPUTS (PESQUISA E DATAS CORRIGIDOS) */
     input[type="text"], input[type="date"] {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
@@ -104,7 +104,17 @@ st.markdown(f"""
         border-radius: 8px !important;
         color: {input_text} !important;
     }}
-    div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
+    div[data-baseweb="input"] input {{
+        color: {input_text} !important;
+        background-color: transparent !important;
+        -webkit-text-fill-color: {input_text} !important;
+    }}
+    
+    /* CORREÇÃO ESPECÍFICA PARA O CAMPO DE PESQUISA PRINCIPAL */
+    input[aria-label*="Pesquisa Rápida"] {{
+        color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
+    }}
 
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
@@ -134,8 +144,22 @@ st.markdown(f"""
     .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
     .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
     
-    div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 10px !important; }}
-    div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 10px !important; font-size: 0.9rem !important; font-weight: 600 !important; }}
+    /* EXPANDERS CORRIGIDOS */
+    div[data-testid="stExpander"] {{
+        background-color: {expander_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+    }}
+    div[data-testid="stExpander"] summary {{
+        background-color: {expander_bg} !important;
+        color: {text_color} !important;
+        border-radius: 10px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+    }}
+    div[data-testid="stExpander"] summary span {{
+        color: {text_color} !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -756,7 +780,7 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # PAINEL DE TOTALIZADORES MODERNIZADO E DESTAQUE
+    # PAINEL DE TOTALIZADORES MODERNIZADO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
