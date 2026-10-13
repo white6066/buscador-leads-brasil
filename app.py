@@ -73,7 +73,6 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* CORREÇÃO DOS INPUTS DE DATA PARA SE ADAPTAREM AO TEMA SEM CONFLITOS */
     div[data-testid="stDateInput"] input {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
