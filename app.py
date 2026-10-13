@@ -8,10 +8,11 @@ import re
 import hashlib
 from datetime import datetime
 from PIL import Image
+import base64
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com IA de Imagem Realista",
+    page_title="Novas Empresas - Gerador LP com Fotos Reais HD & Upload Personalizado",
     page_icon="🚀",
     layout="wide"
 )
@@ -220,46 +221,24 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
-def translate_and_optimize_prompt(portuguese_text):
-    text_lower = portuguese_text.lower()
-    if any(w in text_lower for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
-        return "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
-    elif 'carro' in text_lower or 'veiculo' in text_lower or 'automovel' in text_lower or 'anexo' in text_lower or 'realista' in text_lower or 'foto' in text_lower:
-        return "professional car dealership showroom interior, clean polished floor, multiple brand new modern cars on display, bright showroom lighting, realistic commercial photography, 4k"
-    elif 'loja' in text_lower or 'comercio' in text_lower:
-        return f"modern high-end retail store interior, {portuguese_text}, bright professional architectural lighting, photorealistic, 4k"
-    elif 'escritorio' in text_lower or 'sala' in text_lower:
-        return f"sophisticated modern corporate office interior, {portuguese_text}, professional business atmosphere, architectural photography, 4k"
-    else:
-        return f"professional commercial photography of {portuguese_text}, photorealistic, 4k resolution, high quality business display, cinematic lighting"
-
-def generate_superior_ai_image(segmento, razao, specific_instruction="", custom_seed=0):
-    seg_lower = (segmento + " " + razao).lower()
+# --- BIBLIOTECA DE FOTOGRAFIAS REAIS HD (UNSPLASH) ---
+def get_real_hd_photo(segmento, razao, instruction="", index_offset=0):
+    text_search = (instruction + " " + segmento + " " + razao).lower()
     
-    if specific_instruction:
-        prompt = translate_and_optimize_prompt(specific_instruction)
+    if any(w in text_search for w in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
+        photos = [
+            "https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1200&auto=format&fit=crop", # Showroom moderno
+            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=1200&auto=format&fit=crop", # Carro em exposição
+            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop", # Esportivo de luxo
+            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"  # Veículo premium
+        ]
+        return photos[index_offset % len(photos)]
+    elif any(w in text_search for w in ['constr', 'material', 'obra']):
+        return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200&auto=format&fit=crop"
+    elif any(w in text_search for w in ['hospital', 'saude', 'medico', 'clinica']):
+        return "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop"
     else:
-        if any(x in seg_lower for x in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
-            prompt = "professional car dealership showroom interior, clean polished floor, a mix of modern affordable sedans and hatchbacks on display, bright showroom lighting, realistic commercial photography, high quality"
-        elif any(x in seg_lower for x in ['constr', 'material', 'obra', 'ferramenta', 'hardware']):
-            prompt = "modern hardware store and building materials showroom interior, high-end construction materials neatly organized on shelves, bright professional architectural lighting, photorealistic, 4k"
-        elif any(x in seg_lower for x in ['hospital', 'saude', 'medico', 'clinica', 'odont', 'laborat']):
-            prompt = "modern high-end medical clinic interior, clean professional healthcare environment, advanced medical equipment, bright welcoming lighting, photorealistic, 4k"
-        elif any(x in seg_lower for x in ['supermerc', 'mercado', 'aliment', 'varejo', 'comercio']):
-            prompt = "high-end modern supermarket interior, beautifully organized shelves with grocery products, bright clean aisles, commercial retail photography, 4k"
-        elif any(x in seg_lower for x in ['cafe', 'agropecu', 'agrop', 'agricult', 'rural', 'fazenda']):
-            prompt = "modern agricultural business office and sustainable agribusiness landscape, professional corporate environment, high resolution, photorealistic"
-        elif any(x in seg_lower for x in ['advoc', 'jurid', 'contab', 'consult', 'direito', 'gestao']):
-            prompt = "sophisticated modern executive corporate office, meeting room with glass walls, professional business atmosphere, architectural photography, 4k"
-        elif any(x in seg_lower for x in ['estet', 'beleza', 'salao', 'spa']):
-            prompt = "luxury modern aesthetic beauty spa interior, elegant relaxing design, minimalist lighting, high-end wellness center, photorealistic, 4k"
-        else:
-            prompt = f"modern professional corporate workspace for {segmento}, elegant interior design, high-end business environment, photorealistic, 4k"
-
-    encoded_prompt = urllib.parse.quote(prompt)
-    base_seed = int(hashlib.md5((segmento + razao + specific_instruction).encode()).hexdigest(), 16) % 999999
-    final_seed = base_seed + custom_seed
-    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1200&height=800&seed={final_seed}&model=flux&nologo=true"
+        return "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -323,23 +302,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     return html_content
 
-def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, seed_offset_1=0, seed_offset_2=0):
-    img1_inst = ""
-    img2_inst = ""
-    
-    for inst in instructions_list:
-        inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular', '1', 'superior', 'topo', 'exemplo', 'igual', 'semelhante', 'realista', 'verdade', 'anexo']):
-            if "2" not in inst_l and "inferior" not in inst_l and "sobre" not in inst_l:
-                img1_inst = inst
-        if any(w in inst_l for w in ['2', 'inferior', 'segunda', 'sobre']):
-            img2_inst = inst
-
-    if not img1_inst and instructions_list:
-        img1_inst = instructions_list[-1]
-    if not img2_inst and len(instructions_list) > 1:
-        img2_inst = instructions_list[-1]
-
+def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, uploaded_file=None, image_position="Imagem 1 (Superior / Topo)", seed_offset=0):
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
@@ -379,8 +342,26 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     active_email = osint["email"] if osint["email"] else f"contato@{str(display_name).lower().replace(' ', '')}.com.br"
     active_instagram = osint["instagram"] if osint["instagram"] else f"https://instagram.com/{str(display_name).lower().replace(' ', '')}"
 
-    img_feature_1 = generate_superior_ai_image(segmento, razao, img1_inst, seed_offset_1)
-    img_feature_2 = generate_superior_ai_image(segmento, razao, img2_inst if img2_inst else img1_inst, seed_offset_2)
+    # Processamento de Imagens (Código ou Upload)
+    uploaded_base64 = None
+    if uploaded_file is not None:
+        bytes_data = uploaded_file.getvalue()
+        mime_type = uploaded_file.type if hasattr(uploaded_file, 'type') else "image/jpeg"
+        uploaded_base64 = f"data:{mime_type};base64,{base64.b64encode(bytes_data).decode('utf-8')}"
+
+    # Definir Imagem 1 e Imagem 2
+    default_img_1 = get_real_hd_photo(segmento, razao, "", seed_offset)
+    default_img_2 = get_real_hd_photo(segmento, razao, "", seed_offset + 1)
+
+    if uploaded_base64 and "Imagem 1" in image_position:
+        img_feature_1 = uploaded_base64
+        img_feature_2 = default_img_2
+    elif uploaded_base64 and "Imagem 2" in image_position:
+        img_feature_1 = default_img_1
+        img_feature_2 = uploaded_base64
+    else:
+        img_feature_1 = default_img_1
+        img_feature_2 = default_img_2
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -722,8 +703,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com IA de Imagem Realista</div>
-            <div class="banner-subtitle">Sistema inteligente com histórico acumulado de comandos, formatação oficial e alta conversão.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Fotos Reais HD</div>
+            <div class="banner-subtitle">Sistema inteligente com fotografias reais automáticas e opção de upload personalizado por posição.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -843,6 +824,17 @@ try:
                         st.rerun()
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
+                
+                # --- ÁREA DE UPLOAD E CONTROLE DE FOTOS REAIS ---
+                up_col1, up_col2 = st.columns([2, 2])
+                with up_col1:
+                    uploaded_ref_image = st.file_uploader("📎 Enviar foto real própria (JPG/PNG)", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
+                with up_col2:
+                    image_position = st.selectbox(
+                        "Onde aplicar a foto enviada:",
+                        ["Imagem 1 (Superior / Topo)", "Imagem 2 (Inferior / Sobre)"],
+                        key=f"pos_{idx}"
+                    )
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
                 
@@ -850,13 +842,9 @@ try:
                 if hist_key not in st.session_state:
                     st.session_state[hist_key] = []
                 
-                seed1_key = f"seed_off_1_{idx}"
-                if seed1_key not in st.session_state:
-                    st.session_state[seed1_key] = 0
-
-                seed2_key = f"seed_off_2_{idx}"
-                if seed2_key not in st.session_state:
-                    st.session_state[seed2_key] = 0
+                seed_key = f"seed_off_{idx}"
+                if seed_key not in st.session_state:
+                    st.session_state[seed_key] = 0
 
                 input_val_key = f"cust_val_{idx}"
                 if input_val_key not in st.session_state:
@@ -865,17 +853,16 @@ try:
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
-                        st.session_state[seed1_key] = 0
-                        st.session_state[seed2_key] = 0
+                        st.session_state[seed_key] = 0
                         
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
                             
-                        with st.spinner("Gerando Landing Page com IA..."):
-                            lp_html = generate_ai_masterpiece_landing_page(
+                        with st.spinner("Gerando Landing Page com fotos reais HD..."):
+                            lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
-                                st.session_state[hist_key], st.session_state[seed1_key], st.session_state[seed2_key]
+                                st.session_state[hist_key], uploaded_ref_image, image_position, st.session_state[seed_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
@@ -886,7 +873,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: colocar foto de carros novos expostos no showroom", 
+                        placeholder="Ex: trocar foto de carros", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -897,21 +884,17 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
-                            c_lower = typed_instruction.lower()
-                            if "2" in c_lower or "inferior" in c_lower or "sobre" in c_lower:
-                                st.session_state[seed2_key] += 1
-                            else:
-                                st.session_state[seed1_key] += 1
+                        st.session_state[seed_key] += 1
 
-                        with st.spinner("Aplicando alterações da IA..."):
-                            lp_html = generate_ai_masterpiece_landing_page(
+                        with st.spinner("Atualizando fotografias reais..."):
+                            lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
-                                st.session_state[hist_key], st.session_state[seed1_key], st.session_state[seed2_key]
+                                st.session_state[hist_key], uploaded_ref_image, image_position, st.session_state[seed_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.session_state[input_val_key] = ""
-                            st.success("Alteração aplicada com sucesso!")
+                            st.success("Fotografia atualizada com sucesso!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
