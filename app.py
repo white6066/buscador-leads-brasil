@@ -48,7 +48,7 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* 1. CORREÇÃO RADICAL DO BOTÃO EXPANDIR/FECHAR SIDEBAR (REMOVE 'keyboard_double_ar...') */
+    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR */
     button[data-testid="stSidebarCollapseButton"], 
     button[data-testid="stSidebarExpandButton"] {{
         background-color: {input_bg} !important;
@@ -56,27 +56,26 @@ st.markdown(f"""
         border-radius: 8px !important;
         color: transparent !important;
         position: relative !important;
-        width: 38px !important;
-        height: 38px !important;
+        width: 36px !important;
+        height: 36px !important;
     }}
     button[data-testid="stSidebarCollapseButton"] *, 
     button[data-testid="stSidebarExpandButton"] * {{
         display: none !important;
         visibility: hidden !important;
-        font-size: 0px !important;
     }}
-    button[data-testid="stSidebarCollapseButton"]::before {{
+    button[data-testid="stSidebarCollapseButton"]::after {{
         content: "◀" !important;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         color: {text_color} !important;
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
     }}
-    button[data-testid="stSidebarExpandButton"]::before {{
+    button[data-testid="stSidebarExpandButton"]::after {{
         content: "▶" !important;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         color: {text_color} !important;
         position: absolute !important;
         top: 50% !important;
@@ -103,7 +102,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: 2px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 14px 0px !important; border-color: {border_color} !important; }}
 
-    /* 2. CORREÇÃO TOTAL DOS CAMPOS DE DATA (FUNDO ESCURO + BORDAS ESCURAS) */
+    /* CAMPOS DE DATA */
     div[data-testid="stDateInput"],
     div[data-testid="stDateInput"] *,
     div[data-testid="stDateInput"] div[data-baseweb="input"],
@@ -143,7 +142,28 @@ st.markdown(f"""
     }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
 
-    /* 3. CORREÇÃO TOTAL DO EXPANDER DAS EMPRESAS (ELIMINA '_arrow_...' E REEMPLAZA POR ÍCONE) */
+    /* CORREÇÃO DO FILE UPLOADER (COR E TEXTO) */
+    div[data-testid="stFileUploader"] {{
+        background-color: {input_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
+    }}
+    div[data-testid="stFileUploader"] section {{
+        background-color: {input_bg} !important;
+        border: 2px dashed {border_color} !important;
+        border-radius: 8px !important;
+    }}
+    div[data-testid="stFileUploader"] section * {{
+        color: {text_color} !important;
+    }}
+    div[data-testid="stFileUploader"] button {{
+        background-color: {btn_bg} !important;
+        color: {btn_text} !important;
+        border: 1px solid {border_color} !important;
+    }}
+
+    /* EXPANDER DAS EMPRESAS */
     div[data-testid="stExpander"] {{
         background-color: {expander_bg} !important;
         border: 1px solid {border_color} !important;
@@ -155,27 +175,10 @@ st.markdown(f"""
         border-radius: 10px !important;
         padding: 10px 14px !important;
     }}
-    /* Oculta os textos corrompidos injetados no sumário */
     div[data-testid="stExpander"] summary span[data-testid="stMarkdownContainer"] p {{
         display: inline-block !important;
         color: {text_color} !important;
         font-weight: 600 !important;
-    }}
-    /* Força esconder seletores corrompidos tipo _arrow_ */
-    div[data-testid="stExpander"] summary > span:first-child {{
-        font-size: 0px !important;
-        color: transparent !important;
-        width: 18px !important;
-        height: 18px !important;
-        position: relative !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }}
-    div[data-testid="stExpander"] summary > span:first-child::before {{
-        content: "⚙️" !important;
-        font-size: 0.95rem !important;
-        color: {text_color} !important;
     }}
 
     /* BOTÕES GERAIS */
@@ -198,7 +201,6 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
     a {{ text-decoration: none !important; }}
 
-    /* BANNER SUPERIOR DESTAQUE */
     .banner-box {{
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
         padding: 24px 32px;
@@ -959,8 +961,8 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            # EXPANDER COM TÍTULO E ÍCONE LIMPOS
-            with st.expander(f"Gerenciar & Criar LP: {razao}"):
+            # EXPANDER COM TEXTO "Gerenciar, criar e alterar" AO LADO DA ENGRENAGEM
+            with st.expander(f"⚙️ Gerenciar, criar e alterar: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
