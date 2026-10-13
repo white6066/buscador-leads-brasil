@@ -77,7 +77,7 @@ st.markdown(f"""
     div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
     div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
-    /* CORREÇÃO COMPLETA DO INPUT DE DATA NO MODO ESCURO/CLARO */
+    /* ESTILIZAÇÃO COMPLETA DO INPUT DE DATA CONFORME O TEMA */
     div[data-testid="stDateInput"] input,
     div[data-testid="stDateInput"] div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
@@ -85,30 +85,9 @@ st.markdown(f"""
         border: 1px solid {border_color} !important;
         border-radius: 4px !important;
     }}
-    div[data-testid="stDateInput"] input::placeholder {{
-        color: {text_muted} !important;
-    }}
     div[data-testid="stDateInput"] svg {{
         fill: {input_text} !important;
         color: {input_text} !important;
-    }}
-    /* POPUP DO CALENDÁRIO */
-    div[data-baseweb="calendar"] {{
-        background-color: {dropdown_bg} !important;
-        color: {dropdown_text} !important;
-    }}
-    div[data-baseweb="calendar"] * {{
-        color: {dropdown_text} !important;
-        background-color: transparent !important;
-    }}
-    div[data-baseweb="calendar"] button {{
-        background-color: transparent !important;
-        color: {dropdown_text} !important;
-        border: none !important;
-    }}
-    div[data-baseweb="calendar"] button:hover {{
-        background-color: #0ea5e9 !important;
-        color: #ffffff !important;
     }}
 
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
@@ -752,6 +731,7 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
+    # PAINEL DE CONTADORES MODERNO E HARMÔNICO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
@@ -1028,7 +1008,7 @@ try:
             if st.button("▶️", use_container_width=True):
                 if st.session_state.page_num < total_pages: st.session_state.page_num += 1; st.rerun()
         with p_col5:
-            if st.button: st.session_state.page_num = total_pages; st.rerun()
+            if st.button("Fim ⏭️", use_container_width=True): st.session_state.page_num = total_pages; st.rerun()
 
 except Exception as e:
     st.error(f"Erro ao carregar o painel: {e}")
