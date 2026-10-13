@@ -105,7 +105,7 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* FIX EXCLUSIVO DAS SETAS PARA BAIXO E CAIXAS DE SELEÇÃO (SELECTBOX) */
+    /* FIX DEFINITIVO DAS SETAS DO SELECTBOX (REMOVE QUADRADO PRETO) */
     div[data-baseweb="select"] {{
         background-color: transparent !important;
     }}
@@ -115,13 +115,19 @@ st.markdown(f"""
         border: 1px solid {border_color} !important; 
         border-radius: 6px !important; 
     }}
-    div[data-baseweb="select"] * {{ 
+    div[data-baseweb="select"] [data-testid="stSelectbox"] div,
+    div[data-baseweb="select"] div[role="button"],
+    div[data-baseweb="select"] div[aria-hidden="true"],
+    div[data-baseweb="select"] span {{
         background-color: transparent !important;
-        color: {input_text} !important; 
+        background: transparent !important;
+        color: {input_text} !important;
     }}
     div[data-baseweb="select"] svg {{ 
         fill: {input_text} !important; 
         color: {input_text} !important; 
+        width: 18px !important;
+        height: 18px !important;
     }}
     
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ 
