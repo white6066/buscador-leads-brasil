@@ -8,7 +8,6 @@ import re
 import hashlib
 from datetime import datetime
 from PIL import Image
-import streamlit.components.v1 as components
 
 # 1. Configuração da página
 st.set_page_config(
@@ -52,7 +51,6 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botões compactos e elegantes com dois terços (66%) do tamanho */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -839,43 +837,10 @@ try:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
                         st.rerun()
                 
-                st.markdown("<hr style='margin: 8px 0px; border-color: " + border_color + ";'>", unsafe_allow_html=True)
+                st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # Área de colagem de print (Ctrl + V)
-                paste_component_html = f"""
-                <div id="drop-zone-{idx}" contenteditable="true" style="
-                    border: 2px dashed {border_color}; 
-                    background: {input_bg}; 
-                    color: {text_muted}; 
-                    padding: 8px; 
-                    text-align: center; 
-                    border-radius: 6px; 
-                    font-size: 0.8rem;
-                    outline: none;
-                    cursor: text;
-                ">
-                    📋 Cole o print do modelo com <b>Ctrl + V</b> aqui
-                </div>
-                <div id="preview-{idx}" style="margin-top: 4px; text-align: center;"></div>
-                <script>
-                    const zone = document.getElementById('drop-zone-{idx}');
-                    zone.addEventListener('paste', (e) => {{
-                        let items = (e.clipboardData || e.originalEvent.clipboardData).items;
-                        for (let index in items) {{
-                            let item = items[index];
-                            if (item.kind === 'file') {{
-                                let blob = item.getAsFile();
-                                let reader = new FileReader();
-                                reader.onload = function(event) {{
-                                    document.getElementById('preview-{idx}').innerHTML = '<img src="' + event.target.result + '" style="max-height: 80px; border-radius: 4px; border: 1px solid #0ea5e9;" />';
-                                }};
-                                reader.readAsDataURL(blob);
-                            }}
-                        }}
-                    }});
-                </script>
-                """
-                components.html(paste_component_html, height=110)
+                # --- SUBMISSÃO DE IMAGEM OFICIAL DO STREAMLIT ---
+                uploaded_file = st.file_uploader("📎 Anexar print de exemplo ou modelo para a IA", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
                 
@@ -900,9 +865,14 @@ try:
                         st.session_state[hist_key] = []
                         st.session_state[seed1_key] = 0
                         st.session_state[seed2_key] = 0
-                        current_val = st.session_state[input_val_key].strip()
-                        if current_val:
-                            st.session_state[hist_key].append(current_val)
+                        
+                        full_instruction = st.session_state[input_val_key].strip()
+                        if uploaded_file is not None:
+                            full_instruction += " baseado no estilo da imagem anexada"
+                            
+                        if full_instruction:
+                            st.session_state[hist_key].append(full_instruction)
+                            
                         with st.spinner("Gerando Landing Page..."):
                             lp_html = generate_ai_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
@@ -910,11 +880,10 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Landing Page gerada!")
+                            st.success("Landing Page gerada com sucesso!")
                             st.rerun()
 
                 with col_inst_txt:
-                    # Adicionado key única (key=f"text_input_{idx}") para resolver o conflito de IDs
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
@@ -926,16 +895,19 @@ try:
 
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
-                        current_val = st.session_state[input_val_key].strip()
-                        if current_val:
-                            st.session_state[hist_key].append(current_val)
-                            c_lower = current_val.lower()
+                        full_instruction = st.session_state[input_val_key].strip()
+                        if uploaded_file is not None:
+                            full_instruction += " seguindo o padrão visual da imagem anexada"
+                            
+                        if full_instruction:
+                            st.session_state[hist_key].append(full_instruction)
+                            c_lower = full_instruction.lower()
                             if "2" in c_lower or "inferior" in c_lower or "sobre" in c_lower:
                                 st.session_state[seed2_key] += 1
                             else:
                                 st.session_state[seed1_key] += 1
 
-                        with st.spinner("Aplicando alterações..."):
+                        with st.spinner("Aplicando alterações e processando imagem..."):
                             lp_html = generate_ai_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key], st.session_state[seed1_key], st.session_state[seed2_key]
