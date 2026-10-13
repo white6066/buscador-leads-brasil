@@ -914,12 +914,13 @@ try:
                             st.rerun()
 
                 with col_inst_txt:
-                    # Input sem st.text_input(key=...) para evitar o conflito de estado do Streamlit
+                    # Adicionado key única (key=f"text_input_{idx}") para resolver o conflito de IDs
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
                         placeholder="Ex: na imagem 1 quero carros vermelhos, na imagem 2 quero escritório moderno", 
-                        label_visibility="collapsed"
+                        label_visibility="collapsed",
+                        key=f"text_input_{idx}"
                     )
                     st.session_state[input_val_key] = typed_text
 
