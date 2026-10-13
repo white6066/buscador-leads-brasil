@@ -77,6 +77,19 @@ st.markdown(f"""
     div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
     div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
+    /* ESTILIZAÇÃO COMPLETA DO INPUT DE DATA CONFORME O TEMA */
+    div[data-testid="stDateInput"] input,
+    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 4px !important;
+    }}
+    div[data-testid="stDateInput"] svg {{
+        fill: {input_text} !important;
+        color: {input_text} !important;
+    }}
+
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
@@ -84,10 +97,6 @@ st.markdown(f"""
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
     li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
     li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
-
-    div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
-    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
 
     .banner-box {{ background-color: {bg_card}; padding: 20px 28px; border-radius: 6px; color: {text_color}; margin-bottom: 20px; border: 1px solid {border_color}; }}
     .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
@@ -722,13 +731,54 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total Exibidos", len(df_filtered))
-    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
-    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
-    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
+    # PAINEL DE CONTADORES MODERNO E HARMÔNICO
+    tot_1, tot_2, tot_3, tot_4 = st.columns(4)
+    
+    with tot_1:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(df_filtered)}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
-    st.divider()
+    with tot_2:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with tot_3:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with tot_4:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(99, 102, 241, 0.12); color: #6366f1; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
