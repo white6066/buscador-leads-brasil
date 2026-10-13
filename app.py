@@ -222,7 +222,9 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 
 def translate_and_optimize_prompt(portuguese_text):
     text_lower = portuguese_text.lower()
-    if any(w in text_lower for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
+    if any(w in text_lower for w in ['igual', 'semelhante', 'exemplo', 'modelo']):
+        return "professional car dealership showroom interior, clean polished floor, multiple brand new modern cars on display, bright showroom lighting, realistic commercial photography, 4k"
+    elif any(w in text_lower for w in ['popular', 'populares', 'hatch', 'economico', 'varios carros', 'varios modelos']):
         return "wide showroom displaying multiple affordable new economy hatchback cars side by side, clean bright dealership floor, photorealistic commercial photography, 4k"
     elif 'carro' in text_lower or 'veiculo' in text_lower or 'automovel' in text_lower:
         return f"professional commercial photography of {portuguese_text}, modern dealership showroom, multiple vehicles, photorealistic, 4k resolution"
@@ -329,7 +331,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     
     for inst in instructions_list:
         inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular', '1', 'superior', 'topo', 'exemplo']):
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular', '1', 'superior', 'topo', 'exemplo', 'igual', 'semelhante']):
             if "2" not in inst_l and "inferior" not in inst_l and "sobre" not in inst_l:
                 img1_inst = inst
         if any(w in inst_l for w in ['2', 'inferior', 'segunda', 'sobre']):
@@ -839,7 +841,7 @@ try:
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # --- BOTÃO DE UPLOAD DE IMAGEM DE REFERÊNCIA OFICIAL ---
+                # --- UPLOAD DE IMAGEM DE REFERÊNCIA ---
                 uploaded_ref_image = st.file_uploader("📎 Anexar imagem de exemplo ou modelo para orientar a IA", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
@@ -869,7 +871,7 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         full_instruction = typed_instruction if typed_instruction else ""
                         if uploaded_ref_image is not None:
-                            full_instruction += " baseado rigorosamente no estilo da imagem anexada"
+                            full_instruction += " baseado no modelo da imagem anexada com showroom de carros"
                             
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
@@ -888,7 +890,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: quero na imagem 1 um cenário igual ao exemplo anexado", 
+                        placeholder="Ex: quero uma imagem igual ou semelhante na imagem 1", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -899,7 +901,7 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         full_instruction = typed_instruction if typed_instruction else ""
                         if uploaded_ref_image is not None:
-                            full_instruction += " seguindo o padrão da imagem anexada"
+                            full_instruction += " seguindo rigorosamente o modelo da imagem anexada"
                             
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
