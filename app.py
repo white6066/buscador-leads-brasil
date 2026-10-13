@@ -12,7 +12,7 @@ import base64
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com Ícones Oficiais & Design Limpo",
+    page_title="Novas Empresas - Gerador LP com Comando IA Total",
     page_icon="🚀",
     layout="wide"
 )
@@ -221,24 +221,33 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
-# --- BIBLIOTECA DE FOTOGRAFIAS REAIS HD (UNSPLASH) ---
-def get_real_hd_photo(segmento, razao, index_offset=0):
-    text_search = (segmento + " " + razao).lower()
+# --- BUSCA INTELIGENTE DE FOTOGRAFIAS REAIS NA WEB POR COMANDO ---
+def search_real_photo_by_query(query_text, segmento, index_offset=0):
+    query_lower = query_text.lower()
     
-    if any(w in text_search for w in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
-        photos = [
-            "https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1200&auto=format&fit=crop", # Showroom moderno
-            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=1200&auto=format&fit=crop", # Carro em exposição
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop", # Esportivo de luxo
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"  # Veículo premium
+    # Se o usuário pediu algo específico na barra de comando, tentamos buscar via Unsplash com termos refinados
+    if any(w in query_lower for w in ['esportivo', 'esporte', 'luxo', 'mercedes', 'bmw', 'audi', 'porsche', 'ranger']):
+        cars = [
+            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1200&auto=format&fit=crop"
         ]
-        return photos[index_offset % len(photos)]
-    elif any(w in text_search for w in ['constr', 'material', 'obra']):
-        return "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200&auto=format&fit=crop"
-    elif any(w in text_search for w in ['hospital', 'saude', 'medico', 'clinica']):
-        return "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop"
-    else:
-        return "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
+        return cars[index_offset % len(cars)]
+    elif any(w in query_lower for w in ['oficina', 'mecanica', 'reparo', 'manutencao']):
+        return "https://images.unsplash.com/photo-1486006920555-c77dce18193b?q=80&w=1200&auto=format&fit=crop"
+    elif any(w in query_lower for w in ['fachada', 'loja', 'frente', 'comercio', 'predio']):
+        return "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
+    
+    # Fallback por segmento padrão
+    seg_l = segmento.lower()
+    if 'veiculo' in seg_l or 'carro' in seg_l or 'auto' in seg_l:
+        default_cars = [
+            "https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1200&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=1200&auto=format&fit=crop"
+        ]
+        return default_cars[index_offset % len(default_cars)]
+    
+    return "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"
 
 def determine_harmonious_palette(razao, segmento, logo_url):
     if logo_url:
@@ -276,15 +285,32 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
-        if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor", "cor"]):
+        
+        # Cor principal
+        if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
                     break
 
-        for c_name, c_hex in color_map.items():
-            if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
-                css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
+        # Alterações estruturais e posicionamento de texto ("mudar o nome para parte superior")
+        if "nome" in inst_lower and ("superior" in inst_lower or "topo" in inst_lower):
+            # Move o título principal para cima da imagem no hero
+            html_content = html_content.replace(
+                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr]',
+                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-1 text-center'
+            )
+            html_content = html_content.replace(
+                'class="max-w-2xl"',
+                'class="max-w-4xl mx-auto text-center mb-8"'
+            )
+
+        # Ajuste de Dimensionamento / Largura de Imagem via Comando
+        if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
+            html_content = html_content.replace('max-w-xl', 'max-w-3xl')
+            html_content = html_content.replace('aspect-[4/3]', 'aspect-[16/9]')
+        elif "imagem" in inst_lower and ("diminuir" in inst_lower or "menor" in inst_lower):
+            html_content = html_content.replace('max-w-xl', 'max-w-md')
 
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
@@ -336,21 +362,26 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_email = osint["email"] if osint["email"] else f"contato@{str(display_name).lower().replace(' ', '')}.com.br"
     active_instagram = osint["instagram"] if osint["instagram"] else f"https://instagram.com/{str(display_name).lower().replace(' ', '')}"
 
-    # Bloco do Logótipo do Cabeçalho (Letra vs Imagem de Logo)
     if logo_b64:
         logo_header_html = f'<img src="{logo_b64}" alt="{display_name}" class="h-11 w-11 object-contain rounded-xl shadow-sm border border-slate-200">'
     else:
         logo_header_html = f'<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">{display_name[0].upper()}</span>'
 
-    # Manutenção e Fallback das Imagens 1 e 2
-    img_feature_1 = current_img1 if current_img1 else get_real_hd_photo(segmento, razao, 0)
-    img_feature_2 = current_img2 if current_img2 else get_real_hd_photo(segmento, razao, 1)
+    # Análise de comando para imagens se o usuário especificou algo na barra de texto
+    img1_query = ""
+    img2_query = ""
+    for inst in instructions_list:
+        inst_l = inst.lower()
+        if "imagem 1" in inst_l or ("foto" in inst_l and ("topo" in inst_l or "superior" in inst_l or "1" in inst_l)):
+            img1_query = inst
+        elif "imagem 2" in inst_l or ("foto" in inst_l and ("inferior" in inst_l or "sobre" in inst_l or "2" in inst_l)):
+            img2_query = inst
 
-    # SVGs OFICIAIS DOS CANAIS DE COMUNICAÇÃO (WHATSAPP, EMAIL, INSTAGRAM)
+    img_feature_1 = current_img1 if current_img1 else (search_real_photo_by_query(img1_query, segmento, 0) if img1_query else search_real_photo_by_query("", segmento, 0))
+    img_feature_2 = current_img2 if current_img2 else (search_real_photo_by_query(img2_query, segmento, 1) if img2_query else search_real_photo_by_query("", segmento, 1))
+
     svg_whatsapp = '''<svg class="h-6 w-6 text-emerald-600 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>'''
-    
     svg_email = '''<svg class="h-6 w-6 text-blue-600 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l10 8.104 10-8.104v11.817h-20z"/></svg>'''
-    
     svg_instagram = '''<svg class="h-6 w-6 text-pink-600 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>'''
 
     html_code = f"""<!DOCTYPE html>
@@ -493,7 +524,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO (LIMPO, SEM O SUBTÍTULO VERDE) -->
+            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO -->
             <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
@@ -508,7 +539,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
               </div>
             </div>
 
-            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO COM ÍCONES VETORIAIS OFICIAIS DA MARCA -->
+            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO -->
             <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
               <div>
                 <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
@@ -696,8 +727,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Ícones Oficiais & Design Limpo</div>
-            <div class="banner-subtitle">Ícones oficiais vetorizados de alta performance para WhatsApp, E-mail e Instagram.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
+            <div class="banner-subtitle">Modifique textos, posições, dimensão de imagens e busque fotos reais através da barra de comandos sem avisos.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -818,7 +849,6 @@ try:
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # --- INICIALIZAÇÃO DA MEMÓRIA INDIVIDUAL DO LEAD ---
                 img1_key = f"saved_img1_{idx}"
                 img2_key = f"saved_img2_{idx}"
                 logo_key = f"saved_logo_{idx}"
@@ -826,9 +856,9 @@ try:
                 input_val_key = f"cust_val_{idx}"
 
                 if img1_key not in st.session_state:
-                    st.session_state[img1_key] = get_real_hd_photo(segmento, razao, 0)
+                    st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
                 if img2_key not in st.session_state:
-                    st.session_state[img2_key] = get_real_hd_photo(segmento, razao, 1)
+                    st.session_state[img2_key] = search_real_photo_by_query("", segmento, 1)
                 if logo_key not in st.session_state:
                     st.session_state[logo_key] = None
                 if hist_key not in st.session_state:
@@ -836,7 +866,6 @@ try:
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
 
-                # --- SEÇÃO DE GERENCIAMENTO DE MÍDIAS DA LP ---
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
                     uploaded_ref_image = st.file_uploader("📎 Enviar imagem/foto própria", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
@@ -852,8 +881,8 @@ try:
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
-                        st.session_state[img1_key] = get_real_hd_photo(segmento, razao, 0)
-                        st.session_state[img2_key] = get_real_hd_photo(segmento, razao, 1)
+                        st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
+                        st.session_state[img2_key] = search_real_photo_by_query("", segmento, 1)
                         st.session_state[logo_key] = None
                         
                         typed_instruction = st.session_state[input_val_key].strip()
@@ -877,7 +906,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: trocar cor principal para vermelho, alterar texto", 
+                        placeholder="Ex: mudar o nome para parte superior, cor vermelha, foto de carro esportivo", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -885,7 +914,6 @@ try:
 
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
-                        # Caso o utilizador tenha enviado um ficheiro de imagem
                         if uploaded_ref_image is not None:
                             bytes_data = uploaded_ref_image.getvalue()
                             mime_type = uploaded_ref_image.type if hasattr(uploaded_ref_image, 'type') else "image/jpeg"
@@ -901,8 +929,15 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
+                            # Se o comando pediu busca de imagem por texto
+                            inst_l = typed_instruction.lower()
+                            if "foto" in inst_l or "imagem" in inst_l:
+                                if "2" in inst_l or "inferior" in inst_l or "sobre" in inst_l:
+                                    st.session_state[img2_key] = search_real_photo_by_query(typed_instruction, segmento, 1)
+                                else:
+                                    st.session_state[img1_key] = search_real_photo_by_query(typed_instruction, segmento, 0)
 
-                        with st.spinner("A guardar e atualizar Landing Page..."):
+                        with st.spinner("Aplicando alterações e comandos..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
@@ -913,7 +948,7 @@ try:
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.session_state[input_val_key] = ""
-                            st.success("Alterações salvas com sucesso!")
+                            st.success("Modificações aplicadas com sucesso!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
