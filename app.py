@@ -25,12 +25,12 @@ def toggle_theme():
 
 is_dark = st.session_state.theme == "Escuro"
 
-bg_app = "#090d16" if is_dark else "#f1f5f9"
+bg_app = "#0b0f19" if is_dark else "#f8fafc"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
-border_color = "#1f2937" if is_dark else "#cbd5e1"
-hr_color = "#1f2937" if is_dark else "#cbd5e1"
+border_color = "#1f2937" if is_dark else "#e2e8f0"
+hr_color = "#1f2937" if is_dark else "#e2e8f0"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
 input_bg = "#111827" if is_dark else "#ffffff"
@@ -42,60 +42,111 @@ dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_app}; color: {text_color}; }}
-    html, body, [class*="st-"] {{ font-size: 0.92rem !important; }}
+    html, body, [class*="st-"] {{ font-size: 0.92rem !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }}
     
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    [data-testid="stSidebar"] {{ background-color: {bg_app}; color: {text_color} !important; padding-top: 1rem; border-right: 1px solid {border_color}; }}
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{ color: {text_color} !important; font-weight: 500 !important; font-size: 0.9rem !important; }}
-    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
-    [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
+    /* SIDEBAR MODERNA E DESTACADA */
+    [data-testid="stSidebar"] {{
+        background: {bg_card} !important;
+        color: {text_color} !important;
+        padding-top: 1.2rem;
+        border-right: 1px solid {border_color};
+        box-shadow: 4px 0 24px rgba(0,0,0,0.03);
+    }}
+    [data-testid="stSidebar"] label {{
+        color: {text_color} !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 6px;
+    }}
+    [data-testid="stSidebar"] .stMarkdown p {{ color: {text_color} !important; font-size: 0.88rem !important; }}
+    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: 2px !important; }}
+    [data-testid="stSidebar"] hr {{ margin: 14px 0px !important; border-color: {border_color} !important; }}
     
+    /* BOTÕES MODERNIZADOS */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 4px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        transition: all 0.2s ease-in-out;
-        font-size: 0.78rem !important;
-        padding: 3px 6px !important;
-        min-height: 32px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        padding: 6px 12px !important;
+        min-height: 36px !important;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
-        background-color: {btn_bg} !important;
-        border-color: #0ea5e9 !important;
-        color: #0ea5e9 !important;
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+        transform: translateY(-1px);
     }}
     
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
-    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
+    input[type="text"], input[type="date"] {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        font-size: 0.88rem !important;
+    }}
+    div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        color: {input_text} !important;
+    }}
     div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
-    div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
-    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
-    div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
+    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
     
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
-    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
-    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
+        background-color: {dropdown_bg} !important;
+        color: {dropdown_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
 
-    div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
-    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
+    /* MÉTRICAS MODERNAS */
+    div[data-testid="metric-container"] {{
+        background: {bg_card};
+        border: 1px solid {border_color};
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.75rem !important; text-transform: uppercase; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.5rem !important; font-weight: 800 !important; }}
 
-    .banner-box {{ background-color: {bg_card}; padding: 20px 28px; border-radius: 6px; color: {text_color}; margin-bottom: 20px; border: 1px solid {border_color}; }}
-    .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
-    .banner-subtitle {{ color: {text_muted}; font-size: 0.85rem; line-height: 1.4; }}
+    /* BANNER SUPERIOR DESTAQUE PREMIUM */
+    .banner-box {{
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
+        padding: 24px 32px;
+        border-radius: 14px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.18);
+        border: 1px solid rgba(255,255,255,0.15);
+    }}
+    .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; tracking-tight; }}
+    .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
     
-    div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; }}
-    div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 6px !important; font-size: 0.9rem !important; }}
-    p, span, div {{ color: {text_color}; font-size: 0.9rem !important; }}
+    div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 10px !important; }}
+    div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 10px !important; font-size: 0.9rem !important; font-weight: 600 !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,6 +417,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     svg_email = '''<svg class="h-6 w-6 text-blue-600 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l10 8.104 10-8.104v11.817h-20z"/></svg>'''
     svg_instagram = '''<svg class="h-6 w-6 text-pink-600 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>'''
 
+    # O QUADRADO DO MAPA AGORA USA "brand-bg" PARA ACOMPANHAR A COR DO TEMA DINAMICAMENTE
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -506,17 +558,18 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
+            <!-- QUADRADO DE LOCALIZAÇÃO AGORA REAPLICA BRAND-BG -->
+            <div class="p-6 sm:p-8 lg:p-10 brand-bg text-white flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
-                <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+                <p class="mt-2 text-sm text-white/90">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
               </div>
-              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
+              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-black/20">
                 <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
               </div>
-              <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
+              <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
                 <span>📍 {full_address}</span>
-                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="brand-text font-bold hover:underline text-emerald-400">Ampliar no Maps ↗</a>
+                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold underline text-white hover:opacity-80">Ampliar no Maps ↗</a>
               </div>
             </div>
 
@@ -579,15 +632,16 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </section>
   </main>
 
-  <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
+  <!-- RODAPÉ ACOMPANHA TAMBÉM A COR DO TEMA -->
+  <footer class="brand-bg px-5 py-8 text-white/90 border-t border-white/10">
     <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
       <div>
         <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
-        <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
+        <p class="mt-1 text-xs text-white/80">{razao} · {cidade}/{uf}</p>
       </div>
       <div class="text-xs sm:text-right">
         <p>CNPJ: {formatted_cnpj}</p>
-        <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
+        <p class="mt-1 text-white/70">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
       </div>
     </div>
   </footer>
@@ -707,7 +761,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
-            <div class="banner-subtitle">Gerencie leads, aplique alterações de imagens, redimensionamentos, cores e textos mantendo o padrão visual original.</div>
+            <div class="banner-subtitle">Painel de Prospecção Pro: Edição de fotos, ajuste de cores, dimensões e sincronização visual do mapa.</div>
         </div>
     """, unsafe_allow_html=True)
 
