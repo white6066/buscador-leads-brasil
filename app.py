@@ -77,7 +77,7 @@ st.markdown(f"""
     div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
     div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
 
-    /* ESTILIZAÇÃO COMPLETA DO INPUT DE DATA CONFORME O TEMA */
+    /* AJUSTE DO INPUT DE DATA E DO CALENDÁRIO FLUTUANTE */
     div[data-testid="stDateInput"] input,
     div[data-testid="stDateInput"] div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
@@ -88,6 +88,19 @@ st.markdown(f"""
     div[data-testid="stDateInput"] svg {{
         fill: {input_text} !important;
         color: {input_text} !important;
+    }}
+    div[data-baseweb="calendar"] {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+    }}
+    div[data-baseweb="calendar"] * {{
+        color: {input_text} !important;
+        background-color: transparent !important;
+    }}
+    div[data-baseweb="calendar"] button:hover {{
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
     }}
 
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
@@ -731,7 +744,6 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # PAINEL DE CONTADORES MODERNO E HARMÔNICO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
