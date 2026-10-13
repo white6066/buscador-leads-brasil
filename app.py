@@ -385,7 +385,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </button>
   </div>
 
-  <div id="conteudo-lp">
+  <div id="conteudo-lp" style="width: 100%; max-width: 1200px; margin: 0 auto; background: #ffffff;">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
         ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
@@ -416,7 +416,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </header>
 
     <main>
-      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28 pdf-section">
+      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28 pdf-section" style="page-break-before: auto;">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
           <div class="max-w-2xl">
             <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-white/95 backdrop-blur-sm">
@@ -592,7 +592,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       btn.disabled = true;
 
       const opt = {{
-        margin:       0,
+        margin:       [5, 5, 5, 5],
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
         html2canvas:  {{ 
@@ -602,7 +602,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
           windowWidth: 1200,
           scrollY: 0
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }}
+        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }},
+        pagebreak:    {{ mode: ['css', 'legacy'] }}
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
@@ -967,7 +968,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_app=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
