@@ -32,7 +32,7 @@ text_muted = "#9ca3af" if is_dark else "#64748b"
 border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 
-# Cores de botões ajustadas para alto contraste nos dois temas
+# Cores de botões e inputs dinâmicos
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
 btn_border = "#374151" if is_dark else "#cbd5e1"
@@ -56,7 +56,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* ESTILIZAÇÃO UNIVERSAL DOS BOTÕES */
+    /* FIX DOS BOTÕES E ÍCONES */
     [data-testid="stSidebar"] button,
     .stDownloadButton button, 
     div[data-testid="stExpander"] button, 
@@ -106,44 +106,20 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* INPUTS DE TEXTO E CAMPOS DE DATA */
-    input[type="text"] {{ 
-        background-color: {input_bg} !important; 
-        color: {input_text} !important; 
-        border: 1px solid {border_color} !important; 
-        font-size: 0.9rem !important; 
-    }}
-    
-    div[data-testid="stDateInput"] input,
-    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 6px !important;
-    }}
-
-    div[data-baseweb="input"] {{ 
-        background-color: {input_bg} !important; 
-        border: 1px solid {border_color} !important; 
-        border-radius: 6px !important; 
-        color: {input_text} !important; 
-    }}
-    div[data-baseweb="input"] input {{ 
-        color: {input_text} !important; 
-        background-color: transparent !important; 
-    }}
-
-    /* SELECTBOXES E DROPDOWNS */
+    /* FIX DAS SETAS DOS SELECTBOXES E DROPDOWNS */
     div[data-baseweb="select"] > div {{ 
         background-color: {input_bg} !important; 
         color: {input_text} !important; 
         border: 1px solid {border_color} !important; 
         border-radius: 6px !important; 
-        overflow: hidden !important; 
     }}
-    div[data-baseweb="select"] span {{ 
+    div[data-baseweb="select"] * {{ 
         color: {input_text} !important; 
-        font-size: 0.9rem !important; 
+        fill: {input_text} !important; 
+    }}
+    div[data-baseweb="select"] svg {{ 
+        fill: {input_text} !important; 
+        color: {input_text} !important; 
     }}
     
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ 
@@ -162,7 +138,39 @@ st.markdown(f"""
         color: #ffffff !important; 
     }}
 
-    /* FILE UPLOADER */
+    /* FIX DOS CAMPOS DE ENTRADA DE TEXTO E DATA */
+    input[type="text"], input[type="date"] {{ 
+        background-color: {input_bg} !important; 
+        color: {input_text} !important; 
+        border: 1px solid {border_color} !important; 
+        border-radius: 6px !important;
+        font-size: 0.9rem !important; 
+    }}
+    
+    div[data-testid="stDateInput"] input,
+    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 6px !important;
+    }}
+    div[data-testid="stDateInput"] svg {{
+        fill: {input_text} !important;
+        color: {input_text} !important;
+    }}
+
+    div[data-baseweb="input"] {{ 
+        background-color: {input_bg} !important; 
+        border: 1px solid {border_color} !important; 
+        border-radius: 6px !important; 
+        color: {input_text} !important; 
+    }}
+    div[data-baseweb="input"] input {{ 
+        color: {input_text} !important; 
+        background-color: transparent !important; 
+    }}
+
+    /* FIX COMPLETO DO FILE UPLOADER */
     div[data-testid="stFileUploader"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
@@ -176,6 +184,7 @@ st.markdown(f"""
     }}
     div[data-testid="stFileUploader"] section * {{
         color: {text_color} !important;
+        fill: {text_color} !important;
     }}
 
     .banner-box {{ 
