@@ -337,7 +337,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=1200, initial-scale=1.0">
   <meta name="theme-color" content="{primary_color}">
   <title>{display_name} | {segmento}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -353,7 +353,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       --ink: #111816;
     }}
     html {{ scroll-behavior: smooth; }}
-    body {{ font-family: "DM Sans", sans-serif; color: var(--ink); background-color: #fafbf9; }}
+    body {{ font-family: "DM Sans", sans-serif; color: var(--ink); background-color: #fafbf9; width: 100%; min-width: 1120px; }}
     h1, h2, h3, .display {{ font-family: "Manrope", sans-serif; }}
     .brand-bg {{ background: var(--primary); }}
     .brand-text {{ color: var(--primary); }}
@@ -367,14 +367,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     }}
     .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
     .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
-    
-    @media print {{
-      .pdf-section {{
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        page-break-before: always;
-      }}
-    }}
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
@@ -385,7 +377,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </button>
   </div>
 
-  <div id="conteudo-lp" style="width: 100%; max-width: 1200px; margin: 0 auto; background: #ffffff;">
+  <div id="conteudo-lp" style="width: 1120px; margin: 0 auto; background: #ffffff;">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
         ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
@@ -416,7 +408,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </header>
 
     <main>
-      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28 pdf-section" style="page-break-before: auto;">
+      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
           <div class="max-w-2xl">
             <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-white/95 backdrop-blur-sm">
@@ -442,7 +434,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
       </section>
 
-      <section id="servicos" class="border-b border-slate-200/80 bg-white py-16 sm:py-20 pdf-section">
+      <section id="servicos" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
         <div class="mx-auto max-w-7xl px-5 lg:px-8">
           <div class="mx-auto mb-12 max-w-2xl text-center">
             <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Atuação Estratégica</p>
@@ -470,7 +462,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
       </section>
 
-      <section id="sobre" class="py-16 sm:py-24 pdf-section">
+      <section id="sobre" class="py-16 sm:py-24">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
           <div class="relative">
             <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-xl">
@@ -490,7 +482,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
       </section>
 
-      <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20 pdf-section">
+      <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
         <div class="mx-auto max-w-7xl px-5 lg:px-8">
           <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
             <div class="grid lg:grid-cols-2">
@@ -567,7 +559,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       </section>
     </main>
 
-    <footer class="bg-[#070e0b] px-5 py-8 text-white/70 pdf-section">
+    <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
       <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
         <div>
           <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
@@ -592,7 +584,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       btn.disabled = true;
 
       const opt = {{
-        margin:       [5, 5, 5, 5],
+        margin:       [0, 0, 0, 0],
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
         html2canvas:  {{ 
@@ -600,10 +592,10 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
           useCORS: true, 
           letterRendering: true,
           windowWidth: 1200,
+          scrollX: 0,
           scrollY: 0
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }},
-        pagebreak:    {{ mode: ['css', 'legacy'] }}
+        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }}
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
