@@ -25,7 +25,7 @@ def toggle_theme():
 
 is_dark = st.session_state.theme == "Escuro"
 
-bg_app = "#0b0f19" if is_dark else "#f8fafc"
+bg_app = "#090d16" if is_dark else "#f8fafc"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
@@ -47,7 +47,7 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* SIDEBAR MODERNA E DESTACADA */
+    /* SIDEBAR MODERNA */
     [data-testid="stSidebar"] {{
         background: {bg_card} !important;
         color: {text_color} !important;
@@ -67,7 +67,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: 2px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 14px 0px !important; border-color: {border_color} !important; }}
     
-    /* BOTÕES MODERNIZADOS */
+    /* BOTÕES */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -121,17 +121,6 @@ st.markdown(f"""
         border-radius: 8px !important;
     }}
 
-    /* MÉTRICAS MODERNAS */
-    div[data-testid="metric-container"] {{
-        background: {bg_card};
-        border: 1px solid {border_color};
-        padding: 16px 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }}
-    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 700 !important; font-size: 0.75rem !important; text-transform: uppercase; }}
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.5rem !important; font-weight: 800 !important; }}
-
     /* BANNER SUPERIOR DESTAQUE PREMIUM */
     .banner-box {{
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
@@ -142,7 +131,7 @@ st.markdown(f"""
         box-shadow: 0 8px 24px rgba(2, 132, 199, 0.18);
         border: 1px solid rgba(255,255,255,0.15);
     }}
-    .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; tracking-tight; }}
+    .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
     .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
     
     div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 10px !important; }}
@@ -417,7 +406,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     svg_email = '''<svg class="h-6 w-6 text-blue-600 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l10 8.104 10-8.104v11.817h-20z"/></svg>'''
     svg_instagram = '''<svg class="h-6 w-6 text-pink-600 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>'''
 
-    # O QUADRADO DO MAPA AGORA USA "brand-bg" PARA ACOMPANHAR A COR DO TEMA DINAMICAMENTE
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -450,12 +438,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
-    <span class="inline-flex items-center justify-center gap-2">
-      ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
-    </span>
-  </div>
-
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
       <a href="#inicio" class="flex items-center gap-3">
@@ -558,7 +540,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <!-- QUADRADO DE LOCALIZAÇÃO AGORA REAPLICA BRAND-BG -->
             <div class="p-6 sm:p-8 lg:p-10 brand-bg text-white flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
@@ -632,7 +613,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </section>
   </main>
 
-  <!-- RODAPÉ ACOMPANHA TAMBÉM A COR DO TEMA -->
   <footer class="brand-bg px-5 py-8 text-white/90 border-t border-white/10">
     <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
       <div>
@@ -776,13 +756,54 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total Exibidos", len(df_filtered))
-    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
-    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
-    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
+    # PAINEL DE TOTALIZADORES MODERNIZADO E DESTAQUE
+    tot_1, tot_2, tot_3, tot_4 = st.columns(4)
+    
+    with tot_1:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(df_filtered)}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
-    st.divider()
+    with tot_2:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with tot_3:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with tot_4:
+        st.markdown(f"""
+            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
+                <div style="background: rgba(99, 102, 241, 0.12); color: #6366f1; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
