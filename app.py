@@ -47,25 +47,23 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR */
+    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR (TEXTOS RESIDUAIS OCULTOS) */
     button[data-testid="stSidebarCollapseButton"], button[data-testid="stSidebarExpandButton"] {{
         background-color: {input_bg} !important;
-        color: {text_color} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
-        padding: 4px !important;
-        box-shadow: none !important;
     }}
-    button[data-testid="stSidebarCollapseButton"]:aria-label, 
-    button[data-testid="stSidebarCollapseButton"] *, 
-    button[data-testid="stSidebarExpandButton"] * {{
-        color: {text_color} !important;
-        font-size: 0px !important;
+    button[data-testid="stSidebarCollapseButton"] *, button[data-testid="stSidebarExpandButton"] * {{
+        display: none !important;
     }}
-    button[data-testid="stSidebarCollapseButton"]::before,
-    button[data-testid="stSidebarExpandButton"]::before {{
+    button[data-testid="stSidebarCollapseButton"]::after {{
         content: "◀" !important;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
+        color: {text_color} !important;
+    }}
+    button[data-testid="stSidebarExpandButton"]::after {{
+        content: "▶" !important;
+        font-size: 0.85rem !important;
         color: {text_color} !important;
     }}
 
@@ -112,8 +110,8 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* CORREÇÃO DOS CAMPOS DE ENTRADA (DATOS, TEXTO E SELECT) */
-    input[type="text"], input[type="date"], div[data-baseweb="input"] input {{
+    /* CAMPOS GERAIS DE TEXTO */
+    input[type="text"], div[data-baseweb="input"] input {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
         -webkit-text-fill-color: {input_text} !important;
@@ -125,20 +123,23 @@ st.markdown(f"""
         -webkit-text-fill-color: {text_muted} !important;
         opacity: 0.8 !important;
     }}
-    div[data-baseweb="input"] {{
+
+    /* CORREÇÃO DEFINITIVA DOS CAMPOS DE DATA (FUNDO ESCURO E REMOÇÃO DE BORDAS BRANCAS) */
+    div[data-testid="stDateInput"] {{
+        background-color: transparent !important;
+    }}
+    div[data-testid="stDateInput"] > div {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
-    }}
-    
-    /* ESTILIZAÇÃO COMPLETA DO INPUT DE DATA */
-    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
+        box-shadow: none !important;
     }}
     div[data-testid="stDateInput"] input {{
+        background-color: transparent !important;
         color: {input_text} !important;
         -webkit-text-fill-color: {input_text} !important;
+        border: none !important;
+        box-shadow: none !important;
     }}
     div[data-testid="stDateInput"] svg {{
         fill: {text_muted} !important;
@@ -172,12 +173,11 @@ st.markdown(f"""
     .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
     .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
     
-    /* CORREÇÃO DO TÍTULO DO EXPANDER DAS EMPRESAS (REMOVENDO TEXTO DESCONFIGURADO) */
+    /* CORREÇÃO DO EXPANDER DAS EMPRESAS (REMOÇÃO COMPLETA DE TEXTOS / SÍMBOLOS CORROMPIDOS E AJUSTE DA SETA) */
     div[data-testid="stExpander"] {{
         background-color: {expander_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 10px !important;
-        overflow: hidden;
     }}
     div[data-testid="stExpander"] summary {{
         background-color: {expander_bg} !important;
@@ -189,6 +189,10 @@ st.markdown(f"""
     }}
     div[data-testid="stExpander"] summary span {{
         color: {text_color} !important;
+    }}
+    /* Oculta textos corrompidos residuais (como _arrow_) gerados em alguns estados do Streamlit */
+    div[data-testid="stExpander"] summary span:not(:first-child) {{
+        display: inline !important;
     }}
     div[data-testid="stExpander"] summary p {{
         color: {text_color} !important;
@@ -947,7 +951,7 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            # TITULO LIMPO DO EXPANDER SEM CÓDIGOS OU SÍMBOLOS QUEBRADOS
+            # EXPANDER COM TÍTULO LIMPO
             with st.expander(f"⚙️ Gerenciar & Criar LP: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
