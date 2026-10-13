@@ -226,41 +226,31 @@ def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
     css_injections = []
     
-    # EXPANSAO DA PALETA DE CORES
     color_map = {
-        # Azuis
         "azul bebe": "#89cff0", "azul bebê": "#89cff0", "azul claro": "#38bdf8",
         "azul celeste": "#0ea5e9", "azul": "#2563eb", "azul royal": "#1d4ed8",
         "azul marinho": "#1e3a8a", "azul escuro": "#0f172a", "cyan": "#06b6d4",
-        "turquesa": "#14b8a6",
-        # Verdes
-        "verde": "#16a34a", "verde claro": "#4ade80", "verde lima": "#84cc16",
-        "verde esmeralda": "#10b981", "verde oliva": "#65a30d", "verde escuro": "#14532d",
-        "mint": "#6ee7b7", "menta": "#6ee7b7",
-        # Vermelhos & Rosas
+        "turquesa": "#14b8a6", "verde": "#16a34a", "verde claro": "#4ade80",
+        "verde lima": "#84cc16", "verde esmeralda": "#10b981", "verde oliva": "#65a30d",
+        "verde escuro": "#14532d", "mint": "#6ee7b7", "menta": "#6ee7b7",
         "vermelho": "#dc2626", "vermelho escuro": "#991b1b", "vinho": "#881337",
         "rosa": "#ec4899", "rosa claro": "#f472b6", "rosa choque": "#f43f5e",
-        "pink": "#db2777", "magenta": "#d946ef",
-        # Roxo & Violeta
-        "roxo": "#7c3aed", "violeta": "#8b5cf6", "lilás": "#c084fc", "lilas": "#c084fc",
-        "púrpura": "#581c87", "purpura": "#581c87", "índigo": "#4338ca", "indigo": "#4338ca",
-        # Amarelos & Laranjas
-        "laranja": "#ea580c", "laranja queimado": "#c2410c", "terracota": "#b45309",
-        "amarelo": "#eab308", "dourado": "#d97706", "amarelo claro": "#fef08a",
-        # Neutros & Tons de Terra
-        "preto": "#0f172a", "grafite": "#1e293b", "cinza": "#64748b", "cinza claro": "#cbd5e1",
-        "cinza escuro": "#334155", "branco": "#ffffff", "bege": "#d4b996", "marrom": "#78350f"
+        "pink": "#db2777", "magenta": "#d946ef", "roxo": "#7c3aed",
+        "violeta": "#8b5cf6", "lilás": "#c084fc", "lilas": "#c084fc",
+        "púrpura": "#581c87", "purpura": "#581c87", "índigo": "#4338ca",
+        "indigo": "#4338ca", "laranja": "#ea580c", "laranja queimado": "#c2410c",
+        "terracota": "#b45309", "amarelo": "#eab308", "dourado": "#d97706",
+        "amarelo claro": "#fef08a", "preto": "#0f172a", "grafite": "#1e293b",
+        "cinza": "#64748b", "cinza claro": "#cbd5e1", "cinza escuro": "#334155",
+        "branco": "#ffffff", "bege": "#d4b996", "marrom": "#78350f"
     }
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
-        
-        # Suporte a Hexadecimal direto na instrução (ex: #123456)
         hex_match = re.search(r'#(?:[0-9a-fA-F]{3}){1,2}\b', instruction)
         if hex_match:
             custom_primary_color = hex_match.group(0)
         elif any(w in inst_lower for w in ["cor", "tema", "mudar", "trocar", "deixar"]):
-            # Ordena por tamanho para casar termos compostos antes (ex: "azul bebe" antes de "azul")
             for c_name in sorted(color_map.keys(), key=len, reverse=True):
                 if c_name in inst_lower:
                     custom_primary_color = color_map[c_name]
@@ -394,6 +384,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </span>
       </a>
       <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
+        <a class="hover:brand-text transition" href="#inicio">Início</a>
         <a class="hover:brand-text transition" href="#sobre">Sobre Nós</a>
         <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
         <a class="hover:brand-text transition" href="#contato">Contato</a>
@@ -696,7 +687,6 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # CONTADORES NATIVOS COM DESIGN ESTILIZADO E SUPORTE A TEMA CLARO/ESCURO
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
