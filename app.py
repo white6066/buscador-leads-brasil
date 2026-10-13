@@ -8,7 +8,6 @@ import re
 import hashlib
 from datetime import datetime
 from PIL import Image
-import streamlit.components.v1 as components
 
 # 1. Configuração da página
 st.set_page_config(
@@ -840,55 +839,8 @@ try:
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # --- CAMPO DE TEXTO INTELIGENTE COM SUPORTE A COLAGEM (CTRL+V) ---
-                input_val_key = f"cust_val_{idx}"
-                if input_val_key not in st.session_state:
-                    st.session_state[input_val_key] = ""
-
-                pasted_img_key = f"pasted_img_{idx}"
-                if pasted_img_key not in st.session_state:
-                    st.session_state[pasted_img_key] = ""
-
-                paste_component_html = f"""
-                <div id="paste-box-{idx}" contenteditable="true" style="
-                    border: 2px dashed {border_color}; 
-                    background: {input_bg}; 
-                    color: {text_muted}; 
-                    padding: 8px; 
-                    text-align: center; 
-                    border-radius: 6px; 
-                    font-size: 0.82rem;
-                    outline: none;
-                    cursor: text;
-                    margin-bottom: 8px;
-                ">
-                    📋 Clique aqui e cole um print do modelo com <b>Ctrl + V</b>
-                </div>
-                <div id="thumb-preview-{idx}" style="text-align:center; margin-bottom: 6px;"></div>
-                <input type="hidden" id="img-data-{idx}" value="">
-                <script>
-                    const box = document.getElementById('paste-box-{idx}');
-                    box.addEventListener('paste', (e) => {{
-                        let items = (e.clipboardData || e.originalEvent.clipboardData).items;
-                        for (let index in items) {{
-                            let item = items[index];
-                            if (item.kind === 'file') {{
-                                let blob = item.getAsFile();
-                                let reader = new FileReader();
-                                reader.onload = function(event) {{
-                                    let base64Img = event.target.result;
-                                    document.getElementById('thumb-preview-{idx}').innerHTML = '<img src="' + base64Img + '" style="max-height: 70px; border-radius: 4px; border: 1px solid #0ea5e9;" /><span style="font-size:11px; color:#10b981; display:block;">✔ Imagem anexada com sucesso!</span>';
-                                    
-                                    // Sincroniza com Streamlit via URL params simulados ou salvando no sessionStorage
-                                    sessionStorage.setItem('pasted_img_{idx}', base64Img);
-                                }};
-                                reader.readAsDataURL(blob);
-                            }}
-                        }}
-                    }});
-                </script>
-                """
-                components.html(paste_component_html, height=115)
+                # --- BOTÃO DE UPLOAD DE IMAGEM DE REFERÊNCIA OFICIAL ---
+                uploaded_ref_image = st.file_uploader("📎 Anexar imagem de exemplo ou modelo para orientar a IA", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
                 
@@ -904,6 +856,10 @@ try:
                 if seed2_key not in st.session_state:
                     st.session_state[seed2_key] = 0
 
+                input_val_key = f"cust_val_{idx}"
+                if input_val_key not in st.session_state:
+                    st.session_state[input_val_key] = ""
+
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
@@ -911,8 +867,10 @@ try:
                         st.session_state[seed2_key] = 0
                         
                         typed_instruction = st.session_state[input_val_key].strip()
-                        full_instruction = f"{typed_instruction} (com base no exemplo visual fornecido)" if typed_instruction else "gerar com base no exemplo visual fornecido"
-                        
+                        full_instruction = typed_instruction if typed_instruction else ""
+                        if uploaded_ref_image is not None:
+                            full_instruction += " baseado rigorosamente no estilo da imagem anexada"
+                            
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
                             
@@ -923,14 +881,14 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Landing Page gerada!")
+                            st.success("Landing Page gerada com sucesso!")
                             st.rerun()
 
                 with col_inst_txt:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: se baseia no exemplo e faz igual na imagem", 
+                        placeholder="Ex: quero na imagem 1 um cenário igual ao exemplo anexado", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -939,8 +897,10 @@ try:
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
                         typed_instruction = st.session_state[input_val_key].strip()
-                        full_instruction = f"{typed_instruction} (seguindo padrão do modelo)" if typed_instruction else "seguir padrão do modelo colado"
-                        
+                        full_instruction = typed_instruction if typed_instruction else ""
+                        if uploaded_ref_image is not None:
+                            full_instruction += " seguindo o padrão da imagem anexada"
+                            
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
                             c_lower = full_instruction.lower()
@@ -957,7 +917,7 @@ try:
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.session_state[input_val_key] = ""
-                            st.success("Alteração aplicada!")
+                            st.success("Alteração aplicada com sucesso!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
