@@ -367,6 +367,12 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     }}
     .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
     .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
+    
+    /* Regras essenciais para evitar quebra de blocos no PDF */
+    section, article, .map-box-bg, footer {{
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }}
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
@@ -591,7 +597,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1400 
+          windowWidth: 1600 
         }},
         jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape' }}
       }};
@@ -958,7 +964,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_apply_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
