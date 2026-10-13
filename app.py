@@ -12,7 +12,7 @@ import base64
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com Controle Individual de Fotos e Logo",
+    page_title="Novas Empresas - Gerador LP com Ícones Oficiais & Design Limpo",
     page_icon="🚀",
     layout="wide"
 )
@@ -282,12 +282,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
                     custom_primary_color = c_hex
                     break
 
-        if "canais de atendimento" in inst_lower and ("cor" in inst_lower or "branco" in inst_lower or "white" in inst_lower):
-            html_content = html_content.replace(
-                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-300">Canais de Atendimento</p>',
-                '<p class="text-xs font-extrabold uppercase tracking-[.2em] text-white">Canais de Atendimento</p>'
-            )
-
         for c_name, c_hex in color_map.items():
             if c_name in inst_lower and ("cor da fonte" in inst_lower or "texto" in inst_lower or "cor do texto" in inst_lower or "fonte" in inst_lower):
                 css_injections.append(f"body, p, span, h2, h3 {{ color: {c_hex} !important; }}")
@@ -351,6 +345,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     # Manutenção e Fallback das Imagens 1 e 2
     img_feature_1 = current_img1 if current_img1 else get_real_hd_photo(segmento, razao, 0)
     img_feature_2 = current_img2 if current_img2 else get_real_hd_photo(segmento, razao, 1)
+
+    # SVGs OFICIAIS DOS CANAIS DE COMUNICAÇÃO (WHATSAPP, EMAIL, INSTAGRAM)
+    svg_whatsapp = '''<svg class="h-6 w-6 text-emerald-600 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>'''
+    
+    svg_email = '''<svg class="h-6 w-6 text-blue-600 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l10 8.104 10-8.104v11.817h-20z"/></svg>'''
+    
+    svg_instagram = '''<svg class="h-6 w-6 text-pink-600 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>'''
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -492,11 +493,10 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO -->
+            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO (LIMPO, SEM O SUBTÍTULO VERDE) -->
             <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
               <div>
-                <p class="text-xs font-extrabold uppercase tracking-[.2em] text-emerald-400">Canais de Atendimento</p>
-                <h2 class="display mt-2 text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
+                <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
                 <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
               </div>
               <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
@@ -508,42 +508,48 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
               </div>
             </div>
 
-            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO -->
+            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO COM ÍCONES VETORIAIS OFICIAIS DA MARCA -->
             <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
               <div>
                 <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
                 <p class="mt-1 text-sm text-slate-500">Fale diretamente com nossa equipe por nossos canais oficiais:</p>
                 
                 <div class="mt-6 space-y-5">
-                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold">💬</span>
+                  <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm">
+                      {svg_whatsapp}
+                    </span>
                     <div class="flex-1 min-w-0">
-                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
+                      <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
                       <p class="text-sm font-bold text-slate-900">{display_phone_text}</p>
                     </div>
-                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg brand-bg px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
+                    <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg brand-bg px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
                       <span>Conversar ↗</span>
                     </a>
                   </div>
 
-                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 font-bold">📧</span>
+                  <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100/70 shadow-sm">
+                      {svg_email}
+                    </span>
                     <div class="flex-1 min-w-0">
-                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
+                      <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
                       <p class="text-sm font-bold text-slate-900 truncate">{active_email}</p>
                     </div>
-                    <a href="mailto:{active_email}" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                    <a href="mailto:{active_email}" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3.5 py-2 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
                       <span>Enviar ↗</span>
                     </a>
                   </div>
 
-                  <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pink-100 text-pink-700 font-bold">📸</span>
+                  <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100/70 shadow-sm">
+                      {svg_instagram}
+                    </span>
                     <div class="flex-1 min-w-0">
-                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
+                      <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
                       <p class="text-sm font-bold text-slate-900 truncate">{active_instagram}</p>
                     </div>
-                    <a href="{active_instagram}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                    <a href="{active_instagram}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3.5 py-2 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
                       <span>Aceder ↗</span>
                     </a>
                   </div>
@@ -690,8 +696,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Controle Individual de Fotos e Logo</div>
-            <div class="banner-subtitle">Substitua a Imagem 1 e Imagem 2 de forma independente sem perder as fotos salvas, com suporte a Logo opcional.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Ícones Oficiais & Design Limpo</div>
+            <div class="banner-subtitle">Ícones oficiais vetorizados de alta performance para WhatsApp, E-mail e Instagram.</div>
         </div>
     """, unsafe_allow_html=True)
 
