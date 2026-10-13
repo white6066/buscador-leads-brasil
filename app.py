@@ -12,7 +12,7 @@ import base64
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com Fotos Reais HD & Upload Personalizado",
+    page_title="Novas Empresas - Gerador LP com Controle Individual de Fotos e Logo",
     page_icon="🚀",
     layout="wide"
 )
@@ -222,8 +222,8 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     }
 
 # --- BIBLIOTECA DE FOTOGRAFIAS REAIS HD (UNSPLASH) ---
-def get_real_hd_photo(segmento, razao, instruction="", index_offset=0):
-    text_search = (instruction + " " + segmento + " " + razao).lower()
+def get_real_hd_photo(segmento, razao, index_offset=0):
+    text_search = (segmento + " " + razao).lower()
     
     if any(w in text_search for w in ['veiculo', 'carro', 'automov', 'seminovo', 'auto', 'mecanica', 'revenda']):
         photos = [
@@ -302,7 +302,7 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     return html_content
 
-def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, uploaded_file=None, image_position="Imagem 1 (Superior / Topo)", seed_offset=0):
+def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel_planilha, data_abert, cnpj, instructions_list, current_img1=None, current_img2=None, logo_b64=None):
     osint = deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento)
     primary_color, color_rationale = determine_harmonious_palette(razao, segmento, osint["logo"])
     
@@ -342,26 +342,15 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_email = osint["email"] if osint["email"] else f"contato@{str(display_name).lower().replace(' ', '')}.com.br"
     active_instagram = osint["instagram"] if osint["instagram"] else f"https://instagram.com/{str(display_name).lower().replace(' ', '')}"
 
-    # Processamento de Imagens (Código ou Upload)
-    uploaded_base64 = None
-    if uploaded_file is not None:
-        bytes_data = uploaded_file.getvalue()
-        mime_type = uploaded_file.type if hasattr(uploaded_file, 'type') else "image/jpeg"
-        uploaded_base64 = f"data:{mime_type};base64,{base64.b64encode(bytes_data).decode('utf-8')}"
-
-    # Definir Imagem 1 e Imagem 2
-    default_img_1 = get_real_hd_photo(segmento, razao, "", seed_offset)
-    default_img_2 = get_real_hd_photo(segmento, razao, "", seed_offset + 1)
-
-    if uploaded_base64 and "Imagem 1" in image_position:
-        img_feature_1 = uploaded_base64
-        img_feature_2 = default_img_2
-    elif uploaded_base64 and "Imagem 2" in image_position:
-        img_feature_1 = default_img_1
-        img_feature_2 = uploaded_base64
+    # Bloco do Logótipo do Cabeçalho (Letra vs Imagem de Logo)
+    if logo_b64:
+        logo_header_html = f'<img src="{logo_b64}" alt="{display_name}" class="h-11 w-11 object-contain rounded-xl shadow-sm border border-slate-200">'
     else:
-        img_feature_1 = default_img_1
-        img_feature_2 = default_img_2
+        logo_header_html = f'<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">{display_name[0].upper()}</span>'
+
+    # Manutenção e Fallback das Imagens 1 e 2
+    img_feature_1 = current_img1 if current_img1 else get_real_hd_photo(segmento, razao, 0)
+    img_feature_2 = current_img2 if current_img2 else get_real_hd_photo(segmento, razao, 1)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -404,9 +393,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
       <a href="#inicio" class="flex items-center gap-3">
-        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">
-          {display_name[0].upper()}
-        </span>
+        {logo_header_html}
         <span class="min-w-0">
           <span class="block display truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
           <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">{segmento}</span>
@@ -703,8 +690,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Fotos Reais HD</div>
-            <div class="banner-subtitle">Sistema inteligente com fotografias reais automáticas e opção de upload personalizado por posição.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Controle Individual de Fotos e Logo</div>
+            <div class="banner-subtitle">Substitua a Imagem 1 e Imagem 2 de forma independente sem perder as fotos salvas, com suporte a Logo opcional.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -825,44 +812,55 @@ try:
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # --- ÁREA DE UPLOAD E CONTROLE DE FOTOS REAIS ---
+                # --- INICIALIZAÇÃO DA MEMÓRIA INDIVIDUAL DO LEAD ---
+                img1_key = f"saved_img1_{idx}"
+                img2_key = f"saved_img2_{idx}"
+                logo_key = f"saved_logo_{idx}"
+                hist_key = f"instructions_history_{idx}"
+                input_val_key = f"cust_val_{idx}"
+
+                if img1_key not in st.session_state:
+                    st.session_state[img1_key] = get_real_hd_photo(segmento, razao, 0)
+                if img2_key not in st.session_state:
+                    st.session_state[img2_key] = get_real_hd_photo(segmento, razao, 1)
+                if logo_key not in st.session_state:
+                    st.session_state[logo_key] = None
+                if hist_key not in st.session_state:
+                    st.session_state[hist_key] = []
+                if input_val_key not in st.session_state:
+                    st.session_state[input_val_key] = ""
+
+                # --- SEÇÃO DE GERENCIAMENTO DE MÍDIAS DA LP ---
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
-                    uploaded_ref_image = st.file_uploader("📎 Enviar foto real própria (JPG/PNG)", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
+                    uploaded_ref_image = st.file_uploader("📎 Enviar imagem/foto própria", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
                 with up_col2:
                     image_position = st.selectbox(
-                        "Onde aplicar a foto enviada:",
-                        ["Imagem 1 (Superior / Topo)", "Imagem 2 (Inferior / Sobre)"],
+                        "Onde aplicar a imagem enviada:",
+                        ["Imagem 1 (Superior / Topo)", "Imagem 2 (Inferior / Sobre)", "Logótipo Oficial do Cabeçalho"],
                         key=f"pos_{idx}"
                     )
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
-                
-                hist_key = f"instructions_history_{idx}"
-                if hist_key not in st.session_state:
-                    st.session_state[hist_key] = []
-                
-                seed_key = f"seed_off_{idx}"
-                if seed_key not in st.session_state:
-                    st.session_state[seed_key] = 0
-
-                input_val_key = f"cust_val_{idx}"
-                if input_val_key not in st.session_state:
-                    st.session_state[input_val_key] = ""
 
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
-                        st.session_state[seed_key] = 0
+                        st.session_state[img1_key] = get_real_hd_photo(segmento, razao, 0)
+                        st.session_state[img2_key] = get_real_hd_photo(segmento, razao, 1)
+                        st.session_state[logo_key] = None
                         
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
                             
-                        with st.spinner("Gerando Landing Page com fotos reais HD..."):
+                        with st.spinner("Gerando Landing Page inicial..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
-                                st.session_state[hist_key], uploaded_ref_image, image_position, st.session_state[seed_key]
+                                st.session_state[hist_key],
+                                st.session_state[img1_key],
+                                st.session_state[img2_key],
+                                st.session_state[logo_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
@@ -873,7 +871,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: trocar foto de carros", 
+                        placeholder="Ex: trocar cor principal para vermelho, alterar texto", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -881,20 +879,35 @@ try:
 
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
+                        # Caso o utilizador tenha enviado um ficheiro de imagem
+                        if uploaded_ref_image is not None:
+                            bytes_data = uploaded_ref_image.getvalue()
+                            mime_type = uploaded_ref_image.type if hasattr(uploaded_ref_image, 'type') else "image/jpeg"
+                            b64_str = f"data:{mime_type};base64,{base64.b64encode(bytes_data).decode('utf-8')}"
+
+                            if "Imagem 1" in image_position:
+                                st.session_state[img1_key] = b64_str
+                            elif "Imagem 2" in image_position:
+                                st.session_state[img2_key] = b64_str
+                            elif "Logótipo" in image_position:
+                                st.session_state[logo_key] = b64_str
+
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
-                        st.session_state[seed_key] += 1
 
-                        with st.spinner("Atualizando fotografias reais..."):
+                        with st.spinner("A guardar e atualizar Landing Page..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
-                                st.session_state[hist_key], uploaded_ref_image, image_position, st.session_state[seed_key]
+                                st.session_state[hist_key],
+                                st.session_state[img1_key],
+                                st.session_state[img2_key],
+                                st.session_state[logo_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.session_state[input_val_key] = ""
-                            st.success("Fotografia atualizada com sucesso!")
+                            st.success("Alterações salvas com sucesso!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
