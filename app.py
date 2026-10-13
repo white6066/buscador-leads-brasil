@@ -73,6 +73,13 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
+    /* CORREÇÃO DOS INPUTS DE DATA PARA SE ADAPTAREM AO TEMA SEM CONFLITOS */
+    div[data-testid="stDateInput"] input {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border-color: {border_color} !important;
+    }}
+
     div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
     div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
@@ -88,105 +95,6 @@ st.markdown(f"""
     div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; }}
     div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 6px !important; font-size: 0.9rem !important; }}
     p, span, div {{ color: {text_color}; font-size: 0.9rem !important; }}
-
-    /* CAMPOS DE DATA: adapta o campo ao tema selecionado */
-    [data-testid="stDateInput"],
-    [data-testid="stDateInput"] label {{ color: {text_color} !important; }}
-
-    [data-testid="stDateInput"] input,
-    [data-testid="stDateInput"] div[data-baseweb="input"],
-    [data-testid="stDateInput"] div[data-baseweb="input"] > div {{
-        background: {input_bg} !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
-        border-color: {border_color} !important;
-        caret-color: {input_text} !important;
-    }}
-    [data-testid="stDateInput"] input::placeholder {{
-        color: {text_muted} !important;
-        -webkit-text-fill-color: {text_muted} !important;
-        opacity: 1 !important;
-    }}
-
-    /* O popup do calendário é renderizado fora do contêiner do campo.
-       Identifica o popover que contém o calendário e estiliza seus filhos. */
-    div[data-baseweb="popover"]:has([data-baseweb="calendar"]),
-    div[role="dialog"]:has([data-baseweb="calendar"]),
-    [data-baseweb="calendar"] {{
-        background-color: {bg_card} !important;
-        color: {text_color} !important;
-        border-color: {border_color} !important;
-        color-scheme: {'dark' if is_dark else 'light'};
-    }}
-    div[data-baseweb="popover"]:has([data-baseweb="calendar"]) *,
-    div[role="dialog"]:has([data-baseweb="calendar"]) *,
-    [data-baseweb="calendar"] * {{
-        color: {text_color} !important;
-        border-color: {border_color} !important;
-    }}
-    div[data-baseweb="popover"]:has([data-baseweb="calendar"]) div,
-    div[role="dialog"]:has([data-baseweb="calendar"]) div,
-    [data-baseweb="calendar"] div,
-    [data-baseweb="calendar"] [role="grid"],
-    [data-baseweb="calendar"] [role="row"],
-    [data-baseweb="calendar"] [role="columnheader"],
-    [data-baseweb="calendar"] [role="gridcell"] {{
-        background-color: {bg_card} !important;
-    }}
-
-    [data-baseweb="calendar"] button,
-    [data-baseweb="calendar"] button span,
-    [data-baseweb="calendar"] button svg {{
-        background-color: {bg_card} !important;
-        color: {text_color} !important;
-        fill: {text_color} !important;
-        border-color: {border_color} !important;
-    }}
-    [data-baseweb="calendar"] button:hover,
-    [data-baseweb="calendar"] [role="gridcell"]:hover,
-    [data-baseweb="calendar"] [role="gridcell"]:hover button {{
-        background-color: #0ea5e9 !important;
-        color: #ffffff !important;
-    }}
-    [data-baseweb="calendar"] button[aria-selected="true"],
-    [data-baseweb="calendar"] [aria-selected="true"],
-    [data-baseweb="calendar"] [aria-pressed="true"] {{
-        background-color: #0ea5e9 !important;
-        color: #ffffff !important;
-        border-color: #0ea5e9 !important;
-    }}
-    [data-baseweb="calendar"] button:disabled,
-    [data-baseweb="calendar"] [aria-disabled="true"] {{
-        color: {text_muted} !important;
-        opacity: 0.55 !important;
-    }}
-    div[data-baseweb="popover"] [role="listbox"],
-    div[data-baseweb="popover"] [role="option"],
-    div[data-baseweb="popover"] li {{
-        background-color: {dropdown_bg} !important;
-        color: {dropdown_text} !important;
-    }}
-    div[data-baseweb="popover"] [role="option"]:hover,
-    div[data-baseweb="popover"] li:hover {{
-        background-color: #0ea5e9 !important;
-        color: #ffffff !important;
-    }}
-
-
-    /* O tema nativo do menu do Streamlit é independente do estado Python.
-       Oculta somente a seção de seleção de tema nativa, quando identificável,
-       para que o botão lateral seja o controle de tema da aplicação. */
-    [data-testid="stThemeSection"],
-    [data-testid="stThemeSelector"],
-    [data-testid="stThemeToggle"],
-    section[data-testid="stThemeSection"] {{
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        overflow: hidden !important;
-    }}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -769,7 +677,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "🌙 Modo Escuro" if not is_dark else "☀️ Modo Claro"
+        theme_btn_label = "☀️ Modo Claro" if is_dark else "🌙 Modo Escuro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
