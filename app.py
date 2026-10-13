@@ -52,7 +52,7 @@ st.markdown(f"""
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
     
-    /* Botões compactos e elegantes */
+    /* Botões compactos e elegantes com dois terços (66%) do tamanho */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -61,7 +61,7 @@ st.markdown(f"""
         box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         transition: all 0.2s ease-in-out;
         font-size: 0.78rem !important;
-        padding: 3px 8px !important;
+        padding: 3px 6px !important;
         min-height: 32px !important;
     }}
     [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
@@ -891,16 +891,16 @@ try:
                 if seed2_key not in st.session_state:
                     st.session_state[seed2_key] = 0
 
-                input_key = f"cust_inst_{idx}"
-                if input_key not in st.session_state:
-                    st.session_state[input_key] = ""
+                input_val_key = f"cust_val_{idx}"
+                if input_val_key not in st.session_state:
+                    st.session_state[input_val_key] = ""
 
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
                         st.session_state[seed1_key] = 0
                         st.session_state[seed2_key] = 0
-                        current_val = st.session_state.get(input_key, "").strip()
+                        current_val = st.session_state[input_val_key].strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                         with st.spinner("Gerando Landing Page..."):
@@ -914,16 +914,18 @@ try:
                             st.rerun()
 
                 with col_inst_txt:
+                    # Input sem st.text_input(key=...) para evitar o conflito de estado do Streamlit
                     typed_text = st.text_input(
                         "O que mudar na LP", 
+                        value=st.session_state[input_val_key],
                         placeholder="Ex: na imagem 1 quero carros vermelhos, na imagem 2 quero escritório moderno", 
-                        key=input_key,
                         label_visibility="collapsed"
                     )
+                    st.session_state[input_val_key] = typed_text
 
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
-                        current_val = st.session_state.get(input_key, "").strip()
+                        current_val = st.session_state[input_val_key].strip()
                         if current_val:
                             st.session_state[hist_key].append(current_val)
                             c_lower = current_val.lower()
@@ -939,9 +941,7 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            
-                            # Limpeza segura do input alterando o valor no session_state ANTES do próximo rerun
-                            st.session_state[input_key] = ""
+                            st.session_state[input_val_key] = ""
                             st.success("Alteração aplicada com sucesso!")
                             st.rerun()
 
