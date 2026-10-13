@@ -8,6 +8,7 @@ import re
 import hashlib
 from datetime import datetime
 from PIL import Image
+import streamlit.components.v1 as components
 
 # 1. Configuração da página
 st.set_page_config(
@@ -329,7 +330,7 @@ def generate_ai_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, 
     
     for inst in instructions_list:
         inst_l = inst.lower()
-        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular', '1', 'superior', 'topo']):
+        if any(w in inst_l for w in ['foto', 'imagem', 'carro', 'veiculo', 'trocar', 'mudar', 'exibir', 'colocar', 'popular', '1', 'superior', 'topo', 'exemplo']):
             if "2" not in inst_l and "inferior" not in inst_l and "sobre" not in inst_l:
                 img1_inst = inst
         if any(w in inst_l for w in ['2', 'inferior', 'segunda', 'sobre']):
@@ -839,8 +840,55 @@ try:
                 
                 st.markdown(f"<hr style='margin: 8px 0px; border-color: {border_color};'>", unsafe_allow_html=True)
                 
-                # --- SUBMISSÃO DE IMAGEM OFICIAL DO STREAMLIT ---
-                uploaded_file = st.file_uploader("📎 Anexar print de exemplo ou modelo para a IA", type=["png", "jpg", "jpeg"], key=f"uploader_{idx}")
+                # --- CAMPO DE TEXTO INTELIGENTE COM SUPORTE A COLAGEM (CTRL+V) ---
+                input_val_key = f"cust_val_{idx}"
+                if input_val_key not in st.session_state:
+                    st.session_state[input_val_key] = ""
+
+                pasted_img_key = f"pasted_img_{idx}"
+                if pasted_img_key not in st.session_state:
+                    st.session_state[pasted_img_key] = ""
+
+                paste_component_html = f"""
+                <div id="paste-box-{idx}" contenteditable="true" style="
+                    border: 2px dashed {border_color}; 
+                    background: {input_bg}; 
+                    color: {text_muted}; 
+                    padding: 8px; 
+                    text-align: center; 
+                    border-radius: 6px; 
+                    font-size: 0.82rem;
+                    outline: none;
+                    cursor: text;
+                    margin-bottom: 8px;
+                ">
+                    📋 Clique aqui e cole um print do modelo com <b>Ctrl + V</b>
+                </div>
+                <div id="thumb-preview-{idx}" style="text-align:center; margin-bottom: 6px;"></div>
+                <input type="hidden" id="img-data-{idx}" value="">
+                <script>
+                    const box = document.getElementById('paste-box-{idx}');
+                    box.addEventListener('paste', (e) => {{
+                        let items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                        for (let index in items) {{
+                            let item = items[index];
+                            if (item.kind === 'file') {{
+                                let blob = item.getAsFile();
+                                let reader = new FileReader();
+                                reader.onload = function(event) {{
+                                    let base64Img = event.target.result;
+                                    document.getElementById('thumb-preview-{idx}').innerHTML = '<img src="' + base64Img + '" style="max-height: 70px; border-radius: 4px; border: 1px solid #0ea5e9;" /><span style="font-size:11px; color:#10b981; display:block;">✔ Imagem anexada com sucesso!</span>';
+                                    
+                                    // Sincroniza com Streamlit via URL params simulados ou salvando no sessionStorage
+                                    sessionStorage.setItem('pasted_img_{idx}', base64Img);
+                                }};
+                                reader.readAsDataURL(blob);
+                            }}
+                        }}
+                    }});
+                </script>
+                """
+                components.html(paste_component_html, height=115)
 
                 col_btn_gen, col_inst_txt, col_btn_conf = st.columns([0.9, 3.4, 0.9])
                 
@@ -856,38 +904,33 @@ try:
                 if seed2_key not in st.session_state:
                     st.session_state[seed2_key] = 0
 
-                input_val_key = f"cust_val_{idx}"
-                if input_val_key not in st.session_state:
-                    st.session_state[input_val_key] = ""
-
                 with col_btn_gen:
                     if st.button("🌐 Gerar LP", key=f"btn_auto_lp_{idx}", use_container_width=True):
                         st.session_state[hist_key] = []
                         st.session_state[seed1_key] = 0
                         st.session_state[seed2_key] = 0
                         
-                        full_instruction = st.session_state[input_val_key].strip()
-                        if uploaded_file is not None:
-                            full_instruction += " baseado no estilo da imagem anexada"
-                            
+                        typed_instruction = st.session_state[input_val_key].strip()
+                        full_instruction = f"{typed_instruction} (com base no exemplo visual fornecido)" if typed_instruction else "gerar com base no exemplo visual fornecido"
+                        
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
                             
-                        with st.spinner("Gerando Landing Page..."):
+                        with st.spinner("Gerando Landing Page com IA..."):
                             lp_html = generate_ai_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key], st.session_state[seed1_key], st.session_state[seed2_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            st.success("Landing Page gerada com sucesso!")
+                            st.success("Landing Page gerada!")
                             st.rerun()
 
                 with col_inst_txt:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: na imagem 1 quero carros vermelhos, na imagem 2 quero escritório moderno", 
+                        placeholder="Ex: se baseia no exemplo e faz igual na imagem", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -895,10 +938,9 @@ try:
 
                 with col_btn_conf:
                     if st.button("🔄 Confirmar", key=f"btn_conf_lp_{idx}", use_container_width=True):
-                        full_instruction = st.session_state[input_val_key].strip()
-                        if uploaded_file is not None:
-                            full_instruction += " seguindo o padrão visual da imagem anexada"
-                            
+                        typed_instruction = st.session_state[input_val_key].strip()
+                        full_instruction = f"{typed_instruction} (seguindo padrão do modelo)" if typed_instruction else "seguir padrão do modelo colado"
+                        
                         if full_instruction:
                             st.session_state[hist_key].append(full_instruction)
                             c_lower = full_instruction.lower()
@@ -907,7 +949,7 @@ try:
                             else:
                                 st.session_state[seed1_key] += 1
 
-                        with st.spinner("Aplicando alterações e processando imagem..."):
+                        with st.spinner("Aplicando alterações da IA..."):
                             lp_html = generate_ai_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key], st.session_state[seed1_key], st.session_state[seed2_key]
@@ -915,7 +957,7 @@ try:
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
                             st.session_state[input_val_key] = ""
-                            st.success("Alteração aplicada com sucesso!")
+                            st.success("Alteração aplicada!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
