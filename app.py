@@ -367,12 +367,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     }}
     .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
     .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
-    
-    /* Regras essenciais para evitar quebra de blocos no PDF */
-    section, article, .map-box-bg, footer {{
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }}
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
@@ -590,16 +584,16 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       btn.disabled = true;
 
       const opt = {{
-        margin:       0,
+        margin:       [10, 10, 10, 10],
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
         html2canvas:  {{ 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1600 
+          windowWidth: 1400 
         }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape' }}
+        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }}
       }};
 
       html2pdf().from(element).set(opt).save().then(() => {{
