@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 if "theme" not in st.session_state:
-    st.session_state.theme = "Claro"
+    st.session_state.theme = "Escuro"
 
 def toggle_theme():
     st.session_state.theme = "Claro" if st.session_state.theme == "Escuro" else "Escuro"
@@ -33,7 +33,7 @@ border_color = "#1f2937" if is_dark else "#cbd5e1"
 hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
-input_bg = "#1f2937" if is_dark else "#ffffff"
+input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#ffffff" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
 dropdown_bg = "#111827" if is_dark else "#ffffff"
@@ -41,30 +41,47 @@ dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
 st.markdown(f"""
 <style>
-    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
+    /* FUNDO PRINCIPAL DO APP */
+    .stApp {{ background-color: {bg_app} !important; color: {text_color} !important; }}
     html, body, [class*="st-"] {{ font-size: 0.92rem !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }}
     
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR (TEXTOS RESIDUAIS OCULTOS) */
-    button[data-testid="stSidebarCollapseButton"], button[data-testid="stSidebarExpandButton"] {{
+    /* 1. CORREÇÃO RADICAL DO BOTÃO EXPANDIR/FECHAR SIDEBAR (REMOVE 'keyboard_double_ar...') */
+    button[data-testid="stSidebarCollapseButton"], 
+    button[data-testid="stSidebarExpandButton"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
+        color: transparent !important;
+        position: relative !important;
+        width: 38px !important;
+        height: 38px !important;
     }}
-    button[data-testid="stSidebarCollapseButton"] *, button[data-testid="stSidebarExpandButton"] * {{
+    button[data-testid="stSidebarCollapseButton"] *, 
+    button[data-testid="stSidebarExpandButton"] * {{
         display: none !important;
+        visibility: hidden !important;
+        font-size: 0px !important;
     }}
-    button[data-testid="stSidebarCollapseButton"]::after {{
+    button[data-testid="stSidebarCollapseButton"]::before {{
         content: "◀" !important;
-        font-size: 0.85rem !important;
+        font-size: 0.9rem !important;
         color: {text_color} !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
     }}
-    button[data-testid="stSidebarExpandButton"]::after {{
+    button[data-testid="stSidebarExpandButton"]::before {{
         content: "▶" !important;
-        font-size: 0.85rem !important;
+        font-size: 0.9rem !important;
         color: {text_color} !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
     }}
 
     /* SIDEBAR */
@@ -85,15 +102,88 @@ st.markdown(f"""
     [data-testid="stSidebar"] .stMarkdown p {{ color: {text_color} !important; font-size: 0.88rem !important; }}
     [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: 2px !important; }}
     [data-testid="stSidebar"] hr {{ margin: 14px 0px !important; border-color: {border_color} !important; }}
-    
-    /* BOTÕES */
+
+    /* 2. CORREÇÃO TOTAL DOS CAMPOS DE DATA (FUNDO ESCURO + BORDAS ESCURAS) */
+    div[data-testid="stDateInput"],
+    div[data-testid="stDateInput"] *,
+    div[data-testid="stDateInput"] div[data-baseweb="input"],
+    div[data-testid="stDateInput"] div[data-baseweb="input"] * {{
+        background-color: {input_bg} !important;
+        background: {input_bg} !important;
+        color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
+        border-color: {border_color} !important;
+        box-shadow: none !important;
+    }}
+    div[data-testid="stDateInput"] input {{
+        border-radius: 8px !important;
+        border: 1px solid {border_color} !important;
+    }}
+    div[data-testid="stDateInput"] input::placeholder {{
+        color: {text_muted} !important;
+        -webkit-text-fill-color: {text_muted} !important;
+    }}
+    div[data-testid="stDateInput"] svg {{
+        fill: {text_muted} !important;
+    }}
+
+    /* CAMPOS GERAIS DE TEXTO E SELECTBOX */
+    input[type="text"], div[data-baseweb="input"] input {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
+        border-radius: 8px !important;
+        font-size: 0.88rem !important;
+    }}
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+    }}
+    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
+
+    /* 3. CORREÇÃO TOTAL DO EXPANDER DAS EMPRESAS (ELIMINA '_arrow_...' E REEMPLAZA POR ÍCONE) */
+    div[data-testid="stExpander"] {{
+        background-color: {expander_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+    }}
+    div[data-testid="stExpander"] summary {{
+        background-color: {expander_bg} !important;
+        color: {text_color} !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+    }}
+    /* Oculta os textos corrompidos injetados no sumário */
+    div[data-testid="stExpander"] summary span[data-testid="stMarkdownContainer"] p {{
+        display: inline-block !important;
+        color: {text_color} !important;
+        font-weight: 600 !important;
+    }}
+    /* Força esconder seletores corrompidos tipo _arrow_ */
+    div[data-testid="stExpander"] summary > span:first-child {{
+        font-size: 0px !important;
+        color: transparent !important;
+        width: 18px !important;
+        height: 18px !important;
+        position: relative !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }}
+    div[data-testid="stExpander"] summary > span:first-child::before {{
+        content: "⚙️" !important;
+        font-size: 0.95rem !important;
+        color: {text_color} !important;
+    }}
+
+    /* BOTÕES GERAIS */
     [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 0.82rem !important;
         font-weight: 600 !important;
         padding: 6px 12px !important;
@@ -103,64 +193,12 @@ st.markdown(f"""
         background-color: #0284c7 !important;
         border-color: #0284c7 !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
-        transform: translateY(-1px);
     }}
     
-    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
+    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
     a {{ text-decoration: none !important; }}
 
-    /* CAMPOS GERAIS DE TEXTO */
-    input[type="text"], div[data-baseweb="input"] input {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
-        border-radius: 8px !important;
-        font-size: 0.88rem !important;
-    }}
-    input::placeholder {{
-        color: {text_muted} !important;
-        -webkit-text-fill-color: {text_muted} !important;
-        opacity: 0.8 !important;
-    }}
-
-    /* CORREÇÃO DEFINITIVA DOS CAMPOS DE DATA (FUNDO ESCURO E REMOÇÃO DE BORDAS BRANCAS) */
-    div[data-testid="stDateInput"] {{
-        background-color: transparent !important;
-    }}
-    div[data-testid="stDateInput"] > div {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-    }}
-    div[data-testid="stDateInput"] input {{
-        background-color: transparent !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
-        border: none !important;
-        box-shadow: none !important;
-    }}
-    div[data-testid="stDateInput"] svg {{
-        fill: {text_muted} !important;
-    }}
-
-    div[data-baseweb="select"] > div {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-    }}
-    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
-    
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{
-        background-color: {dropdown_bg} !important;
-        color: {dropdown_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-    }}
-
-    /* BANNER SUPERIOR DESTAQUE PREMIUM */
+    /* BANNER SUPERIOR DESTAQUE */
     .banner-box {{
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
         padding: 24px 32px;
@@ -172,36 +210,6 @@ st.markdown(f"""
     }}
     .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
     .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
-    
-    /* CORREÇÃO DO EXPANDER DAS EMPRESAS (REMOÇÃO COMPLETA DE TEXTOS / SÍMBOLOS CORROMPIDOS E AJUSTE DA SETA) */
-    div[data-testid="stExpander"] {{
-        background-color: {expander_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
-    }}
-    div[data-testid="stExpander"] summary {{
-        background-color: {expander_bg} !important;
-        color: {text_color} !important;
-        border-radius: 10px !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        padding: 10px 14px !important;
-    }}
-    div[data-testid="stExpander"] summary span {{
-        color: {text_color} !important;
-    }}
-    /* Oculta textos corrompidos residuais (como _arrow_) gerados em alguns estados do Streamlit */
-    div[data-testid="stExpander"] summary span:not(:first-child) {{
-        display: inline !important;
-    }}
-    div[data-testid="stExpander"] summary p {{
-        color: {text_color} !important;
-        margin: 0px !important;
-        font-weight: 600 !important;
-    }}
-    div[data-testid="stExpander"] summary svg {{
-        fill: {text_color} !important;
-    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -778,7 +786,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "🌙 Modo Escuro" if not is_dark else "☀️ Modo Claro"
+        theme_btn_label = "☀️ Modo Claro" if is_dark else "🌙 Modo Escuro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
@@ -951,8 +959,8 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            # EXPANDER COM TÍTULO LIMPO
-            with st.expander(f"⚙️ Gerenciar & Criar LP: {razao}"):
+            # EXPANDER COM TÍTULO E ÍCONE LIMPOS
+            with st.expander(f"Gerenciar & Criar LP: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
