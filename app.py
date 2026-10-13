@@ -587,18 +587,18 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       if (btnContainer) btnContainer.style.display = 'none';
 
       const originalStyle = element.getAttribute('style') || '';
-      element.style.width = '1280px';
+      element.style.width = '1120px';
       element.style.margin = '0 auto';
 
       const opt = {{
-        margin:       [5, 5, 5, 5],
+        margin:       [8, 8, 8, 8],
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
         html2canvas:  {{ 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1280,
+          windowWidth: 1120,
           scrollX: 0,
           scrollY: 0
         }},
