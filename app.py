@@ -578,18 +578,23 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 
     function gerarPDF() {{
       const element = document.getElementById('conteudo-lp');
+      const btn = event.currentTarget;
+      const textoOriginal = btn.innerHTML;
+      btn.innerHTML = '⏳ A gerar PDF...';
+      btn.disabled = true;
+
       const opt = {{
         margin:       0,
         filename:     'landing_page_{cnpj}.pdf',
         image:        {{ type: 'jpeg', quality: 0.98 }},
-        html2canvas:  {{ scale: 2, useCORS: true, letterRendering: true }},
+        html2canvas:  {{ 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          windowWidth: 1200 
+        }},
         jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'portrait' }}
       }};
-
-      const btn = event.currentTarget;
-      const textoOriginal = btn.innerHTML;
-      btn.innerHTML = '⏳ Gerando PDF...';
-      btn.disabled = true;
 
       html2pdf().from(element).set(opt).save().then(() => {{
         btn.innerHTML = textoOriginal;
