@@ -88,6 +88,97 @@ st.markdown(f"""
     div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; }}
     div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 6px !important; font-size: 0.9rem !important; }}
     p, span, div {{ color: {text_color}; font-size: 0.9rem !important; }}
+
+    /* ==========================================================
+       CORREÇÃO: CAMPOS DE DATA E CALENDÁRIO (Streamlit/BaseWeb)
+       Acompanha automaticamente o tema Claro/Escuro.
+       ========================================================== */
+    [data-testid="stDateInput"] {{
+        color: {text_color} !important;
+    }}
+
+    [data-testid="stDateInput"] input,
+    [data-testid="stDateInput"] div[data-baseweb="input"] > div {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border-color: {border_color} !important;
+        -webkit-text-fill-color: {input_text} !important;
+        caret-color: {input_text} !important;
+    }}
+
+    [data-testid="stDateInput"] input::placeholder {{
+        color: {text_muted} !important;
+        -webkit-text-fill-color: {text_muted} !important;
+        opacity: 1 !important;
+    }}
+
+    [data-testid="stDateInput"] button,
+    [data-testid="stDateInput"] button svg {{
+        background-color: {btn_bg} !important;
+        color: {btn_text} !important;
+        fill: {btn_text} !important;
+        border-color: {border_color} !important;
+    }}
+
+    /* O calendário é renderizado em um popover separado do campo. */
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="calendar"],
+    div[data-baseweb="calendar"] > div,
+    div[role="dialog"]:has([data-baseweb="calendar"]) {{
+        background-color: {bg_card} !important;
+        color: {text_color} !important;
+        border-color: {border_color} !important;
+    }}
+
+    [data-baseweb="calendar"] *,
+    [data-baseweb="calendar"] [role="grid"],
+    [data-baseweb="calendar"] [role="row"],
+    [data-baseweb="calendar"] [role="columnheader"],
+    [data-baseweb="calendar"] [role="gridcell"] {{
+        color: {text_color} !important;
+    }}
+
+    [data-baseweb="calendar"] button,
+    [data-baseweb="calendar"] button span,
+    [data-baseweb="calendar"] button svg {{
+        background-color: {bg_card} !important;
+        color: {text_color} !important;
+        fill: {text_color} !important;
+        border-color: {border_color} !important;
+    }}
+
+    [data-baseweb="calendar"] button:hover {{
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
+    }}
+
+    [data-baseweb="calendar"] button[aria-selected="true"],
+    [data-baseweb="calendar"] [aria-selected="true"],
+    [data-baseweb="calendar"] [aria-pressed="true"] {{
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
+        border-color: #0ea5e9 !important;
+    }}
+
+    [data-baseweb="calendar"] button:disabled,
+    [data-baseweb="calendar"] [aria-disabled="true"] {{
+        color: {text_muted} !important;
+        opacity: 0.55 !important;
+    }}
+
+    /* Menus de mês/ano quando a versão do Streamlit os disponibiliza. */
+    div[data-baseweb="popover"] [role="listbox"],
+    div[data-baseweb="popover"] [role="option"],
+    div[data-baseweb="popover"] li {{
+        background-color: {dropdown_bg} !important;
+        color: {dropdown_text} !important;
+    }}
+    div[data-baseweb="popover"] [role="option"]:hover,
+    div[data-baseweb="popover"] li:hover {{
+        background-color: #0ea5e9 !important;
+        color: #ffffff !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
