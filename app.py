@@ -18,14 +18,14 @@ st.set_page_config(
 )
 
 if "theme" not in st.session_state:
-    st.session_state.theme = "Escuro"
+    st.session_state.theme = "Claro"
 
 def toggle_theme():
     st.session_state.theme = "Claro" if st.session_state.theme == "Escuro" else "Escuro"
 
 is_dark = st.session_state.theme == "Escuro"
 
-bg_app = "#0b0f19" if is_dark else "#f8fafc"
+bg_app = "#090d16" if is_dark else "#f1f5f9"
 bg_card = "#111827" if is_dark else "#ffffff"
 text_color = "#f3f4f6" if is_dark else "#0f172a"
 text_muted = "#9ca3af" if is_dark else "#64748b"
@@ -34,149 +34,68 @@ hr_color = "#1f2937" if is_dark else "#cbd5e1"
 btn_bg = "#1f2937" if is_dark else "#ffffff"
 btn_text = "#f3f4f6" if is_dark else "#0f172a"
 input_bg = "#111827" if is_dark else "#ffffff"
-input_text = "#ffffff" if is_dark else "#0f172a"
+input_text = "#f3f4f6" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
+dropdown_bg = "#111827" if is_dark else "#ffffff"
+dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
 st.markdown(f"""
 <style>
-    /* FUNDO PRINCIPAL DO APP */
-    .stApp {{ background-color: {bg_app} !important; color: {text_color} !important; }}
-    html, body, [class*="st-"] {{ font-size: 0.92rem !important; font-family: 'Inter', system-ui, -apple-system, sans-serif; }}
+    .stApp {{ background-color: {bg_app}; color: {text_color}; }}
+    html, body, [class*="st-"] {{ font-size: 0.92rem !important; }}
     
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* SIDEBAR */
-    [data-testid="stSidebar"] {{
-        background: {bg_card} !important;
-        color: {text_color} !important;
-        padding-top: 1.2rem;
-        border-right: 1px solid {border_color};
-    }}
-    [data-testid="stSidebar"] label {{
-        color: {text_color} !important;
-        font-weight: 700 !important;
-        font-size: 0.82rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin-top: 6px;
-    }}
-    [data-testid="stSidebar"] .stMarkdown p {{ color: {text_color} !important; font-size: 0.88rem !important; }}
-    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: 2px !important; }}
-    [data-testid="stSidebar"] hr {{ margin: 14px 0px !important; border-color: {border_color} !important; }}
-
-    /* CAMPOS DE DATA */
-    div[data-testid="stDateInput"],
-    div[data-testid="stDateInput"] *,
-    div[data-testid="stDateInput"] div[data-baseweb="input"],
-    div[data-testid="stDateInput"] div[data-baseweb="input"] * {{
-        background-color: {input_bg} !important;
-        background: {input_bg} !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
-        border-color: {border_color} !important;
-        box-shadow: none !important;
-    }}
-    div[data-testid="stDateInput"] input {{
-        border-radius: 8px !important;
-        border: 1px solid {border_color} !important;
-    }}
-    div[data-testid="stDateInput"] input::placeholder {{
-        color: {text_muted} !important;
-        -webkit-text-fill-color: {text_muted} !important;
-    }}
-    div[data-testid="stDateInput"] svg {{
-        fill: {text_muted} !important;
-    }}
-
-    /* CAMPOS GERAIS DE TEXTO E SELECTBOX */
-    input[type="text"], div[data-baseweb="input"] input {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
-        border-radius: 8px !important;
-        font-size: 0.88rem !important;
-    }}
-    div[data-baseweb="select"] > div {{
-        background-color: {input_bg} !important;
-        color: {input_text} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-    }}
-    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
-
-    /* CORREÇÃO DO FILE UPLOADER (REMOVE DUPLICAÇÃO DE TEXTO E AJUSTA CORES) */
-    div[data-testid="stFileUploader"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
-        padding: 12px !important;
-    }}
-    div[data-testid="stFileUploader"] section {{
-        background-color: {input_bg} !important;
-        border: 2px dashed {border_color} !important;
-        border-radius: 8px !important;
-    }}
-    div[data-testid="stFileUploader"] section * {{
-        color: {text_color} !important;
-    }}
-    /* Esconde spans duplicados gerados pelo widget nativo do st.file_uploader */
-    div[data-testid="stFileUploader"] span[data-testid="stMarkdownContainer"] {{
-        display: none !important;
-    }}
-    div[data-testid="stFileUploader"] small {{
-        color: {text_muted} !important;
-    }}
-
-    /* EXPANDER DAS EMPRESAS */
-    div[data-testid="stExpander"] {{
-        background-color: {expander_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 10px !important;
-    }}
-    div[data-testid="stExpander"] summary {{
-        background-color: {expander_bg} !important;
-        color: {text_color} !important;
-        border-radius: 10px !important;
-        padding: 10px 14px !important;
-    }}
-    div[data-testid="stExpander"] summary span[data-testid="stMarkdownContainer"] p {{
-        display: inline-block !important;
-        color: {text_color} !important;
-        font-weight: 600 !important;
-    }}
-
-    /* BOTÕES ESPECÍFICOS */
-    .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button {{
+    [data-testid="stSidebar"] {{ background-color: {bg_app}; color: {text_color} !important; padding-top: 1rem; border-right: 1px solid {border_color}; }}
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {{ color: {text_color} !important; font-weight: 500 !important; font-size: 0.9rem !important; }}
+    [data-testid="stSidebar"] div.stSelectbox {{ margin-bottom: -10px !important; }}
+    [data-testid="stSidebar"] hr {{ margin: 12px 0px !important; border-color: {border_color} !important; }}
+    
+    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        padding: 6px 12px !important;
-        min-height: 36px !important;
+        border-radius: 4px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        transition: all 0.2s ease-in-out;
+        font-size: 0.78rem !important;
+        padding: 3px 6px !important;
+        min-height: 32px !important;
     }}
-    .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover {{
-        background-color: #0284c7 !important;
-        border-color: #0284c7 !important;
-        color: #ffffff !important;
+    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
+        background-color: {btn_bg} !important;
+        border-color: #0ea5e9 !important;
+        color: #0ea5e9 !important;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
     }}
     
-    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; }}
+    h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    .banner-box {{
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
-        padding: 24px 32px;
-        border-radius: 14px;
-        color: #ffffff;
-        margin-bottom: 24px;
-        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.18);
-        border: 1px solid rgba(255,255,255,0.15);
-    }}
-    .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
-    .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
+    input[type="text"], input[type="date"] {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; font-size: 0.9rem !important; }}
+    div[data-baseweb="input"] {{ background-color: {input_bg} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; color: {input_text} !important; }}
+    div[data-baseweb="input"] input {{ color: {input_text} !important; background-color: transparent !important; }}
+
+    div[data-baseweb="select"] > div {{ background-color: {input_bg} !important; color: {input_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; overflow: hidden !important; }}
+    div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.9rem !important; }}
+    div[data-baseweb="select"] div[role="button"] {{ border-left: none !important; box-shadow: none !important; }}
+    
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; border: 1px solid {border_color} !important; border-radius: 4px !important; }}
+    li[data-baseweb="option"], div[role="option"] {{ background-color: {dropdown_bg} !important; color: {dropdown_text} !important; font-size: 0.9rem !important; }}
+    li[data-baseweb="option"]:hover, div[role="option"]:hover {{ background-color: #0ea5e9 !important; color: #ffffff !important; }}
+
+    div[data-testid="metric-container"] {{ background-color: {bg_card}; border: 1px solid {border_color}; padding: 14px 18px; border-radius: 6px; }}
+    div[data-testid="metric-container"] label {{ color: {text_muted} !important; font-weight: 600 !important; font-size: 0.8rem !important; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: {text_color} !important; font-size: 1.35rem !important; font-weight: 800 !important; }}
+
+    .banner-box {{ background-color: {bg_card}; padding: 20px 28px; border-radius: 6px; color: {text_color}; margin-bottom: 20px; border: 1px solid {border_color}; }}
+    .banner-title {{ font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; color: {text_color} !important; }}
+    .banner-subtitle {{ color: {text_muted}; font-size: 0.85rem; line-height: 1.4; }}
+    
+    div[data-testid="stExpander"] {{ background-color: {expander_bg} !important; border: 1px solid {border_color} !important; border-radius: 6px !important; }}
+    div[data-testid="stExpander"] summary {{ background-color: {expander_bg} !important; color: {text_color} !important; border-radius: 6px !important; font-size: 0.9rem !important; }}
+    p, span, div {{ color: {text_color}; font-size: 0.9rem !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -302,9 +221,11 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         "extra_activities": [fix_encoding(a) for a in extra_activities[:3]]
     }
 
+# --- BUSCA INTELIGENTE DE FOTOGRAFIAS REAIS NA WEB POR COMANDO ---
 def search_real_photo_by_query(query_text, segmento, index_offset=0):
     query_lower = query_text.lower()
     
+    # Se o usuário pediu algo específico na barra de comando, tentamos buscar via Unsplash com termos refinados
     if any(w in query_lower for w in ['esportivo', 'esporte', 'luxo', 'mercedes', 'bmw', 'audi', 'porsche', 'ranger']):
         cars = [
             "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop",
@@ -317,6 +238,7 @@ def search_real_photo_by_query(query_text, segmento, index_offset=0):
     elif any(w in query_lower for w in ['fachada', 'loja', 'frente', 'comercio', 'predio']):
         return "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
     
+    # Fallback por segmento padrão
     seg_l = segmento.lower()
     if 'veiculo' in seg_l or 'carro' in seg_l or 'auto' in seg_l:
         default_cars = [
@@ -351,6 +273,7 @@ def determine_harmonious_palette(razao, segmento, logo_url):
 
 def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
+    css_injections = []
     
     color_map = {
         "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
@@ -362,12 +285,27 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
+        
+        # Cor principal
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
                     custom_primary_color = c_hex
                     break
 
+        # Alterações estruturais e posicionamento de texto ("mudar o nome para parte superior")
+        if "nome" in inst_lower and ("superior" in inst_lower or "topo" in inst_lower):
+            # Move o título principal para cima da imagem no hero
+            html_content = html_content.replace(
+                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr]',
+                'grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-1 text-center'
+            )
+            html_content = html_content.replace(
+                'class="max-w-2xl"',
+                'class="max-w-4xl mx-auto text-center mb-8"'
+            )
+
+        # Ajuste de Dimensionamento / Largura de Imagem via Comando
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
             html_content = html_content.replace('max-w-xl', 'max-w-3xl')
             html_content = html_content.replace('aspect-[4/3]', 'aspect-[16/9]')
@@ -377,6 +315,10 @@ def apply_accumulated_modifications(html_content, instructions_list):
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
         html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
+
+    if css_injections:
+        full_css = f"<style>\n" + "\n".join(css_injections) + "\n</style>"
+        html_content = html_content.replace("</head>", f"{full_css}\n</head>")
 
     return html_content
 
@@ -425,6 +367,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     else:
         logo_header_html = f'<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">{display_name[0].upper()}</span>'
 
+    # Análise de comando para imagens se o usuário especificou algo na barra de texto
     img1_query = ""
     img2_query = ""
     for inst in instructions_list:
@@ -473,6 +416,12 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
+  <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
+    <span class="inline-flex items-center justify-center gap-2">
+      ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
+    </span>
+  </div>
+
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
       <a href="#inicio" class="flex items-center gap-3">
@@ -575,20 +524,22 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <div class="p-6 sm:p-8 lg:p-10 brand-bg text-white flex flex-col justify-between">
+            <!-- COLUNA ESQUERDA: MAPA DO GOOGLE MAPS EMBUTIDO -->
+            <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
-                <p class="mt-2 text-sm text-white/90">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+                <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
               </div>
-              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-black/20">
+              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
                 <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
               </div>
-              <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
+              <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
                 <span>📍 {full_address}</span>
-                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold underline text-white hover:opacity-80">Ampliar no Maps ↗</a>
+                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="brand-text font-bold hover:underline text-emerald-400">Ampliar no Maps ↗</a>
               </div>
             </div>
 
+            <!-- COLUNA DIREITA: CANAIS DE COMUNICAÇÃO -->
             <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
               <div>
                 <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
@@ -636,6 +587,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                 </div>
               </div>
 
+              <!-- ENDEREÇO POR ESCRITO ABAIXO -->
               <div class="mt-8 pt-6 border-t border-slate-100">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Endereço Oficial da Sede</p>
                 <p class="mt-1 text-sm font-medium text-slate-700 leading-relaxed">{full_address}</p>
@@ -648,15 +600,15 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </section>
   </main>
 
-  <footer class="brand-bg px-5 py-8 text-white/90 border-t border-white/10">
+  <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
     <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
       <div>
         <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
-        <p class="mt-1 text-xs text-white/80">{razao} · {cidade}/{uf}</p>
+        <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
       </div>
       <div class="text-xs sm:text-right">
         <p>CNPJ: {formatted_cnpj}</p>
-        <p class="mt-1 text-white/70">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
+        <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
       </div>
     </div>
   </footer>
@@ -747,7 +699,7 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
         
-        theme_btn_label = "☀️ Modo Claro" if is_dark else "🌙 Modo Escuro"
+        theme_btn_label = "🌙 Modo Escuro" if not is_dark else "☀️ Modo Claro"
         if st.button(theme_btn_label, use_container_width=True):
             toggle_theme()
             st.rerun()
@@ -776,7 +728,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
-            <div class="banner-subtitle">Painel de Prospecção Pro: Edição de fotos, ajuste de cores, dimensões e sincronização visual do mapa.</div>
+            <div class="banner-subtitle">Modifique textos, posições, dimensão de imagens e busque fotos reais através da barra de comandos sem avisos.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -791,54 +743,13 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # PAINEL DE TOTALIZADORES
-    tot_1, tot_2, tot_3, tot_4 = st.columns(4)
-    
-    with tot_1:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">📊</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Total Exibidos</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(df_filtered)}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Exibidos", len(df_filtered))
+    m2.metric("Pendentes", len(current_df[current_df["Status"] == "Pendente"]))
+    m3.metric("LPs Geradas", len(current_df[current_df["Status"] == "LP Gerada"]))
+    m4.metric("Vendas Fechadas", len(current_df[current_df["Status"] == "Finalizado Positivo"]))
 
-    with tot_2:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⏳</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Pendentes</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Pendente"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with tot_3:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">⚡</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">LPs Geradas</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "LP Gerada"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with tot_4:
-        st.markdown(f"""
-            <div style="background: {bg_card}; border: 1px solid {border_color}; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 14px;">
-                <div style="background: rgba(99, 102, 241, 0.12); color: #6366f1; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">🏆</div>
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: {text_muted}; text-transform: uppercase; letter-spacing: 0.05em;">Vendas Fechadas</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: {text_color}; margin-top: 2px;">{len(current_df[current_df["Status"] == "Finalizado Positivo"])}</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
+    st.divider()
 
     col_search, col_export = st.columns([5, 1])
     with col_search:
@@ -920,8 +831,7 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            # EXPANDER COM TEXTO "Gerenciar, criar e alterar" AO LADO DA ENGRENAGEM
-            with st.expander(f"⚙️ Gerenciar, criar e alterar: {razao}"):
+            with st.expander(f"⚙️ Gerenciar & Criar LP Masterpiece: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
@@ -996,7 +906,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: trocar cor para azul, buscar foto de carro esportivo, aumentar imagem...", 
+                        placeholder="Ex: mudar o nome para parte superior, cor vermelha, foto de carro esportivo", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
@@ -1019,14 +929,15 @@ try:
                         typed_instruction = st.session_state[input_val_key].strip()
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
+                            # Se o comando pediu busca de imagem por texto
                             inst_l = typed_instruction.lower()
-                            if "foto" in inst_l or "imagem" in inst_l or "carro" in inst_l or "esportivo" in inst_l:
+                            if "foto" in inst_l or "imagem" in inst_l:
                                 if "2" in inst_l or "inferior" in inst_l or "sobre" in inst_l:
                                     st.session_state[img2_key] = search_real_photo_by_query(typed_instruction, segmento, 1)
                                 else:
                                     st.session_state[img1_key] = search_real_photo_by_query(typed_instruction, segmento, 0)
 
-                        with st.spinner("Aplicando alterações..."):
+                        with st.spinner("Aplicando alterações e comandos..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
