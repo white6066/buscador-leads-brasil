@@ -105,29 +105,29 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* FIX DEFINITIVO DAS SETAS DO SELECTBOX (REMOVE QUADRADO PRETO) */
+    /* REMOÇÃO DEFINITIVA DO QUADRADO PRETO DA SETA (SELECTBOX) */
     div[data-baseweb="select"] {{
-        background-color: transparent !important;
+        background-color: {input_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 6px !important;
     }}
     div[data-baseweb="select"] > div {{ 
-        background-color: {input_bg} !important; 
+        background-color: transparent !important; 
         color: {input_text} !important; 
-        border: 1px solid {border_color} !important; 
-        border-radius: 6px !important; 
+        border: none !important; 
     }}
-    div[data-baseweb="select"] [data-testid="stSelectbox"] div,
+    /* Zera qualquer fundo de div interna da seta e isola o ícone */
+    div[data-baseweb="select"] div[data-testid="stSelectbox"] div,
     div[data-baseweb="select"] div[role="button"],
     div[data-baseweb="select"] div[aria-hidden="true"],
     div[data-baseweb="select"] span {{
         background-color: transparent !important;
         background: transparent !important;
-        color: {input_text} !important;
     }}
+    /* Deixa a seta limpa na cor correta */
     div[data-baseweb="select"] svg {{ 
         fill: {input_text} !important; 
         color: {input_text} !important; 
-        width: 18px !important;
-        height: 18px !important;
     }}
     
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"], div.stSelectbox div[role="listbox"] {{ 
