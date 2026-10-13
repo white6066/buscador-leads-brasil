@@ -36,8 +36,6 @@ btn_text = "#f3f4f6" if is_dark else "#0f172a"
 input_bg = "#111827" if is_dark else "#ffffff"
 input_text = "#ffffff" if is_dark else "#0f172a"
 expander_bg = "#111827" if is_dark else "#ffffff"
-dropdown_bg = "#111827" if is_dark else "#ffffff"
-dropdown_text = "#f3f4f6" if is_dark else "#0f172a"
 
 st.markdown(f"""
 <style>
@@ -48,41 +46,6 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
-    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR */
-    button[data-testid="stSidebarCollapseButton"], 
-    button[data-testid="stSidebarExpandButton"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid {border_color} !important;
-        border-radius: 8px !important;
-        color: transparent !important;
-        position: relative !important;
-        width: 36px !important;
-        height: 36px !important;
-    }}
-    button[data-testid="stSidebarCollapseButton"] *, 
-    button[data-testid="stSidebarExpandButton"] * {{
-        display: none !important;
-        visibility: hidden !important;
-    }}
-    button[data-testid="stSidebarCollapseButton"]::after {{
-        content: "◀" !important;
-        font-size: 0.85rem !important;
-        color: {text_color} !important;
-        position: absolute !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-    }}
-    button[data-testid="stSidebarExpandButton"]::after {{
-        content: "▶" !important;
-        font-size: 0.85rem !important;
-        color: {text_color} !important;
-        position: absolute !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-    }}
-
     /* SIDEBAR */
     [data-testid="stSidebar"] {{
         background: {bg_card} !important;
@@ -142,12 +105,12 @@ st.markdown(f"""
     }}
     div[data-baseweb="select"] span {{ color: {input_text} !important; font-size: 0.88rem !important; }}
 
-    /* CORREÇÃO DO FILE UPLOADER (COR E TEXTO) */
+    /* CORREÇÃO DO FILE UPLOADER (REMOVE DUPLICAÇÃO DE TEXTO E AJUSTA CORES) */
     div[data-testid="stFileUploader"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 10px !important;
-        padding: 10px !important;
+        padding: 12px !important;
     }}
     div[data-testid="stFileUploader"] section {{
         background-color: {input_bg} !important;
@@ -157,10 +120,12 @@ st.markdown(f"""
     div[data-testid="stFileUploader"] section * {{
         color: {text_color} !important;
     }}
-    div[data-testid="stFileUploader"] button {{
-        background-color: {btn_bg} !important;
-        color: {btn_text} !important;
-        border: 1px solid {border_color} !important;
+    /* Esconde spans duplicados gerados pelo widget nativo do st.file_uploader */
+    div[data-testid="stFileUploader"] span[data-testid="stMarkdownContainer"] {{
+        display: none !important;
+    }}
+    div[data-testid="stFileUploader"] small {{
+        color: {text_muted} !important;
     }}
 
     /* EXPANDER DAS EMPRESAS */
@@ -181,8 +146,8 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
-    /* BOTÕES GERAIS */
-    [data-testid="stSidebar"] button, .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button, button {{
+    /* BOTÕES ESPECÍFICOS */
+    .stDownloadButton button, div[data-testid="stExpander"] button, div.row-widget.stButton button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
@@ -192,7 +157,7 @@ st.markdown(f"""
         padding: 6px 12px !important;
         min-height: 36px !important;
     }}
-    [data-testid="stSidebar"] button:hover, .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover, button:hover {{
+    .stDownloadButton button:hover, div[data-testid="stExpander"] button:hover, div.row-widget.stButton button:hover {{
         background-color: #0284c7 !important;
         border-color: #0284c7 !important;
         color: #ffffff !important;
@@ -386,7 +351,6 @@ def determine_harmonious_palette(razao, segmento, logo_url):
 
 def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
-    css_injections = []
     
     color_map = {
         "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
@@ -398,7 +362,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
-        
         if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor"]):
             for c_name, c_hex in color_map.items():
                 if c_name in inst_lower:
@@ -414,10 +377,6 @@ def apply_accumulated_modifications(html_content, instructions_list):
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
         html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
-
-    if css_injections:
-        full_css = f"<style>\n" + "\n".join(css_injections) + "\n</style>"
-        html_content = html_content.replace("</head>", f"{full_css}\n</head>")
 
     return html_content
 
