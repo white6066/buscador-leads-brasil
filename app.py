@@ -47,6 +47,28 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ background-color: {bg_app} !important; border-bottom: 1px solid {border_color} !important; }}
     [data-testid="stHeader"] * {{ color: {text_color} !important; }}
     
+    /* CORREÇÃO DO BOTÃO DE RECOLHER/EXPANDIR A SIDEBAR */
+    button[data-testid="stSidebarCollapseButton"], button[data-testid="stSidebarExpandButton"] {{
+        background-color: {input_bg} !important;
+        color: {text_color} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        padding: 4px !important;
+        box-shadow: none !important;
+    }}
+    button[data-testid="stSidebarCollapseButton"]:aria-label, 
+    button[data-testid="stSidebarCollapseButton"] *, 
+    button[data-testid="stSidebarExpandButton"] * {{
+        color: {text_color} !important;
+        font-size: 0px !important;
+    }}
+    button[data-testid="stSidebarCollapseButton"]::before,
+    button[data-testid="stSidebarExpandButton"]::before {{
+        content: "◀" !important;
+        font-size: 0.9rem !important;
+        color: {text_color} !important;
+    }}
+
     /* SIDEBAR */
     [data-testid="stSidebar"] {{
         background: {bg_card} !important;
@@ -90,30 +112,36 @@ st.markdown(f"""
     h1, h2, h3, h4, h5, h6 {{ color: {text_color} !important; font-family: system-ui, -apple-system, sans-serif; }}
     a {{ text-decoration: none !important; }}
 
-    /* CAMPOS DE TEXTO E INPUTS (PESQUISA E DATAS CORRIGIDOS) */
-    input[type="text"], input[type="date"] {{
+    /* CORREÇÃO DOS CAMPOS DE ENTRADA (DATOS, TEXTO E SELECT) */
+    input[type="text"], input[type="date"], div[data-baseweb="input"] input {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
-        border: 1px solid {border_color} !important;
+        -webkit-text-fill-color: {input_text} !important;
         border-radius: 8px !important;
         font-size: 0.88rem !important;
+    }}
+    input::placeholder {{
+        color: {text_muted} !important;
+        -webkit-text-fill-color: {text_muted} !important;
+        opacity: 0.8 !important;
     }}
     div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
-        color: {input_text} !important;
-    }}
-    div[data-baseweb="input"] input {{
-        color: {input_text} !important;
-        background-color: transparent !important;
-        -webkit-text-fill-color: {input_text} !important;
     }}
     
-    /* CORREÇÃO ESPECÍFICA PARA O CAMPO DE PESQUISA PRINCIPAL */
-    input[aria-label*="Pesquisa Rápida"] {{
+    /* ESTILIZAÇÃO COMPLETA DO INPUT DE DATA */
+    div[data-testid="stDateInput"] div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        border: 1px solid {border_color} !important;
+    }}
+    div[data-testid="stDateInput"] input {{
         color: {input_text} !important;
         -webkit-text-fill-color: {input_text} !important;
+    }}
+    div[data-testid="stDateInput"] svg {{
+        fill: {text_muted} !important;
     }}
 
     div[data-baseweb="select"] > div {{
@@ -144,11 +172,12 @@ st.markdown(f"""
     .banner-title {{ font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; color: #ffffff !important; }}
     .banner-subtitle {{ color: rgba(255,255,255,0.88); font-size: 0.9rem; line-height: 1.5; font-weight: 500; }}
     
-    /* EXPANDERS CORRIGIDOS */
+    /* CORREÇÃO DO TÍTULO DO EXPANDER DAS EMPRESAS (REMOVENDO TEXTO DESCONFIGURADO) */
     div[data-testid="stExpander"] {{
         background-color: {expander_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 10px !important;
+        overflow: hidden;
     }}
     div[data-testid="stExpander"] summary {{
         background-color: {expander_bg} !important;
@@ -156,9 +185,18 @@ st.markdown(f"""
         border-radius: 10px !important;
         font-size: 0.9rem !important;
         font-weight: 600 !important;
+        padding: 10px 14px !important;
     }}
     div[data-testid="stExpander"] summary span {{
         color: {text_color} !important;
+    }}
+    div[data-testid="stExpander"] summary p {{
+        color: {text_color} !important;
+        margin: 0px !important;
+        font-weight: 600 !important;
+    }}
+    div[data-testid="stExpander"] summary svg {{
+        fill: {text_color} !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -780,7 +818,7 @@ try:
     if cidade_selecionada != "Todas": df_filtered = df_filtered[df_filtered["Cidade"].astype(str).str.strip().str.upper() == cidade_selecionada]
     if status_selecionado != "Todos": df_filtered = df_filtered[df_filtered["Status"].astype(str).str.strip() == status_selecionado.strip()]
 
-    # PAINEL DE TOTALIZADORES MODERNIZADO
+    # PAINEL DE TOTALIZADORES
     tot_1, tot_2, tot_3, tot_4 = st.columns(4)
     
     with tot_1:
@@ -909,7 +947,8 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            with st.expander(f"⚙️ Gerenciar & Criar LP Masterpiece: {razao}"):
+            # TITULO LIMPO DO EXPANDER SEM CÓDIGOS OU SÍMBOLOS QUEBRADOS
+            with st.expander(f"⚙️ Gerenciar & Criar LP: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
