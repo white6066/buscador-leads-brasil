@@ -226,21 +226,44 @@ def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
     css_injections = []
     
+    # EXPANSAO DA PALETA DE CORES
     color_map = {
-        "vermelho": "#dc2626", "azul": "#2563eb", "verde": "#16a34a", 
-        "preto": "#000000", "branco": "#ffffff", "cinza": "#64748b",
-        "laranja": "#ea580c", "roxo": "#7c3aed", "rosa": "#db2777",
-        "bege": "#d4b996", "dourado": "#d97706", "amarelo": "#ca8a04",
-        "azul marinho": "#1e3a8a", "azul escuro": "#0f172a"
+        # Azuis
+        "azul bebe": "#89cff0", "azul bebê": "#89cff0", "azul claro": "#38bdf8",
+        "azul celeste": "#0ea5e9", "azul": "#2563eb", "azul royal": "#1d4ed8",
+        "azul marinho": "#1e3a8a", "azul escuro": "#0f172a", "cyan": "#06b6d4",
+        "turquesa": "#14b8a6",
+        # Verdes
+        "verde": "#16a34a", "verde claro": "#4ade80", "verde lima": "#84cc16",
+        "verde esmeralda": "#10b981", "verde oliva": "#65a30d", "verde escuro": "#14532d",
+        "mint": "#6ee7b7", "menta": "#6ee7b7",
+        # Vermelhos & Rosas
+        "vermelho": "#dc2626", "vermelho escuro": "#991b1b", "vinho": "#881337",
+        "rosa": "#ec4899", "rosa claro": "#f472b6", "rosa choque": "#f43f5e",
+        "pink": "#db2777", "magenta": "#d946ef",
+        # Roxo & Violeta
+        "roxo": "#7c3aed", "violeta": "#8b5cf6", "lilás": "#c084fc", "lilas": "#c084fc",
+        "púrpura": "#581c87", "purpura": "#581c87", "índigo": "#4338ca", "indigo": "#4338ca",
+        # Amarelos & Laranjas
+        "laranja": "#ea580c", "laranja queimado": "#c2410c", "terracota": "#b45309",
+        "amarelo": "#eab308", "dourado": "#d97706", "amarelo claro": "#fef08a",
+        # Neutros & Tons de Terra
+        "preto": "#0f172a", "grafite": "#1e293b", "cinza": "#64748b", "cinza claro": "#cbd5e1",
+        "cinza escuro": "#334155", "branco": "#ffffff", "bege": "#d4b996", "marrom": "#78350f"
     }
 
     for instruction in instructions_list:
         inst_lower = instruction.lower()
         
-        if any(w in inst_lower for w in ["cor principal", "cor do tema", "mudar cor", "trocar cor"]):
-            for c_name, c_hex in color_map.items():
+        # Suporte a Hexadecimal direto na instrução (ex: #123456)
+        hex_match = re.search(r'#(?:[0-9a-fA-F]{3}){1,2}\b', instruction)
+        if hex_match:
+            custom_primary_color = hex_match.group(0)
+        elif any(w in inst_lower for w in ["cor", "tema", "mudar", "trocar", "deixar"]):
+            # Ordena por tamanho para casar termos compostos antes (ex: "azul bebe" antes de "azul")
+            for c_name in sorted(color_map.keys(), key=len, reverse=True):
                 if c_name in inst_lower:
-                    custom_primary_color = c_hex
+                    custom_primary_color = color_map[c_name]
                     break
 
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
@@ -346,6 +369,9 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       background:
         radial-gradient(ellipse at 85% 15%, rgba(255,255,255,.14), transparent 40%),
         linear-gradient(135deg, var(--primary-deep), var(--primary) 70%, #0f172a);
+    }}
+    .map-box-bg {{
+      background: linear-gradient(145deg, var(--primary) 0%, var(--primary-deep, #0f172a) 100%);
     }}
     .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
     .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
@@ -460,17 +486,17 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       <div class="mx-auto max-w-7xl px-5 lg:px-8">
         <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
           <div class="grid lg:grid-cols-2">
-            <div class="p-6 sm:p-8 lg:p-10 bg-slate-900 flex flex-col justify-between">
+            <div class="p-6 sm:p-8 lg:p-10 map-box-bg flex flex-col justify-between">
               <div>
                 <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
-                <p class="mt-2 text-sm text-slate-300">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+                <p class="mt-2 text-sm text-white/80">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
               </div>
-              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-slate-700 bg-slate-800">
+              <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-slate-800">
                 <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
               </div>
-              <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
+              <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
                 <span>📍 {full_address}</span>
-                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="brand-text font-bold hover:underline text-emerald-400">Ampliar no Maps ↗</a>
+                <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold hover:underline text-white bg-white/20 px-3 py-1.5 rounded-lg transition">Ampliar no Maps ↗</a>
               </div>
             </div>
 
@@ -840,7 +866,7 @@ try:
                     typed_text = st.text_input(
                         "O que mudar na LP", 
                         value=st.session_state[input_val_key],
-                        placeholder="Ex: trocar cor para azul, buscar foto de carro esportivo, aumentar imagem...", 
+                        placeholder="Ex: trocar cor para azul bebe, verde menta, #89cff0...", 
                         label_visibility="collapsed",
                         key=f"text_input_{idx}"
                     )
