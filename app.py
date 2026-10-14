@@ -337,8 +337,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Biblioteca html2pdf para exportação em PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -363,7 +361,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante de Download em PDF -->
+  <!-- Botão Flutuante Automatizado para Salvar PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -570,47 +568,24 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
-      const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
-      const btn = event.currentTarget;
-      const textoOriginal = btn.innerHTML;
-      
-      btn.innerHTML = '⏳ A gerar PDF...';
-      btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      const originalStyle = element.getAttribute('style') || '';
-      element.style.width = '1440px';
-      element.style.margin = '0 auto';
-
-      const opt = {{
-        margin:       [10, 10, 10, 10],
-        filename:     'landing_page_{cnpj}.pdf',
-        image:        {{ type: 'jpeg', quality: 0.99 }},
-        html2canvas:  {{ 
-          scale: 2, 
-          useCORS: true, 
-          letterRendering: true,
-          windowWidth: 1440,
-          scrollX: 0,
-          scrollY: 0
-        }},
-        jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
-      }};
-
-      html2pdf().set(opt).from(element).save().then(() => {{
-        element.setAttribute('style', originalStyle);
+      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
+      const url = URL.createObjectURL(blob);
+      const novaAba = window.open(url, '_blank');
+      
+      if (novaAba) {{
+        novaAba.onload = function() {{
+          setTimeout(() => {{
+            novaAba.print();
+            if (btnContainer) btnContainer.style.display = 'block';
+          }}, 800);
+        }};
+      }} else {{
         if (btnContainer) btnContainer.style.display = 'block';
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-      }}).catch(err => {{
-        console.error(err);
-        element.setAttribute('style', originalStyle);
-        if (btnContainer) btnContainer.style.display = 'block';
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        alert('Erro ao gerar PDF. Tente novamente.');
-      }});
+        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
+      }}
     }}
   </script>
 </body>
