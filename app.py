@@ -343,8 +343,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Biblioteca html2pdf atualizada com script direto do cdnjs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Biblioteca html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -366,10 +366,15 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     }}
     .lift {{ transition: transform .25s ease, box-shadow .25s ease; }}
     .lift:hover {{ transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }}
+    
+    /* Oculta o botão flutuante apenas quando for impresso em PDF via media print ou classe de hide */
+    @media print {{
+      #btn-pdf-container {{ display: none !important; }}
+    }}
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante de Download em PDF -->
+  <!-- Botão Flutuante de Download em PDF visível apenas na LP e oculto na captura do PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -576,11 +581,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
-      if (typeof html2pdf === 'undefined') {{
-        alert('A biblioteca de PDF ainda está a carregar. Aguarde um segundo e tente novamente.');
-        return;
-      }}
-
       const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
       const btn = event.currentTarget;
@@ -594,7 +594,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
-      // Substitui o iframe do mapa por imagem estática limpa para o PDF
       const mapWrapper = document.getElementById('map-wrapper');
       const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
       if (mapWrapper) {{
@@ -616,7 +615,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
       }};
 
-      // Gera o PDF e restaura o mapa interativo logo após
       html2pdf().set(opt).from(element).save().then(() => {{
         if (mapWrapper) mapWrapper.innerHTML = originalMapContent;
         element.setAttribute('style', originalStyle);
