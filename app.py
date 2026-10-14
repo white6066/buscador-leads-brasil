@@ -269,16 +269,22 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
+    display_name = osint["fantasia"]
+    
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
-        whats_link = f"https://wa.me/{clean_tel}"
+        
+        # Mensagem de prospecção comercial pronta para vendas
+        mensagem_vendas = urllib.parse.quote(
+            f"Olá {display_name}! Tudo bem? Analisamos o registro da sua empresa ({segmento} em {cidade}) e preparamos uma Landing Page profissional exclusiva para impulsionar suas vendas e autoridade no mercado. Dá uma olhada no projeto que estruturamos para vocês!"
+        )
+        whats_link = f"https://wa.me/{clean_tel}?text={mensagem_vendas}"
         display_phone_text = format_phone(active_tel)
     else:
         whats_link = "https://wa.me/"
         display_phone_text = "WhatsApp indisponível"
 
-    display_name = osint["fantasia"]
     custom_slogan = osint["slogan"] if osint["slogan"] else f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
     extra_acts = osint["extra_activities"]
