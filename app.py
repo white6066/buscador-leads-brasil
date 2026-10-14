@@ -971,7 +971,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_apply_html=True)
+            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
