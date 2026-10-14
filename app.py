@@ -343,8 +343,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Biblioteca html2pdf para exportação em PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Biblioteca html2pdf atualizada com script direto do cdnjs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -576,6 +576,11 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
+      if (typeof html2pdf === 'undefined') {{
+        alert('A biblioteca de PDF ainda está a carregar. Aguarde um segundo e tente novamente.');
+        return;
+      }}
+
       const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
       const btn = event.currentTarget;
@@ -589,7 +594,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
-      // Substitui temporariamente o iframe do mapa por uma captura estática limpa idêntica para o PDF
+      // Substitui o iframe do mapa por imagem estática limpa para o PDF
       const mapWrapper = document.getElementById('map-wrapper');
       const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
       if (mapWrapper) {{
