@@ -589,7 +589,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
-      // Substitui temporariamente o iframe do mapa por uma imagem estática limpa para o PDF
+      // Substitui temporariamente o iframe do mapa por uma captura estática limpa idêntica para o PDF
       const mapWrapper = document.getElementById('map-wrapper');
       const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
       if (mapWrapper) {{
