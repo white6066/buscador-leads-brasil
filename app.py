@@ -324,13 +324,10 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     img_feature_1 = current_img1 if current_img1 else (search_real_photo_by_query(img1_query, segmento, 0) if img1_query else search_real_photo_by_query("", segmento, 0))
     img_feature_2 = current_img2 if current_img2 else (search_real_photo_by_query(img2_query, segmento, 1) if img2_query else search_real_photo_by_query("", segmento, 1))
 
-    # Ícones em Imagem Base64 100% garantidos contra falhas de renderização no PDF Canvas
-    b64_whatsapp = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBmaWxsPSJpbmhlcml0IiBkPSJNMi4wNTcgMjRsMS42ODctNi4xNjNjLTEuMDQxLTEuODA0LTEuNTg4LTMuODQ5LTEuNTg3LTUuOTQ2LjAwMy02LjU1Niw1LjMzOC0xMS44OTEsMTEuODkzLTExLjg5MSAzLjE4MS4wMDEsNi4xNjcsMS4yNCw4LjQxMywzLjQ4OCAyLjI0NSwyLjI0OCwzLjQ4MSw1LjIzNiwzLjQ4LDguNDE0LS4wMDMsNi41NTctNS4zMzgsMTEuODkyLTExLjg5MywxMS44OTItMS45OSwtLjAwMS0zLjk1MSwtLjUtNS42ODgtMS40NDhsLTYuMzA1LDEuNjU0em02LjU5Ny0zLjgwN2MxLjY3Ni5OTUsMy4yNzYsMS41OTEsNS4zOTIsMS41OTIgNS40NDgsMCw5Ljg4Ni00LjQzNCw5Ljg4OS05Ljg4NS4wMDItNS40NjItNC40MTUtOS44OS05Ljg4MS05Ljg5Mi01LjQ1MiwwLTkuODg3LDQuNDM0LTkuODg5LDkuODg0LS4wMDEsMi4yMjUuNjUxLDMuODkxLDEuNzQ2LDUuNjM0bC0uOTk5LDMuNjQ4IDMuNzQyLS45ODF6bTExLjM4Ny01LjQ2NGMtLjA3NC0uMTI0LS4yNzItLjE5OC0uNTctLjM0Ny0uMjk3LS4xNDktMS43NTgtLjg2OC0yLjAzMS0uOTY3LS4yNzItLjA5OS0uNDctLjE0OS0uNjY5LjE0OS0uMTk4LjI5Ny0uNzY4Ljk2Ny0uOTQxLDEuMTY1LS4xNzMuMTk4LS4zNDcuMjIzLS42NDQuMDc0LS4yOTctLjE0OS0xLjI1NS0uNDYyLTIuMzktMS40NzUtLjg4My0uNzg4LTEuNDgtMS43NjEtMS42NTMtMi4wNTktLjE3My0uMjk3LS4wMTgtLjQ1OC4xMy0uNjA2LjEzNC0uMTMzLjI5Ny0uMzQ3LjQ0Ni0uNTIxLjE1MS0uMTcyLj和LjItLjI5Ni4zLS40OTUuMDk5LS4xOTguMDUtLjM3Mi0uMDI1LS41MjEtLjA3NS0uMTQ4LS42NjktMS42MTEtLjkxNi0uMjA2LS4yNDItLjU3OS0uNDg3LS4wMS0uNjY5LS41MWwtLjU3LS4wMWMtLjE5OCwwLS41Mi4wNzQtLjc5Mi4zNzJzLTEuMDQsMS4wMTYtMS4wNCwyLjQ3OSAxLjA2NSwyLjg3NiwxLjIxMywzLjA3NC4xNDkuMTk4LDIuMDk1LDMuMiw1LjA3Niw0LjQ4Ny43MDkuMzA2LDEuMjYzLjQ4OSwxLjY5NC42MjYuNzEyLjIyNiwxLjM2LjE5NCwxLjg3Mi4xMjhjLjU3MS0uMDg1LDEuNzU4LS43MTksMi4wMDYtMS40MTMuMjQ4LS42OTUuMjQ4LTEuMjkuMTczLTEuNDE0eiIvPjwvc3ZnPg=="
-    
-    # HTML do iframe corrigido para suportar o wrapper e conversão em PDF perfeitamente
+    # Mapa interativo normal no HTML e substituído por uma imagem estática limpa na hora de gerar o PDF para evitar falhas cinzentas
     map_container_html = f"""
-    <div style="position: relative; width: 100%; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #0f172a;">
-      <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div id="map-wrapper" style="position: relative; width: 100%; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #0f172a;">
+      <iframe id="map-iframe" src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
     """
 
@@ -508,8 +505,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                   
                   <div class="mt-6 space-y-5">
                     <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm text-emerald-600">
-                        <img src="{b64_whatsapp}" class="h-6 w-6" alt="WhatsApp">
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm text-emerald-600 font-bold text-lg">
+                        📞
                       </span>
                       <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
@@ -591,6 +588,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
+      // Substitui temporariamente o iframe do mapa por um placeholder visual limpo para o PDF não falhar
+      const mapWrapper = document.getElementById('map-wrapper');
+      const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
+      if (mapWrapper) {{
+        mapWrapper.innerHTML = '<div style="width:100%; height:100%; background:#1e293b; display:flex; align-items:center; justify-content:center; color:#ffffff; font-family:sans-serif; font-weight:bold; font-size:14px; text-align:center; padding:20px;">📍 Mapa da Localização: {full_address}</div>';
+      }}
+
       const opt = {{
         margin:       [10, 10, 10, 10],
         filename:     'landing_page_{cnpj}.pdf',
@@ -607,12 +611,14 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
+        if (mapWrapper) mapWrapper.innerHTML = originalMapContent;
         element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
       }}).catch(err => {{
         console.error(err);
+        if (mapWrapper) mapWrapper.innerHTML = originalMapContent;
         element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
