@@ -109,7 +109,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         try:
             encoded_q = urllib.parse.quote(q)
             url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
-            res = requests.get(url, headers=headers, timeout=4)
+            res = requests.get(url, headers=headers, timeout=3)
             if res.status_code == 200:
                 from bs4 import BeautifulSoup
                 soup = BeautifulSoup(res.text, 'html.parser')
@@ -324,7 +324,9 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     img_feature_1 = current_img1 if current_img1 else (search_real_photo_by_query(img1_query, segmento, 0) if img1_query else search_real_photo_by_query("", segmento, 0))
     img_feature_2 = current_img2 if current_img2 else (search_real_photo_by_query(img2_query, segmento, 1) if img2_query else search_real_photo_by_query("", segmento, 1))
 
-    # Mapa interativo normal no HTML e substituído por uma imagem estática limpa na hora de gerar o PDF para evitar falhas cinzentas
+    # Ícone oficial correto do WhatsApp em SVG base64
+    b64_whatsapp = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBmaWxsPSIjMjVEMzY2IiBkPSJNMTIuMDMxIDIuMUM2LjkyOCAyLjEgMi42IDYuMjIgMi42IDExLjM0Yy0uMDAxIDIuMDIuNTU5IDMuOTkgMS42MDEgNS43MkwyLjYgMjIuMzhsNS4zNzUtMS40MWMxLjcwOS45MzYgMy42NjUgMS40NCA1LjY4MSAxLjQ0IDUuMDI4IDAgOS4xMjgtNC4xMTYgOS4xMjktOS4yNS4wMDItNS4xMzQtNC4xMDEtOS4yNi05LjE1NC05LjI2em0wIDE2Ljg3Yy0xLjU5OSAwLTMuMTI5LS40MzQtNC40NzUtMS4yNzhsLS4zMjEtLjE5MS0zLjI5My44NjYuODg5LTMuMjEtLjIwOC0uMzMyYy0uOTAzLTEuNDM2LTEuMzgxLTMuMTctMS4zOC00Ljk0MSAwLTQuMzU5IDMuNTM5LTcuOSA3Ljg5OC03LjkgNC4zNTkgMCA3LjkgMy41NDEgNy45IDcuOSAwIDQuMzU5LTMuNTQxIDcuOS03Ljg5OCA3Ljl6bTQuMy02LjAwNWMtLjIzNi0uMTE5LTEuMzk5LS42OTEtMS42MTYtLjc3Mi0uMjE3LS4wODEtLjM3NC0uMTE5LS4zNzQuMTE5cy0uNDQzLjU3NS0uNTQzLjY5NC0uMTk5LjEzNC0uNDM1LjAxNi0xLjAxOS0uMzc1LTEuOTQzLTEuMTYxYy0uNzItLjYzMS0xLjIwNi0xLjQxMS0xLjM0My0xLjY0Ny0uMTM3LS4yMzYtLjAxNC0uMzY0LjEwNC0uNDgyLjEwOC0uMTA4LjIzNi0uMjc5LjM1NC0uNDE4LjExOC0uMTM5LjE1Ni0uMjM2LjIzNi0uMzkzLjA4LS4xNTguMDQtLjI5Ny0uMDIyLS40MTYtLjA2LS4xMTktLjM3NC0uOTAyLS41MTQtMS4yMzgtLjEzNS0uMzMxLS4yNzMtLjI4NS0uMzc0LS4yOTFsLS4zMTktLjAwMWMtLjExIDAtLjI5NC4wNC0uNDQ4LjIwNC0uMTU4LjE2NC0uNjAzLjU5LS42MDMgMS40NDdzLjYxNyAxLjY2Ni43MDEgMS43ODVjLjA4LjExOCAxLjIxIDEuODQ4IDIuOTMyIDIuNTktLjQxMS4xNDUtLjczMy4yMy0tLjk4NS4yOTItLjQyMS4xMDYtLjgxLjA5MS0xLjExNS0uMDU1LjMzOS0uMzUzLjcyMS0xLjA5NS44MjMtMS43MDUuMTAyLS42MS4xMDItMS4xMzguMDcyLTEuMTk4LS4wMzEtLjA2LS4yMTUtLjA5OS0uNDUxLS4yMTh6Ii8+PC9zdmc+"
+
     map_container_html = f"""
     <div id="map-wrapper" style="position: relative; width: 100%; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #0f172a;">
       <iframe id="map-iframe" src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -505,8 +507,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                   
                   <div class="mt-6 space-y-5">
                     <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm text-emerald-600 font-bold text-lg">
-                        📞
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm text-emerald-600">
+                        <img src="{b64_whatsapp}" class="h-6 w-6" alt="WhatsApp">
                       </span>
                       <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
@@ -588,7 +590,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
-      // Substitui temporariamente o iframe do mapa por um placeholder visual limpo para o PDF não falhar
       const mapWrapper = document.getElementById('map-wrapper');
       const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
       if (mapWrapper) {{
@@ -903,7 +904,7 @@ try:
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
                             
-                        with st.spinner("Gerando Landing Page inicial..."):
+                        with st.spinner("Executando busca OSINT e gerando Landing Page..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
@@ -950,7 +951,7 @@ try:
                                 else:
                                     st.session_state[img1_key] = search_real_photo_by_query(typed_instruction, segmento, 0)
 
-                        with st.spinner("Aplicando alterações..."):
+                        with st.spinner("Atualizando modificações e dados..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
@@ -978,7 +979,7 @@ try:
                         key=f"dl_html_{idx}"
                     )
 
-            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_app_html=True)
 
         st.divider()
         p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns([2, 1, 1.5, 1, 2])
