@@ -589,6 +589,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       element.style.width = '1440px';
       element.style.margin = '0 auto';
 
+      // Substitui temporariamente o iframe do mapa por uma imagem estática limpa para o PDF
+      const mapWrapper = document.getElementById('map-wrapper');
+      const originalMapContent = mapWrapper ? mapWrapper.innerHTML : '';
+      if (mapWrapper) {{
+        mapWrapper.innerHTML = '<div style="width:100%; height:100%; background-image: url(\'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=800&auto=format&fit=crop\'); background-size: cover; background-position: center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:16px;"><div style="background:rgba(15, 23, 42, 0.9); color:#ffffff; padding:8px 16px; border-radius:8px; font-size:12px; font-weight:bold; font-family:\'Manrope\', sans-serif;">📍 {full_address}</div></div>';
+      }}
+
       const opt = {{
         margin:       [10, 10, 10, 10],
         filename:     'landing_page_{cnpj}.pdf',
@@ -604,13 +611,16 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
       }};
 
+      // Gera o PDF e restaura o mapa interativo logo após
       html2pdf().set(opt).from(element).save().then(() => {{
+        if (mapWrapper) mapWrapper.innerHTML = originalMapContent;
         element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
       }}).catch(err => {{
         console.error(err);
+        if (mapWrapper) mapWrapper.innerHTML = originalMapContent;
         element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
