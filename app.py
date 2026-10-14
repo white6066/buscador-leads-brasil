@@ -84,7 +84,7 @@ def format_cep(cep_str):
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        res = requests.get(image_url, headers=headers, timeout=3)
+        res = requests.get(image_url, headers=headers, timeout=2)
         if res.status_code == 200:
             img = Image.open(io.BytesIO(res.content)).convert('RGB')
             img = img.resize((40, 40))
@@ -98,9 +98,10 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile", f"{razao} instagram oficial"]
+    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile"]
     
     found_logo, found_instagram, found_email, found_phone, found_fantasia, found_site, found_slogan = None, None, None, None, None, None, None
     extra_activities = []
@@ -109,7 +110,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         try:
             encoded_q = urllib.parse.quote(q)
             url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
-            res = requests.get(url, headers=headers, timeout=3)
+            res = requests.get(url, headers=headers, timeout=2)
             if res.status_code == 200:
                 from bs4 import BeautifulSoup
                 soup = BeautifulSoup(res.text, 'html.parser')
@@ -153,13 +154,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
                             if keyword in txt.lower() and len(txt) < 80:
                                 clean_act = txt.strip()
                                 if clean_act not in extra_activities: extra_activities.append(clean_act)
-
-                if not found_logo:
-                    for img in soup.find_all('img'):
-                        src = img.get('src', '')
-                        if 'http' in src and ('logo' in src.lower() or 'icon' in src.lower()):
-                            found_logo = src
-                            break
         except Exception:
             continue
             
