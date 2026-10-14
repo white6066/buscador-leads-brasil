@@ -313,9 +313,9 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_instagram = osint["instagram"] if osint["instagram"] else f"https://instagram.com/{str(display_name).lower().replace(' ', '')}"
 
     if logo_b64:
-        logo_header_html = f'<img src="{logo_b64}" alt="{display_name}" class="h-11 w-11 object-contain rounded-xl shadow-sm border border-slate-200">'
+        logo_header_html = f'<img src="{logo_b64}" alt="{display_name}" class="h-12 w-12 object-contain rounded-xl shadow-sm border border-slate-200">'
     else:
-        logo_header_html = f'<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-lg shadow-md">{display_name[0].upper()}</span>'
+        logo_header_html = f'<span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl brand-bg text-white font-bold text-xl shadow-md">{display_name[0].upper()}</span>'
 
     img1_query = ""
     img2_query = ""
@@ -377,28 +377,28 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </button>
   </div>
 
-  <div id="conteudo-lp" class="w-full bg-white">
-    <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
+  <div id="conteudo-lp" class="w-full bg-white max-w-[1500px] mx-auto">
+    <div class="brand-bg px-6 py-3 text-center text-sm font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
         ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
       </span>
     </div>
 
     <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-        <a href="#inicio" class="flex items-center gap-3">
+      <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-8 py-5">
+        <a href="#inicio" class="flex items-center gap-4">
           {logo_header_html}
           <span class="min-w-0">
-            <span class="block display truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-base uppercase">{display_name}</span>
-            <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">{segmento}</span>
+            <span class="block display truncate text-base font-extrabold tracking-tight text-slate-900 sm:text-lg uppercase">{display_name}</span>
+            <span class="block text-xs font-semibold uppercase tracking-[.18em] text-slate-500">{segmento}</span>
           </span>
         </a>
-        <nav class="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
+        <nav class="hidden items-center gap-10 text-base font-semibold text-slate-600 md:flex">
           <a class="hover:brand-text transition" href="#servicos">Áreas de Atuação</a>
           <a class="hover:brand-text transition" href="#sobre">Sobre Nós</a>
           <a class="hover:brand-text transition" href="#contato">Contato</a>
         </nav>
-        <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-2.5 rounded-xl brand-bg px-5 py-3 text-sm font-bold text-white shadow-md transition hover:opacity-90">
+        <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex shrink-0 items-center gap-3 rounded-xl brand-bg px-6 py-3.5 text-base font-bold text-white shadow-md transition hover:opacity-90">
           <svg class="h-5 w-5 fill-current text-white" viewBox="0 0 24 24">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
           </svg>
@@ -408,24 +408,24 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     </header>
 
     <main>
-      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-20 lg:py-28">
-        <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
-          <div class="max-w-2xl">
-            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-white/95 backdrop-blur-sm">
-              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+      <section id="inicio" class="hero-bg relative isolate overflow-hidden text-white py-24 lg:py-32">
+        <div class="mx-auto grid max-w-[1400px] items-center gap-16 px-8 lg:grid-cols-[1.2fr_.8fr]">
+          <div class="max-w-3xl">
+            <div class="mb-6 inline-flex items-center gap-2.5 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold tracking-wide text-white/95 backdrop-blur-sm">
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
               REFERÊNCIA OFICIAL REGISTRADA
             </div>
-            <h1 class="display max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">{display_name}</h1>
-            <p class="mt-6 max-w-xl text-base leading-8 text-white/85 sm:text-lg">"{custom_slogan}"</p>
-            <div class="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-4 text-sm font-extrabold shadow-xl transition hover:bg-slate-100">
+            <h1 class="display text-5xl font-extrabold leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl">{display_name}</h1>
+            <p class="mt-8 text-lg leading-9 text-white/85 sm:text-xl">"{custom_slogan}"</p>
+            <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+              <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 rounded-xl bg-white text-slate-900 px-8 py-5 text-base font-extrabold shadow-xl transition hover:bg-slate-100">
                 Conversar com Especialistas ↗
               </a>
-              <a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/35 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">Conhecer Empresa</a>
+              <a href="#sobre" class="inline-flex items-center justify-center rounded-xl border border-white/35 px-8 py-5 text-base font-bold text-white transition hover:bg-white/10">Conhecer Empresa</a>
             </div>
           </div>
           <div class="relative mx-auto w-full max-w-xl">
-            <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-3 shadow-2xl backdrop-blur-md">
+            <div class="overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur-md">
               <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-900">
                 <img src="{img_feature_1}" alt="{display_name} - Destaque" class="h-full w-full object-cover object-center" loading="eager">
               </div>
@@ -434,122 +434,122 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
       </section>
 
-      <section id="servicos" class="border-b border-slate-200/80 bg-white py-16 sm:py-20">
-        <div class="mx-auto max-w-7xl px-5 lg:px-8">
-          <div class="mx-auto mb-12 max-w-2xl text-center">
-            <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Atuação Estratégica</p>
-            <h2 class="display mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Soluções completas e estruturadas.</h2>
-            <p class="mt-4 leading-7 text-slate-600">Compromisso com alto desempenho, segurança jurídica e excelência operacional.</p>
+      <section id="servicos" class="border-b border-slate-200/80 bg-white py-20 sm:py-24">
+        <div class="mx-auto max-w-[1400px] px-8">
+          <div class="mx-auto mb-16 max-w-3xl text-center">
+            <p class="text-sm font-extrabold uppercase tracking-[.2em] brand-text">Atuação Estratégica</p>
+            <h2 class="display mt-3 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">Soluções completas e estruturadas.</h2>
+            <p class="mt-5 text-lg leading-8 text-slate-600">Compromisso com alto desempenho, segurança jurídica e excelência operacional.</p>
           </div>
-          <div class="grid gap-6 md:grid-cols-3">
-            <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
-              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">🎯</div>
-              <h3 class="display mt-5 text-lg font-bold text-slate-900">Atendimento Direto</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Comunicação ágil e humanizada para compreender suas demandas com total precisão.</p>
-              <ul class="mt-4 space-y-2">{activities_html}</ul>
+          <div class="grid gap-8 md:grid-cols-3">
+            <article class="lift rounded-3xl border border-slate-200 bg-[#fbfcfb] p-8 shadow-sm">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 brand-text font-bold text-2xl">🎯</div>
+              <h3 class="display mt-6 text-xl font-bold text-slate-900">Atendimento Direto</h3>
+              <p class="mt-3 text-base leading-7 text-slate-600">Comunicação ágil e humanizada para compreender suas demandas com total precisão.</p>
+              <ul class="mt-6 space-y-3">{activities_html}</ul>
             </article>
-            <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
-              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">⚡</div>
-              <h3 class="display mt-5 text-lg font-bold text-slate-900">Agilidade e Rigor</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Processos estruturados para garantir eficiência e pontualidade em cada entrega realizada.</p>
+            <article class="lift rounded-3xl border border-slate-200 bg-[#fbfcfb] p-8 shadow-sm">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 brand-text font-bold text-2xl">⚡</div>
+              <h3 class="display mt-6 text-xl font-bold text-slate-900">Agilidade e Rigor</h3>
+              <p class="mt-3 text-base leading-7 text-slate-600">Processos estruturados para garantir eficiência e pontualidade em cada entrega realizada.</p>
             </article>
-            <article class="lift rounded-2xl border border-slate-200 bg-[#fbfcfb] p-7 shadow-sm">
-              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 brand-text font-bold text-xl">🛡️</div>
-              <h3 class="display mt-5 text-lg font-bold text-slate-900">Segurança & Confiança</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Empresa constituída sob rigorosos padrões de conformidade e idoneidade no mercado.</p>
+            <article class="lift rounded-3xl border border-slate-200 bg-[#fbfcfb] p-8 shadow-sm">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 brand-text font-bold text-2xl">🛡️</div>
+              <h3 class="display mt-6 text-xl font-bold text-slate-900">Segurança & Confiança</h3>
+              <p class="mt-3 text-base leading-7 text-slate-600">Empresa constituída sob rigorosos padrões de conformidade e idoneidade no mercado.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="sobre" class="py-16 sm:py-24">
-        <div class="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:gap-20 lg:px-8">
+      <section id="sobre" class="py-20 sm:py-28">
+        <div class="mx-auto grid max-w-[1400px] items-center gap-16 px-8 lg:grid-cols-2 lg:gap-24">
           <div class="relative">
-            <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100 shadow-xl">
+            <div class="aspect-[4/3] w-full overflow-hidden rounded-3xl bg-slate-100 shadow-xl">
               <img src="{img_feature_2}" alt="{display_name} - Sobre" class="h-full w-full object-cover object-center" loading="lazy">
             </div>
-            <div class="absolute -bottom-5 right-4 rounded-xl bg-white px-5 py-4 shadow-lg sm:right-8 border border-slate-100">
+            <div class="absolute -bottom-6 right-6 rounded-2xl bg-white px-6 py-5 shadow-xl border border-slate-100">
               <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fundação Oficial</p>
-              <p class="display mt-1 font-extrabold brand-text">{data_abert}</p>
+              <p class="display mt-1 text-lg font-extrabold brand-text">{data_abert}</p>
             </div>
           </div>
           <div class="pt-4 lg:pt-0">
-            <p class="text-xs font-extrabold uppercase tracking-[.2em] brand-text">Quem Somos</p>
-            <h2 class="display mt-3 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Tradição e inovação na {display_name}.</h2>
-            <p class="mt-5 leading-8 text-slate-600">Fundada em <b>{data_abert}</b> sob a Razão Social <i>{razao}</i>, a <b>{display_name}</b> destaca-se no mercado de <b>{segmento}</b> em <b>{cidade} - {uf}</b>. Nossa trajetória é pautada na entrega de valor real aos nossos clientes.</p>
-            <p class="mt-4 leading-8 text-slate-600">Conecte-se diretamente com nossa equipe para tirar dúvidas, solicitar propostas ou iniciar parcerias de sucesso.</p>
+            <p class="text-sm font-extrabold uppercase tracking-[.2em] brand-text">Quem Somos</p>
+            <h2 class="display mt-3 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">Tradição e inovação na {display_name}.</h2>
+            <p class="mt-6 text-lg leading-9 text-slate-600">Fundada em <b>{data_abert}</b> sob a Razão Social <i>{razao}</i>, a <b>{display_name}</b> destaca-se no mercado de <b>{segmento}</b> em <b>{cidade} - {uf}</b>. Nossa trajetória é pautada na entrega de valor real aos nossos clientes.</p>
+            <p class="mt-5 text-lg leading-9 text-slate-600">Conecte-se diretamente com nossa equipe para tirar dúvidas, solicitar propostas ou iniciar parcerias de sucesso.</p>
           </div>
         </div>
       </section>
 
-      <section id="contato" class="bg-[#f0f4f1] py-16 sm:py-20">
-        <div class="mx-auto max-w-7xl px-5 lg:px-8">
+      <section id="contato" class="bg-[#f0f4f1] py-20 sm:py-24">
+        <div class="mx-auto max-w-[1400px] px-8">
           <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/70">
             <div class="grid lg:grid-cols-2">
-              <div class="p-6 sm:p-8 lg:p-10 map-box-bg flex flex-col justify-between">
+              <div class="p-10 sm:p-12 lg:p-14 map-box-bg flex flex-col justify-between">
                 <div>
-                  <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
-                  <p class="mt-2 text-sm text-white/80">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
+                  <h2 class="display text-3xl font-extrabold text-white sm:text-4xl">Estamos à sua disposição.</h2>
+                  <p class="mt-3 text-base text-white/80">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
                 </div>
-                <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-slate-800">
+                <div class="mt-8 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-slate-800">
                   <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-                <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
+                <div class="mt-6 text-sm text-white/90 flex items-center justify-between">
                   <span>📍 {full_address}</span>
-                  <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold hover:underline text-white bg-white/20 px-3 py-1.5 rounded-lg transition">Ampliar no Maps ↗</a>
+                  <a href="{maps_url}" target="_blank" rel="noopener noreferrer" class="font-bold hover:underline text-white bg-white/20 px-4 py-2 rounded-xl transition">Ampliar no Maps ↗</a>
                 </div>
               </div>
 
-              <div class="p-8 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
+              <div class="p-10 sm:p-12 lg:p-16 flex flex-col justify-between bg-white">
                 <div>
-                  <h3 class="display text-xl font-extrabold text-slate-900">Canais de Comunicação</h3>
-                  <p class="mt-1 text-sm text-slate-500">Fale diretamente com nossa equipe por nossos canais oficiais:</p>
+                  <h3 class="display text-2xl font-extrabold text-slate-900">Canais de Comunicação</h3>
+                  <p class="mt-2 text-base text-slate-500">Fale diretamente com nossa equipe por nossos canais oficiais:</p>
                   
-                  <div class="mt-6 space-y-5">
-                    <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm">
+                  <div class="mt-8 space-y-6">
+                    <div class="flex items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100/70 shadow-sm">
                         {svg_whatsapp}
                       </span>
                       <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
-                        <p class="text-sm font-bold text-slate-900">{display_phone_text}</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
+                        <p class="text-base font-bold text-slate-900">{display_phone_text}</p>
                       </div>
-                      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg brand-bg px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-90">
+                      <a href="{whats_link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-xl brand-bg px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
                         <span>Conversar ↗</span>
                       </a>
                     </div>
 
-                    <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100/70 shadow-sm">
+                    <div class="flex items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-100/70 shadow-sm">
                         {svg_email}
                       </span>
                       <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
-                        <p class="text-sm font-bold text-slate-900 truncate">{active_email}</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
+                        <p class="text-base font-bold text-slate-900 truncate">{active_email}</p>
                       </div>
-                      <a href="mailto:{active_email}" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3.5 py-2 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                      <a href="mailto:{active_email}" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-800 transition hover:bg-slate-300">
                         <span>Enviar ↗</span>
                       </a>
                     </div>
 
-                    <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100/70 shadow-sm">
+                    <div class="flex items-center gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-pink-100/70 shadow-sm">
                         {svg_instagram}
                       </span>
                       <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
-                        <p class="text-sm font-bold text-slate-900 truncate">{active_instagram}</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
+                        <p class="text-base font-bold text-slate-900 truncate">{active_instagram}</p>
                       </div>
-                      <a href="{active_instagram}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg bg-slate-200 px-3.5 py-2 text-xs font-bold text-slate-800 transition hover:bg-slate-300">
+                      <a href="{active_instagram}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-800 transition hover:bg-slate-300">
                         <span>Aceder ↗</span>
                       </a>
                     </div>
                   </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-slate-100">
+                <div class="mt-10 pt-8 border-t border-slate-100">
                   <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Endereço Oficial da Sede</p>
-                  <p class="mt-1 text-sm font-medium text-slate-700 leading-relaxed">{full_address}</p>
+                  <p class="mt-1 text-base font-medium text-slate-700 leading-relaxed">{full_address}</p>
                   <p class="mt-1 text-xs text-slate-500">Razão Social: {razao} · CNPJ: {formatted_cnpj}</p>
                 </div>
               </div>
@@ -559,13 +559,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       </section>
     </main>
 
-    <footer class="bg-[#070e0b] px-5 py-8 text-white/70">
-      <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-3">
+    <footer class="bg-[#070e0b] px-8 py-10 text-white/70">
+      <div class="mx-auto flex max-w-[1400px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="display text-sm font-extrabold tracking-wide text-white uppercase">{display_name}</p>
-          <p class="mt-1 text-xs">{razao} · {cidade}/{uf}</p>
+          <p class="display text-base font-extrabold tracking-wide text-white uppercase">{display_name}</p>
+          <p class="mt-1 text-sm">{razao} · {cidade}/{uf}</p>
         </div>
-        <div class="text-xs sm:text-right">
+        <div class="text-sm sm:text-right">
           <p>CNPJ: {formatted_cnpj}</p>
           <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
         </div>
@@ -586,10 +586,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      const originalStyle = element.getAttribute('style') || '';
-      element.style.width = '1440px';
-      element.style.margin = '0 auto';
-
       const opt = {{
         margin:       [10, 10, 10, 10],
         filename:     'landing_page_{cnpj}.pdf',
@@ -598,7 +594,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          windowWidth: 1440,
+          windowWidth: 1500,
           scrollX: 0,
           scrollY: 0
         }},
@@ -606,13 +602,11 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
       }};
 
       html2pdf().set(opt).from(element).save().then(() => {{
-        element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
       }}).catch(err => {{
         console.error(err);
-        element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
