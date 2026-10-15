@@ -783,15 +783,15 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Mensagem de abordagem comercial personalizada com os dados do lead
             clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
             if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
                 clean_tel_link = "55" + clean_tel_link
 
+            # Mensagem ajustada sem citação fixa de cidade
             texto_proposta = (
                 f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
                 f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
-                f"Acompanho a abertura de novas empresas em *{cidade}* e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
+                f"Acompanho a abertura de novas empresas e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
                 f"Por isso, tomei a liberdade de desenvolver um modelo de site personalizado para a *{razao}*, sem compromisso, que estou enviando em anexo para vocês conhecerem. O projeto pode ser adaptado conforme suas preferências e necessidades.\n\n"
                 f"Minha proposta é oferecer um investimento acessível, com mensalidade econômica para manter o site no ar e realizar a manutenção. Assim, vocês podem fortalecer a presença digital da empresa, facilitar o contato com interessados e criar novas oportunidades de negócio, sem precisar investir grandes valores.\n\n"
                 f"Se gostarem da ideia, podemos conversar, ajustar o projeto e formalizar tudo por contrato, com valores e condições transparentes.\n\n"
