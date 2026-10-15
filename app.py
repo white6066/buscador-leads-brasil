@@ -271,7 +271,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     
     display_name = osint["fantasia"]
     
-    # Link direto e limpo do WhatsApp da empresa para os clientes navegantes
+    # Link limpo e direto da empresa para uso dentro da LP (clientes conversarem com o estabelecimento)
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
@@ -783,14 +783,23 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            # Montagem da mensagem de abordagem comercial para prospecção
+            # Mensagem de abordagem comercial personalizada com os dados do lead
             clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
             if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
                 clean_tel_link = "55" + clean_tel_link
 
-            msg_prospeccao = urllib.parse.quote(
-                f"Olá {razao}! Tudo bem? Analisamos o registro da sua empresa ({segmento} em {cidade}) e preparamos uma Landing Page profissional exclusiva para impulsionar suas vendas e autoridade no mercado. Dá uma olhada no projeto que estruturamos para vocês!"
+            texto_proposta = (
+                f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
+                f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
+                f"Acompanho a abertura de novas empresas em *{cidade}* e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
+                f"Por isso, tomei a liberdade de desenvolver um modelo de site personalizado para a *{razao}*, sem compromisso, que estou enviando em anexo para vocês conhecerem. O projeto pode ser adaptado conforme suas preferências e necessidades.\n\n"
+                f"Minha proposta é oferecer um investimento acessível, com mensalidade econômica para manter o site no ar e realizar a manutenção. Assim, vocês podem fortalecer a presença digital da empresa, facilitar o contato com interessados e criar novas oportunidades de negócio, sem precisar investir grandes valores.\n\n"
+                f"Se gostarem da ideia, podemos conversar, ajustar o projeto e formalizar tudo por contrato, com valores e condições transparentes.\n\n"
+                f"Que tal dar esse primeiro passo para destacar a *{razao}* no mercado?\n\n"
+                f"Atenciosamente,\n"
+                f"Wesley | Kritech — Soluções Digitais"
             )
+            msg_prospeccao = urllib.parse.quote(texto_proposta)
             wa_pitch_link = f"https://wa.me/{clean_tel_link}?text={msg_prospeccao}" if clean_tel_link else "#"
 
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
@@ -803,7 +812,6 @@ try:
             with r_cols[5]:
                 action_str = []
                 if clean_tel_link: 
-                    # Ícone do WhatsApp com mensagem de prospecção comercial
                     action_str.append(f"[💬]({wa_pitch_link})")
                 else: 
                     action_str.append("📞")
