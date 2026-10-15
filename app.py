@@ -271,15 +271,11 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     
     display_name = osint["fantasia"]
     
+    # Link direto e limpo do WhatsApp da empresa para os clientes navegantes
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
-        
-        # Mensagem de prospecção comercial pronta para vendas
-        mensagem_vendas = urllib.parse.quote(
-            f"Olá {display_name}! Tudo bem? Analisamos o registro da sua empresa ({segmento} em {cidade}) e preparamos uma Landing Page profissional exclusiva para impulsionar suas vendas e autoridade no mercado. Dá uma olhada no projeto que estruturamos para vocês!"
-        )
-        whats_link = f"https://wa.me/{clean_tel}?text={mensagem_vendas}"
+        whats_link = f"https://wa.me/{clean_tel}"
         display_phone_text = format_phone(active_tel)
     else:
         whats_link = "https://wa.me/"
@@ -787,6 +783,16 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
+            # Montagem da mensagem de abordagem comercial para prospecção
+            clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
+            if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
+                clean_tel_link = "55" + clean_tel_link
+
+            msg_prospeccao = urllib.parse.quote(
+                f"Olá {razao}! Tudo bem? Analisamos o registro da sua empresa ({segmento} em {cidade}) e preparamos uma Landing Page profissional exclusiva para impulsionar suas vendas e autoridade no mercado. Dá uma olhada no projeto que estruturamos para vocês!"
+            )
+            wa_pitch_link = f"https://wa.me/{clean_tel_link}?text={msg_prospeccao}" if clean_tel_link else "#"
+
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             r_cols[0].markdown(f"🏢 **{razao}**")
             r_cols[1].markdown(f"`{format_cnpj(cnpj)}`")
@@ -796,9 +802,9 @@ try:
             
             with r_cols[5]:
                 action_str = []
-                if tel: 
-                    clean_tel_link = ''.join(filter(str.isdigit, str(tel)))
-                    action_str.append(f"[📞](https://wa.me/55{clean_tel_link})")
+                if clean_tel_link: 
+                    # Ícone do WhatsApp com mensagem de prospecção comercial
+                    action_str.append(f"[💬]({wa_pitch_link})")
                 else: 
                     action_str.append("📞")
                 if maps_link: 
@@ -819,6 +825,8 @@ try:
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {format_phone(tel) if tel else 'Não informado'}")
+                    if clean_tel_link:
+                        st.markdown(f"📲 [**Enviar Proposta via WhatsApp**]({wa_pitch_link})")
                     st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_encoded}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
