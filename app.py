@@ -271,7 +271,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     
     display_name = osint["fantasia"]
     
-    # Link limpo e direto da empresa para uso dentro da LP (clientes conversarem com o estabelecimento)
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
@@ -363,7 +362,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante Automatizado para Salvar PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -787,7 +785,6 @@ try:
             if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
                 clean_tel_link = "55" + clean_tel_link
 
-            # Mensagem ajustada sem citação fixa de cidade
             texto_proposta = (
                 f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
                 f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
@@ -851,6 +848,7 @@ try:
                 logo_key = f"saved_logo_{idx}"
                 hist_key = f"instructions_history_{idx}"
                 input_val_key = f"cust_val_{idx}"
+                saved_status_key = f"is_saved_{idx}"
 
                 if img1_key not in st.session_state:
                     st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
@@ -862,6 +860,8 @@ try:
                     st.session_state[hist_key] = []
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
+                if saved_status_key not in st.session_state:
+                    st.session_state[saved_status_key] = False
 
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
@@ -953,13 +953,31 @@ try:
                     
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
-                    st.download_button(
-                        label="📥 Baixar Código HTML",
-                        data=lp_html_content,
-                        file_name=f"landing_page_{cnpj}.html",
-                        mime="text/html",
-                        key=f"dl_html_{idx}"
-                    )
+                    # Botões de Salvar, Apagar e Download
+                    b_save, b_del, b_dl = st.columns([1, 1, 2])
+                    with b_save:
+                        if st.button("💾 Salvar LP", key=f"btn_save_{idx}", use_container_width=True):
+                            st.session_state[saved_status_key] = True
+                            st.success("LP salva com sucesso no estado da sessão!")
+                    with b_del:
+                        if st.button("🗑️ Apagar LP", key=f"btn_del_{idx}", use_container_width=True):
+                            if f"lp_data_{idx}" in st.session_state:
+                                del st.session_state[f"lp_data_{idx}"]
+                            st.session_state[saved_status_key] = False
+                            st.warning("LP apagada.")
+                            st.rerun()
+                    with b_dl:
+                        st.download_button(
+                            label="📥 Baixar Código HTML",
+                            data=lp_html_content,
+                            file_name=f"landing_page_{cnpj}.html",
+                            mime="text/html",
+                            key=f"dl_html_{idx}",
+                            use_container_width=True
+                        )
+                    
+                    if st.session_state[saved_status_key]:
+                        st.info("📌 Esta Landing Page está marcada como salva nesta sessão.")
 
             st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
 
