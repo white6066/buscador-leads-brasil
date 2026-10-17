@@ -603,7 +603,26 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
-# --- CARREGAMENTO DA PLANILHA E PERSISTÊNCIA DE STATUS ---
+# --- GERENCIAMENTO DE PERSISTÊNCIA DUPLA (SESSÃO + DISCO) ---
+STATUS_FILE = "status_leads.json"
+LPS_FILE = "saved_lps_data.json"
+
+def load_persistent_store(file_path):
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_persistent_store(file_path, data_dict):
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data_dict, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        pass
+
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -665,25 +684,46 @@ def load_data_from_sheet():
     cols = ["CNPJ", "Razao Social", "Data Abertura", "DataAberturaParsed", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps", "Status"]
     df_base = pd.DataFrame(processed, columns=cols)
 
-    if os.path.exists("status_leads.json"):
-        try:
-            with open("status_leads.json", "r", encoding="utf-8") as f:
-                saved_status = json.load(f)
-                for i, row in df_base.iterrows():
-                    c_key = str(row["CNPJ"])
-                    if c_key in saved_status:
-                        df_base.at[i, "Status"] = saved_status[c_key]
-        except Exception:
-            pass
+    saved_status_map = load_persistent_store(STATUS_FILE)
+    for i, row in df_base.iterrows():
+        c_key = str(row["CNPJ"])
+        if c_key in saved_status_map:
+            df_base.at[i, "Status"] = saved_status_map[c_key]
 
     return df_base
 
-def save_status_to_disk(df_current):
-    status_dict = {}
-    for _, row in df_current.iterrows():
-        status_dict[str(row["CNPJ"])] = row["Status"]
-    with open("status_leads.json", "w", encoding="utf-8") as f:
-        json.dump(status_dict, f, ensure_ascii=False, indent=4)
+def sync_status_change(cnpj, new_status, df_target):
+    saved_status_map = load_persistent_store(STATUS_FILE)
+    saved_status_map[str(cnpj)] = new_status
+    save_persistent_store(STATUS_FILE, saved_status_map)
+
+    for i, row in df_target.iterrows():
+        if str(row["CNPJ"]) == str(cnpj):
+            df_target.at[i, "Status"] = new_status
+            break
+
+def sync_lp_content_save(cnpj, html_code):
+    saved_lps_map = load_persistent_store(LPS_FILE)
+    saved_lps_map[str(cnpj)] = html_code
+    save_persistent_store(LPS_FILE, saved_lps_map)
+
+    os.makedirs("clientes_salvos", exist_ok=True)
+    caminho = f"clientes_salvos/landing_page_{cnpj}.html"
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(html_code)
+
+def sync_lp_content_delete(cnpj):
+    saved_lps_map = load_persistent_store(LPS_FILE)
+    if str(cnpj) in saved_lps_map:
+        del saved_lps_map[str(cnpj)]
+        save_persistent_store(LPS_FILE, saved_lps_map)
+
+    caminho = f"clientes_salvos/landing_page_{cnpj}.html"
+    if os.path.exists(caminho):
+        try:
+            os.remove(caminho)
+        except Exception:
+            pass
 
 try:
     df = load_data_from_sheet()
@@ -697,6 +737,8 @@ try:
 
     if "page_num" not in st.session_state:
         st.session_state.page_num = 1
+
+    saved_lps_store = load_persistent_store(LPS_FILE)
 
     with st.sidebar:
         st.markdown("### 🚀 Central de Leads")
@@ -867,8 +909,7 @@ try:
                     c_idx = status_list.index(current_status) if current_status in status_list else 0
                     novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
                     if novo_status != current_status:
-                        st.session_state.df_status.at[idx, "Status"] = novo_status
-                        save_status_to_disk(st.session_state.df_status)
+                        sync_status_change(cnpj, novo_status, st.session_state.df_status)
                         st.rerun()
                 
                 st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
@@ -878,7 +919,6 @@ try:
                 logo_key = f"saved_logo_{idx}"
                 hist_key = f"instructions_history_{idx}"
                 input_val_key = f"cust_val_{idx}"
-                saved_status_key = f"is_saved_{idx}"
 
                 if img1_key not in st.session_state:
                     st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
@@ -890,8 +930,9 @@ try:
                     st.session_state[hist_key] = []
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
-                if saved_status_key not in st.session_state:
-                    st.session_state[saved_status_key] = False
+
+                if f"lp_data_{idx}" not in st.session_state and str(cnpj) in saved_lps_store:
+                    st.session_state[f"lp_data_{idx}"] = saved_lps_store[str(cnpj)]
 
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
@@ -925,9 +966,9 @@ try:
                                 st.session_state[logo_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
-                            st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            save_status_to_disk(st.session_state.df_status)
-                            st.success("Landing Page gerada com sucesso!")
+                            sync_status_change(cnpj, "LP Gerada", st.session_state.df_status)
+                            sync_lp_content_save(cnpj, lp_html)
+                            st.success("Landing Page gerada e salva com sucesso!")
                             st.rerun()
 
                 with col_inst_txt:
@@ -973,10 +1014,10 @@ try:
                                 st.session_state[logo_key]
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
-                            st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
-                            save_status_to_disk(st.session_state.df_status)
+                            sync_status_change(cnpj, "LP Gerada", st.session_state.df_status)
+                            sync_lp_content_save(cnpj, lp_html)
                             st.session_state[input_val_key] = ""
-                            st.success("Modificações aplicadas com sucesso!")
+                            st.success("Modificações aplicadas e salvas!")
                             st.rerun()
 
                 if f"lp_data_{idx}" in st.session_state:
@@ -988,17 +1029,14 @@ try:
                     b_save, b_del, b_dl = st.columns([1, 1, 2])
                     with b_save:
                         if st.button("💾 Salvar LP no Projeto", key=f"btn_save_{idx}", use_container_width=True):
-                            os.makedirs("clientes_salvos", exist_ok=True)
-                            caminho_arquivo = f"clientes_salvos/landing_page_{cnpj}.html"
-                            with open(caminho_arquivo, "w", encoding="utf-8") as f:
-                                f.write(lp_html_content)
-                            st.session_state[saved_status_key] = True
-                            st.success("LP salva com sucesso na pasta 'clientes_salvos'!")
+                            sync_lp_content_save(cnpj, lp_html_content)
+                            sync_status_change(cnpj, "LP Gerada", st.session_state.df_status)
+                            st.success("LP salva com sucesso!")
                     with b_del:
                         if st.button("🗑️ Apagar LP", key=f"btn_del_{idx}", use_container_width=True):
                             if f"lp_data_{idx}" in st.session_state:
                                 del st.session_state[f"lp_data_{idx}"]
-                            st.session_state[saved_status_key] = False
+                            sync_lp_content_delete(cnpj)
                             st.warning("LP apagada.")
                             st.rerun()
                     with b_dl:
