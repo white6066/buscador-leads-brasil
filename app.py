@@ -6,6 +6,8 @@ import csv
 import urllib.parse
 import re
 import hashlib
+import json
+import os
 from datetime import datetime
 from PIL import Image
 import base64
@@ -84,7 +86,7 @@ def format_cep(cep_str):
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        res = requests.get(image_url, headers=headers, timeout=3)
+        res = requests.get(image_url, headers=headers, timeout=2)
         if res.status_code == 200:
             img = Image.open(io.BytesIO(res.content)).convert('RGB')
             img = img.resize((40, 40))
@@ -98,9 +100,10 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile", f"{razao} instagram oficial"]
+    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile"]
     
     found_logo, found_instagram, found_email, found_phone, found_fantasia, found_site, found_slogan = None, None, None, None, None, None, None
     extra_activities = []
@@ -109,7 +112,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         try:
             encoded_q = urllib.parse.quote(q)
             url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
-            res = requests.get(url, headers=headers, timeout=4)
+            res = requests.get(url, headers=headers, timeout=2)
             if res.status_code == 200:
                 from bs4 import BeautifulSoup
                 soup = BeautifulSoup(res.text, 'html.parser')
@@ -153,13 +156,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
                             if keyword in txt.lower() and len(txt) < 80:
                                 clean_act = txt.strip()
                                 if clean_act not in extra_activities: extra_activities.append(clean_act)
-
-                if not found_logo:
-                    for img in soup.find_all('img'):
-                        src = img.get('src', '')
-                        if 'http' in src and ('logo' in src.lower() or 'icon' in src.lower()):
-                            found_logo = src
-                            break
         except Exception:
             continue
             
@@ -224,7 +220,6 @@ def determine_harmonious_palette(razao, segmento, logo_url):
 
 def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
-    css_injections = []
     
     color_map = {
         "azul bebe": "#89cff0", "azul bebê": "#89cff0", "azul claro": "#38bdf8",
@@ -245,16 +240,22 @@ def apply_accumulated_modifications(html_content, instructions_list):
         "branco": "#ffffff", "bege": "#d4b996", "marrom": "#78350f"
     }
 
-    for instruction in instructions_list:
+    # Percorre o histórico de instruções do mais recente para o mais antigo para priorizar a última cor pedida
+    for instruction in reversed(instructions_list):
         inst_lower = instruction.lower()
         hex_match = re.search(r'#(?:[0-9a-fA-F]{3}){1,2}\b', instruction)
         if hex_match:
             custom_primary_color = hex_match.group(0)
-        elif any(w in inst_lower for w in ["cor", "tema", "mudar", "trocar", "deixar"]):
+            break
+        else:
+            found_color_name = False
             for c_name in sorted(color_map.keys(), key=len, reverse=True):
                 if c_name in inst_lower:
-                    custom_primary_color = c_name
+                    custom_primary_color = color_map[c_name]
+                    found_color_name = True
                     break
+            if found_color_name:
+                break
 
         if "imagem" in inst_lower and ("aumentar" in inst_lower or "largo" in inst_lower or "maior" in inst_lower):
             html_content = html_content.replace('max-w-xl', 'max-w-3xl')
@@ -265,10 +266,8 @@ def apply_accumulated_modifications(html_content, instructions_list):
     if custom_primary_color:
         html_content = re.sub(r'--primary:\s*[^;]+;', f'--primary: {custom_primary_color};', html_content)
         html_content = html_content.replace('bg-[#070e0b]', 'brand-bg')
-
-    if css_injections:
-        full_css = f"<style>\n" + "\n".join(css_injections) + "\n</style>"
-        html_content = html_content.replace("</head>", f"{full_css}\n</head>")
+        # Atualiza também a meta tag theme-color no HTML
+        html_content = re.sub(r'<meta name="theme-color" content="[^"]+">', f'<meta name="theme-color" content="{custom_primary_color}">', html_content)
 
     return html_content
 
@@ -280,6 +279,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
+    display_name = osint["fantasia"]
+    
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
@@ -289,7 +290,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         whats_link = "https://wa.me/"
         display_phone_text = "WhatsApp indisponível"
 
-    display_name = osint["fantasia"]
     custom_slogan = osint["slogan"] if osint["slogan"] else f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
     extra_acts = osint["extra_activities"]
@@ -329,9 +329,13 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     img_feature_1 = current_img1 if current_img1 else (search_real_photo_by_query(img1_query, segmento, 0) if img1_query else search_real_photo_by_query("", segmento, 0))
     img_feature_2 = current_img2 if current_img2 else (search_real_photo_by_query(img2_query, segmento, 1) if img2_query else search_real_photo_by_query("", segmento, 1))
 
-    svg_whatsapp = '''<svg class="h-6 w-6 text-emerald-600 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>'''
-    svg_email = '''<svg class="h-6 w-6 text-blue-600 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l10 8.104 10-8.104v11.817h-20z"/></svg>'''
-    svg_instagram = '''<svg class="h-6 w-6 text-pink-600 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>'''
+    whatsapp_svg_icon = '<svg class="h-6 w-6 fill-current text-emerald-600" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>'
+
+    map_container_html = f"""
+    <div id="map-wrapper" style="position: relative; width: 100%; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #0f172a;">
+      <iframe id="map-iframe" src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    """
 
     html_code = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -344,8 +348,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Biblioteca html2pdf para exportação em PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -370,7 +372,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante de Download em PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -491,8 +492,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                   <h2 class="display text-2xl font-extrabold text-white sm:text-3xl">Estamos à sua disposição.</h2>
                   <p class="mt-2 text-sm text-white/80">Localize nossa sede ou entre em contato instantaneamente através dos canais oficiais.</p>
                 </div>
-                <div class="mt-6 aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-slate-800">
-                  <iframe src="{embed_maps_url}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div class="mt-6">
+                  {map_container_html}
                 </div>
                 <div class="mt-4 text-xs text-white/90 flex items-center justify-between">
                   <span>📍 {full_address}</span>
@@ -507,8 +508,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                   
                   <div class="mt-6 space-y-5">
                     <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm">
-                        {svg_whatsapp}
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 shadow-sm text-emerald-600">
+                        {whatsapp_svg_icon}
                       </span>
                       <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">WhatsApp / Telefone Principal</p>
@@ -520,8 +521,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                     </div>
 
                     <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100/70 shadow-sm">
-                        {svg_email}
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100/70 shadow-sm text-blue-600 font-bold text-lg">
+                        ✉️
                       </span>
                       <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">E-mail Oficial</p>
@@ -533,8 +534,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
                     </div>
 
                     <div class="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100/70 shadow-sm">
-                        {svg_instagram}
+                      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100/70 shadow-sm text-pink-600 font-bold text-lg">
+                        📸
                       </span>
                       <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Instagram Oficial</p>
@@ -577,47 +578,24 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
-      const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
-      const btn = event.currentTarget;
-      const textoOriginal = btn.innerHTML;
-      
-      btn.innerHTML = '⏳ A gerar PDF...';
-      btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      const originalStyle = element.getAttribute('style') || '';
-      element.style.width = '1120px';
-      element.style.margin = '0 auto';
-
-      const opt = {{
-        margin:       [8, 8, 8, 8],
-        filename:     'landing_page_{cnpj}.pdf',
-        image:        {{ type: 'jpeg', quality: 0.98 }},
-        html2canvas:  {{ 
-          scale: 2, 
-          useCORS: true, 
-          letterRendering: true,
-          windowWidth: 1120,
-          scrollX: 0,
-          scrollY: 0
-        }},
-        jsPDF:        {{ unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }}
-      }};
-
-      html2pdf().set(opt).from(element).save().then(() => {{
-        element.setAttribute('style', originalStyle);
+      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
+      const url = URL.createObjectURL(blob);
+      const novaAba = window.open(url, '_blank');
+      
+      if (novaAba) {{
+        novaAba.onload = function() {{
+          setTimeout(() => {{
+            novaAba.print();
+            if (btnContainer) btnContainer.style.display = 'block';
+          }}, 800);
+        }};
+      }} else {{
         if (btnContainer) btnContainer.style.display = 'block';
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-      }}).catch(err => {{
-        console.error(err);
-        element.setAttribute('style', originalStyle);
-        if (btnContainer) btnContainer.style.display = 'block';
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-        alert('Erro ao gerar PDF. Tente novamente.');
-      }});
+        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
+      }}
     }}
   </script>
 </body>
@@ -626,7 +604,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
-# --- CARREGAMENTO DA PLANILHA ---
+# --- CARREGAMENTO DA PLANILHA E PERSISTÊNCIA DE STATUS ---
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -686,7 +664,27 @@ def load_data_from_sheet():
         processed.append([cnpj, razao, data_abert, parsed_dt_str, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
         
     cols = ["CNPJ", "Razao Social", "Data Abertura", "DataAberturaParsed", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps", "Status"]
-    return pd.DataFrame(processed, columns=cols)
+    df_base = pd.DataFrame(processed, columns=cols)
+
+    if os.path.exists("status_leads.json"):
+        try:
+            with open("status_leads.json", "r", encoding="utf-8") as f:
+                saved_status = json.load(f)
+                for i, row in df_base.iterrows():
+                    c_key = str(row["CNPJ"])
+                    if c_key in saved_status:
+                        df_base.at[i, "Status"] = saved_status[c_key]
+        except Exception:
+            pass
+
+    return df_base
+
+def save_status_to_disk(df_current):
+    status_dict = {}
+    for _, row in df_current.iterrows():
+        status_dict[str(row["CNPJ"])] = row["Status"]
+    with open("status_leads.json", "w", encoding="utf-8") as f:
+        json.dump(status_dict, f, ensure_ascii=False, indent=4)
 
 try:
     df = load_data_from_sheet()
@@ -813,6 +811,24 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
+            clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
+            if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
+                clean_tel_link = "55" + clean_tel_link
+
+            texto_proposta = (
+                f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
+                f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
+                f"Acompanho a abertura de novas empresas e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
+                f"Por isso, tomei a liberdade de desenvolver um modelo de site personalizado para a *{razao}*, sem compromisso, que estou enviando em anexo para vocês conhecerem. O projeto pode ser adaptado conforme suas preferências e necessidades.\n\n"
+                f"Minha proposta é oferecer um investimento acessível, com mensalidade econômica para manter o site no ar e realizar a manutenção. Assim, vocês podem fortalecer a presença digital da empresa, facilitar o contato com interessados e criar novas oportunidades de negócio, sem precisar investir grandes valores.\n\n"
+                f"Se gostarem da ideia, podemos conversar, ajustar o projeto e formalizar tudo por contrato, com valores e condições transparentes.\n\n"
+                f"Que tal dar esse primeiro passo para destacar a *{razao}* no mercado?\n\n"
+                f"Atenciosamente,\n"
+                f"Wesley | Kritech — Soluções Digitais"
+            )
+            msg_prospeccao = urllib.parse.quote(texto_proposta)
+            wa_pitch_link = f"https://wa.me/{clean_tel_link}?text={msg_prospeccao}" if clean_tel_link else "#"
+
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             r_cols[0].markdown(f"🏢 **{razao}**")
             r_cols[1].markdown(f"`{format_cnpj(cnpj)}`")
@@ -822,9 +838,8 @@ try:
             
             with r_cols[5]:
                 action_str = []
-                if tel: 
-                    clean_tel_link = ''.join(filter(str.isdigit, str(tel)))
-                    action_str.append(f"[📞](https://wa.me/55{clean_tel_link})")
+                if clean_tel_link: 
+                    action_str.append(f"[💬]({wa_pitch_link})")
                 else: 
                     action_str.append("📞")
                 if maps_link: 
@@ -845,6 +860,8 @@ try:
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {format_phone(tel) if tel else 'Não informado'}")
+                    if clean_tel_link:
+                        st.markdown(f"📲 [**Enviar Proposta via WhatsApp**]({wa_pitch_link})")
                     st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_encoded}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
@@ -852,6 +869,7 @@ try:
                     novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
                     if novo_status != current_status:
                         st.session_state.df_status.at[idx, "Status"] = novo_status
+                        save_status_to_disk(st.session_state.df_status)
                         st.rerun()
                 
                 st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
@@ -861,6 +879,7 @@ try:
                 logo_key = f"saved_logo_{idx}"
                 hist_key = f"instructions_history_{idx}"
                 input_val_key = f"cust_val_{idx}"
+                saved_status_key = f"is_saved_{idx}"
 
                 if img1_key not in st.session_state:
                     st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
@@ -872,6 +891,8 @@ try:
                     st.session_state[hist_key] = []
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
+                if saved_status_key not in st.session_state:
+                    st.session_state[saved_status_key] = False
 
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
@@ -896,7 +917,7 @@ try:
                         if typed_instruction:
                             st.session_state[hist_key].append(typed_instruction)
                             
-                        with st.spinner("Gerando Landing Page inicial..."):
+                        with st.spinner("Executando busca OSINT e gerando Landing Page..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
@@ -906,6 +927,7 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
+                            save_status_to_disk(st.session_state.df_status)
                             st.success("Landing Page gerada com sucesso!")
                             st.rerun()
 
@@ -943,7 +965,7 @@ try:
                                 else:
                                     st.session_state[img1_key] = search_real_photo_by_query(typed_instruction, segmento, 0)
 
-                        with st.spinner("Aplicando alterações..."):
+                        with st.spinner("Atualizando modificações e dados..."):
                             lp_html = generate_masterpiece_landing_page(
                                 razao, segmento, cidade, uf, endereco, tel, data_abert, cnpj, 
                                 st.session_state[hist_key],
@@ -953,6 +975,7 @@ try:
                             )
                             st.session_state[f"lp_data_{idx}"] = lp_html
                             st.session_state.df_status.at[idx, "Status"] = "LP Gerada"
+                            save_status_to_disk(st.session_state.df_status)
                             st.session_state[input_val_key] = ""
                             st.success("Modificações aplicadas com sucesso!")
                             st.rerun()
@@ -963,13 +986,31 @@ try:
                     
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
-                    st.download_button(
-                        label="📥 Baixar Código HTML",
-                        data=lp_html_content,
-                        file_name=f"landing_page_{cnpj}.html",
-                        mime="text/html",
-                        key=f"dl_html_{idx}"
-                    )
+                    b_save, b_del, b_dl = st.columns([1, 1, 2])
+                    with b_save:
+                        if st.button("💾 Salvar LP no Projeto", key=f"btn_save_{idx}", use_container_width=True):
+                            os.makedirs("clientes_salvos", exist_ok=True)
+                            caminho_arquivo = f"clientes_salvos/landing_page_{cnpj}.html"
+                            with open(caminho_arquivo, "w", encoding="utf-8") as f:
+                                f.write(lp_html_content)
+                            st.session_state[saved_status_key] = True
+                            st.success("LP salva com sucesso na pasta 'clientes_salvos'!")
+                    with b_del:
+                        if st.button("🗑️ Apagar LP", key=f"btn_del_{idx}", use_container_width=True):
+                            if f"lp_data_{idx}" in st.session_state:
+                                del st.session_state[f"lp_data_{idx}"]
+                            st.session_state[saved_status_key] = False
+                            st.warning("LP apagada.")
+                            st.rerun()
+                    with b_dl:
+                        st.download_button(
+                            label="📥 Baixar Código HTML",
+                            data=lp_html_content,
+                            file_name=f"landing_page_{cnpj}.html",
+                            mime="text/html",
+                            key=f"dl_html_{idx}",
+                            use_container_width=True
+                        )
 
             st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
 
