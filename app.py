@@ -269,8 +269,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
-    display_name = osint["fantasia"]
-    
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
@@ -280,6 +278,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         whats_link = "https://wa.me/"
         display_phone_text = "WhatsApp indisponível"
 
+    display_name = osint["fantasia"]
     custom_slogan = osint["slogan"] if osint["slogan"] else f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
     extra_acts = osint["extra_activities"]
@@ -338,6 +337,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Biblioteca html2pdf para exportação em PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -362,6 +363,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
+  <!-- Botão Flutuante de Download em PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -568,24 +570,47 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
+      const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
+      const btn = event.currentTarget;
+      const textoOriginal = btn.innerHTML;
+      
+      btn.innerHTML = '⏳ A gerar PDF...';
+      btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
-      const url = URL.createObjectURL(blob);
-      const novaAba = window.open(url, '_blank');
-      
-      if (novaAba) {{
-        novaAba.onload = function() {{
-          setTimeout(() => {{
-            novaAba.print();
-            if (btnContainer) btnContainer.style.display = 'block';
-          }}, 800);
-        }};
-      }} else {{
+      const originalStyle = element.getAttribute('style') || '';
+      element.style.width = '1440px';
+      element.style.margin = '0 auto';
+
+      const opt = {{
+        margin:       [10, 10, 10, 10],
+        filename:     'landing_page_{cnpj}.pdf',
+        image:        {{ type: 'jpeg', quality: 0.99 }},
+        html2canvas:  {{ 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          windowWidth: 1440,
+          scrollX: 0,
+          scrollY: 0
+        }},
+        jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
+      }};
+
+      html2pdf().set(opt).from(element).save().then(() => {{
+        element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
-        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
-      }}
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+      }}).catch(err => {{
+        console.error(err);
+        element.setAttribute('style', originalStyle);
+        if (btnContainer) btnContainer.style.display = 'block';
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+        alert('Erro ao gerar PDF. Tente novamente.');
+      }});
     }}
   </script>
 </body>
@@ -781,24 +806,6 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
-            if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
-                clean_tel_link = "55" + clean_tel_link
-
-            texto_proposta = (
-                f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
-                f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
-                f"Acompanho a abertura de novas empresas e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
-                f"Por isso, tomei a liberdade de desenvolver um modelo de site personalizado para a *{razao}*, sem compromisso, que estou enviando em anexo para vocês conhecerem. O projeto pode ser adaptado conforme suas preferências e necessidades.\n\n"
-                f"Minha proposta é oferecer um investimento acessível, com mensalidade econômica para manter o site no ar e realizar a manutenção. Assim, vocês podem fortalecer a presença digital da empresa, facilitar o contato com interessados e criar novas oportunidades de negócio, sem precisar investir grandes valores.\n\n"
-                f"Se gostarem da ideia, podemos conversar, ajustar o projeto e formalizar tudo por contrato, com valores e condições transparentes.\n\n"
-                f"Que tal dar esse primeiro passo para destacar a *{razao}* no mercado?\n\n"
-                f"Atenciosamente,\n"
-                f"Wesley | Kritech — Soluções Digitais"
-            )
-            msg_prospeccao = urllib.parse.quote(texto_proposta)
-            wa_pitch_link = f"https://wa.me/{clean_tel_link}?text={msg_prospeccao}" if clean_tel_link else "#"
-
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             r_cols[0].markdown(f"🏢 **{razao}**")
             r_cols[1].markdown(f"`{format_cnpj(cnpj)}`")
@@ -808,8 +815,9 @@ try:
             
             with r_cols[5]:
                 action_str = []
-                if clean_tel_link: 
-                    action_str.append(f"[💬]({wa_pitch_link})")
+                if tel: 
+                    clean_tel_link = ''.join(filter(str.isdigit, str(tel)))
+                    action_str.append(f"[📞](https://wa.me/55{clean_tel_link})")
                 else: 
                     action_str.append("📞")
                 if maps_link: 
@@ -830,8 +838,6 @@ try:
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {format_phone(tel) if tel else 'Não informado'}")
-                    if clean_tel_link:
-                        st.markdown(f"📲 [**Enviar Proposta via WhatsApp**]({wa_pitch_link})")
                     st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_encoded}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
@@ -848,7 +854,6 @@ try:
                 logo_key = f"saved_logo_{idx}"
                 hist_key = f"instructions_history_{idx}"
                 input_val_key = f"cust_val_{idx}"
-                saved_status_key = f"is_saved_{idx}"
 
                 if img1_key not in st.session_state:
                     st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
@@ -860,8 +865,6 @@ try:
                     st.session_state[hist_key] = []
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
-                if saved_status_key not in st.session_state:
-                    st.session_state[saved_status_key] = False
 
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
@@ -953,31 +956,13 @@ try:
                     
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
-                    # Botões de Salvar, Apagar e Download
-                    b_save, b_del, b_dl = st.columns([1, 1, 2])
-                    with b_save:
-                        if st.button("💾 Salvar LP", key=f"btn_save_{idx}", use_container_width=True):
-                            st.session_state[saved_status_key] = True
-                            st.success("LP salva com sucesso no estado da sessão!")
-                    with b_del:
-                        if st.button("🗑️ Apagar LP", key=f"btn_del_{idx}", use_container_width=True):
-                            if f"lp_data_{idx}" in st.session_state:
-                                del st.session_state[f"lp_data_{idx}"]
-                            st.session_state[saved_status_key] = False
-                            st.warning("LP apagada.")
-                            st.rerun()
-                    with b_dl:
-                        st.download_button(
-                            label="📥 Baixar Código HTML",
-                            data=lp_html_content,
-                            file_name=f"landing_page_{cnpj}.html",
-                            mime="text/html",
-                            key=f"dl_html_{idx}",
-                            use_container_width=True
-                        )
-                    
-                    if st.session_state[saved_status_key]:
-                        st.info("📌 Esta Landing Page está marcada como salva nesta sessão.")
+                    st.download_button(
+                        label="📥 Baixar Código HTML",
+                        data=lp_html_content,
+                        file_name=f"landing_page_{cnpj}.html",
+                        mime="text/html",
+                        key=f"dl_html_{idx}"
+                    )
 
             st.markdown("<hr style='margin: 2px 0px 4px 0px;'>", unsafe_allow_html=True)
 
