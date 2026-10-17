@@ -84,7 +84,7 @@ def format_cep(cep_str):
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        res = requests.get(image_url, headers=headers, timeout=2)
+        res = requests.get(image_url, headers=headers, timeout=3)
         if res.status_code == 200:
             img = Image.open(io.BytesIO(res.content)).convert('RGB')
             img = img.resize((40, 40))
@@ -98,10 +98,9 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-@st.cache_data(ttl=3600, show_spinner=False)
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile"]
+    queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile", f"{razao} instagram oficial"]
     
     found_logo, found_instagram, found_email, found_phone, found_fantasia, found_site, found_slogan = None, None, None, None, None, None, None
     extra_activities = []
@@ -110,7 +109,7 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
         try:
             encoded_q = urllib.parse.quote(q)
             url = f"https://html.duckduckgo.com/html/?q={encoded_q}"
-            res = requests.get(url, headers=headers, timeout=2)
+            res = requests.get(url, headers=headers, timeout=3)
             if res.status_code == 200:
                 from bs4 import BeautifulSoup
                 soup = BeautifulSoup(res.text, 'html.parser')
@@ -154,6 +153,13 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
                             if keyword in txt.lower() and len(txt) < 80:
                                 clean_act = txt.strip()
                                 if clean_act not in extra_activities: extra_activities.append(clean_act)
+
+                if not found_logo:
+                    for img in soup.find_all('img'):
+                        src = img.get('src', '')
+                        if 'http' in src and ('logo' in src.lower() or 'icon' in src.lower()):
+                            found_logo = src
+                            break
         except Exception:
             continue
             
@@ -269,9 +275,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     active_tel = osint["phone"] if osint["phone"] else tel_planilha
     clean_tel = "".join(filter(str.isdigit, str(active_tel))) if active_tel else ""
     
-    display_name = osint["fantasia"]
-    
-    # Link limpo e direto da empresa para uso dentro da LP (clientes conversarem com o estabelecimento)
     if clean_tel:
         if not clean_tel.startswith("55") and len(clean_tel) <= 11:
             clean_tel = "55" + clean_tel
@@ -281,6 +284,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         whats_link = "https://wa.me/"
         display_phone_text = "WhatsApp indisponível"
 
+    display_name = osint["fantasia"]
     custom_slogan = osint["slogan"] if osint["slogan"] else f"Excelência, segurança e compromisso incomparável em {segmento}. Soluções sob medida para superar suas expectativas."
 
     extra_acts = osint["extra_activities"]
@@ -339,6 +343,8 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Biblioteca html2pdf para exportação em PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {{
       --primary: {primary_color};
@@ -363,7 +369,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante Automatizado para Salvar PDF -->
+  <!-- Botão Flutuante de Download em PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -570,24 +576,47 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function gerarPDF() {{
+      const element = document.getElementById('conteudo-lp');
       const btnContainer = document.getElementById('btn-pdf-container');
+      const btn = event.currentTarget;
+      const textoOriginal = btn.innerHTML;
+      
+      btn.innerHTML = '⏳ A gerar PDF...';
+      btn.disabled = true;
       if (btnContainer) btnContainer.style.display = 'none';
 
-      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
-      const url = URL.createObjectURL(blob);
-      const novaAba = window.open(url, '_blank');
-      
-      if (novaAba) {{
-        novaAba.onload = function() {{
-          setTimeout(() => {{
-            novaAba.print();
-            if (btnContainer) btnContainer.style.display = 'block';
-          }}, 800);
-        }};
-      }} else {{
+      const originalStyle = element.getAttribute('style') || '';
+      element.style.width = '1440px';
+      element.style.margin = '0 auto';
+
+      const opt = {{
+        margin:       [10, 10, 10, 10],
+        filename:     'landing_page_{cnpj}.pdf',
+        image:        {{ type: 'jpeg', quality: 0.99 }},
+        html2canvas:  {{ 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          windowWidth: 1440,
+          scrollX: 0,
+          scrollY: 0
+        }},
+        jsPDF:        {{ unit: 'mm', format: 'a3', orientation: 'landscape', compress: true }}
+      }};
+
+      html2pdf().set(opt).from(element).save().then(() => {{
+        element.setAttribute('style', originalStyle);
         if (btnContainer) btnContainer.style.display = 'block';
-        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
-      }}
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+      }}).catch(err => {{
+        console.error(err);
+        element.setAttribute('style', originalStyle);
+        if (btnContainer) btnContainer.style.display = 'block';
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+        alert('Erro ao gerar PDF. Tente novamente.');
+      }});
     }}
   </script>
 </body>
@@ -783,25 +812,6 @@ try:
             maps_link = row["Maps"]
             current_status = row["Status"]
 
-            clean_tel_link = ''.join(filter(str.isdigit, str(tel))) if tel else ""
-            if clean_tel_link and not clean_tel_link.startswith("55") and len(clean_tel_link) <= 11:
-                clean_tel_link = "55" + clean_tel_link
-
-            # Mensagem ajustada sem citação fixa de cidade
-            texto_proposta = (
-                f"Olá, pessoal da *{razao}*! Tudo bem?\n\n"
-                f"Me chamo Wesley e sou responsável pela Kritech, especializada na criação de sites profissionais com preços acessíveis.\n\n"
-                f"Acompanho a abertura de novas empresas e acredito que investir em uma boa presença na internet desde o início pode ser um grande diferencial para transmitir confiança, fortalecer a marca e conquistar novos clientes.\n\n"
-                f"Por isso, tomei a liberdade de desenvolver um modelo de site personalizado para a *{razao}*, sem compromisso, que estou enviando em anexo para vocês conhecerem. O projeto pode ser adaptado conforme suas preferências e necessidades.\n\n"
-                f"Minha proposta é oferecer um investimento acessível, com mensalidade econômica para manter o site no ar e realizar a manutenção. Assim, vocês podem fortalecer a presença digital da empresa, facilitar o contato com interessados e criar novas oportunidades de negócio, sem precisar investir grandes valores.\n\n"
-                f"Se gostarem da ideia, podemos conversar, ajustar o projeto e formalizar tudo por contrato, com valores e condições transparentes.\n\n"
-                f"Que tal dar esse primeiro passo para destacar a *{razao}* no mercado?\n\n"
-                f"Atenciosamente,\n"
-                f"Wesley | Kritech — Soluções Digitais"
-            )
-            msg_prospeccao = urllib.parse.quote(texto_proposta)
-            wa_pitch_link = f"https://wa.me/{clean_tel_link}?text={msg_prospeccao}" if clean_tel_link else "#"
-
             r_cols = st.columns([2.6, 1.4, 1.0, 0.5, 1.1, 1.2, 1.2])
             r_cols[0].markdown(f"🏢 **{razao}**")
             r_cols[1].markdown(f"`{format_cnpj(cnpj)}`")
@@ -811,8 +821,9 @@ try:
             
             with r_cols[5]:
                 action_str = []
-                if clean_tel_link: 
-                    action_str.append(f"[💬]({wa_pitch_link})")
+                if tel: 
+                    clean_tel_link = ''.join(filter(str.isdigit, str(tel)))
+                    action_str.append(f"[📞](https://wa.me/55{clean_tel_link})")
                 else: 
                     action_str.append("📞")
                 if maps_link: 
@@ -833,8 +844,6 @@ try:
                     st.markdown(f"**Endereço:** {endereco if endereco else 'Não informado'}")
                 with c2:
                     st.markdown(f"**Telefone:** {format_phone(tel) if tel else 'Não informado'}")
-                    if clean_tel_link:
-                        st.markdown(f"📲 [**Enviar Proposta via WhatsApp**]({wa_pitch_link})")
                     st.markdown(f"📸 [Pesquisar Instagram / Maps](https://www.google.com/search?q={nome_encoded}+instagram)")
                 with c3:
                     status_list = ["Pendente", "Em Análise", "LP Gerada", "Proposta Enviada", "Finalizado Positivo", "Finalizado Negativo"]
