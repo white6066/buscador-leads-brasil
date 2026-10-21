@@ -86,7 +86,7 @@ def format_cep(cep_str):
         return f"{nums[:5]}-{nums[5:]}"
     return cep_str
 
-# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM REDAÇÃO COMPLETA ---
+# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM REDAÇÃO COMPLETA E TRATAMENTO DE CEP ---
 def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_contratado, 
                             razao_contratante, cnpj_contratante, end_contratante, cidade_contratante, uf_contratante,
                             dominio_site=""):
@@ -98,6 +98,23 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     font = style.font
     font.name = 'Calibri'
     font.size = Pt(11)
+    
+    # Trata e limpa o formato do CEP no endereço da CONTRATANTE
+    def format_address_clean(addr):
+        if not addr:
+            return ""
+        
+        def replace_cep(match):
+            digits = match.group(1)
+            return f"CEP: {digits[:5]}-{digits[5:]}"
+        
+        # Remove parênteses em CEPs como (CEP: 69918093) e formata com hífen
+        addr_clean = re.sub(r'\(\s*CEP:\s*(\d{8})\s*\)', r'CEP: \1', addr, flags=re.IGNORECASE)
+        addr_clean = re.sub(r'CEP:\s*(\d{8})', replace_cep, addr_clean, flags=re.IGNORECASE)
+        
+        return addr_clean
+
+    clean_end_contratante = format_address_clean(end_contratante)
     
     # Inserção do Logo no Cabeçalho (se existir no diretório do projeto)
     logo_path = None
@@ -142,7 +159,7 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     run_p2.bold = True
     p_partes.add_run(
         f"{razao_contratante.upper()}, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº {format_cnpj(cnpj_contratante)}, "
-        f"com sede em {end_contratante}, neste ato representada por seu representante legal.\n\n"
+        f"com sede em {clean_end_contratante}, neste ato representada por seu representante legal.\n\n"
         f"As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas a seguir expostas:"
     )
     
@@ -204,7 +221,7 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
 
     add_clause(
         "CLÁUSULA OITAVA – FORO",
-        f"Para dirimir quaisquer controvérsias oriundas deste instrumento, as partes elegem o foro da Comarca de {cidade_contratante.upper()}/{uf_contratante.upper()}, renunciando a qualquer outro, por mais privileged que seja."
+        f"Para dirimir quaisquer controvérsias oriundas deste instrumento, as partes elegem o foro da Comarca de {cidade_contratante.upper()}/{uf_contratante.upper()}, renunciando a qualquer outro, por mais privilegiado que seja."
     )
 
     doc.add_paragraph()
