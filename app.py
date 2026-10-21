@@ -86,7 +86,7 @@ def format_cep(cep_str):
         return f"{nums[:5]}-{nums[5:]}"
     return cep_str
 
-# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM LOGO ---
+# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM REDAÇÃO COMPLETA ---
 def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_contratado, 
                             razao_contratante, cnpj_contratante, end_contratante, cidade_contratante, uf_contratante,
                             dominio_site=""):
@@ -123,8 +123,8 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     run_title.bold = True
     run_title.font.size = Pt(12)
     
-    doc.add_paragraph() # Espaçamento
-    
+    doc.add_paragraph()
+
     # Preâmbulo - Partes
     p_partes = doc.add_paragraph()
     p_partes.paragraph_format.line_spacing = 1.15
@@ -133,8 +133,8 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     run_p1 = p_partes.add_run("CONTRATADO: ")
     run_p1.bold = True
     p_partes.add_run(
-        f"{nome_contratado.upper()}, pessoa física, inscrito(a) no CPF/MF sob o nº {cpf_contratado}, "
-        f"portador(a) do RG nº {rg_contratado}, residente e domiciliado(a) em {end_contratado}, "
+        f"{nome_contratado.upper()}, pessoa física, inscrito no CPF/MF sob o nº {cpf_contratado}, "
+        f"portador do RG nº {rg_contratado}, residente e domiciliado na {end_contratado}, "
         f"atuando sob o nome fantasia KRITECH - SOLUÇÕES DIGITAIS.\n\n"
     )
     
@@ -142,7 +142,7 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     run_p2.bold = True
     p_partes.add_run(
         f"{razao_contratante.upper()}, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº {format_cnpj(cnpj_contratante)}, "
-        f"com sede em {end_contratante}, no município de {cidade_contratante}/{uf_contratante}.\n\n"
+        f"com sede em {end_contratante}, neste ato representada por seu representante legal.\n\n"
         f"As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas a seguir expostas:"
     )
     
@@ -152,44 +152,59 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
         p.paragraph_format.space_after = Pt(4)
         r_t = p.add_run(title)
         r_t.bold = True
-        r_txt = p.add_run(f" {text}")
+        r_txt = p.add_run(f"\n{text}")
 
     add_clause(
-        "CLÁUSULA PRIMEIRA – DO OBJETO:",
+        "CLÁUSULA PRIMEIRA – DO OBJETO",
         "O presente instrumento tem como objeto a prestação de serviços de desenvolvimento, configuração, publicação, hospedagem e manutenção de uma Landing Page (página de vendas/apresentação institucional) personalizada para a CONTRATANTE."
     )
 
-    dom_text = f" no domínio {dominio_site}" if dominio_site else " no domínio a ser definido conjuntamente pelas partes."
+    dom_text = f" no domínio {dominio_site}." if dominio_site else " no domínio definido conjuntamente pelas partes."
     add_clause(
-        "CLÁUSULA SEGUNDA – DOS VALORES E FORMA DE PAGAMENTO:",
+        "CLÁUSULA SEGUNDA – DOS VALORES E FORMA DE PAGAMENTO",
         f"Pela prestação dos serviços contratados, a CONTRATANTE pagará ao CONTRATADO os seguintes valores:\n"
         f"a) R$ 700,00 (setecentos reais), a título de taxa única de criação e desenvolvimento do site, pagos da seguinte forma:\n"
         f"   - Entrada de 50% (R$ 350,00) no ato da assinatura deste contrato;\n"
-        f"   - Saldo remanescente de 50% (R$ 350,00) imediatamente após a publicação oficial da Landing Page na internet{dom_text};\n"
+        f"   - Saldo remanescente de 50% (R$ 350,00) imediatamente após a publicação oficial da Landing Page na internet{dom_text}\n"
         f"b) R$ 80,00 (oitenta reais) mensais, a título de manutenção, suporte contínuo e hospedagem do site no ar.\n"
-        f"Parágrafo Único: O pagamento da mensalidade de R$ 80,00 terá vencimento fixo no dia 05 (cinco) de cada mês, mediante emissão e envio de Boleto Bancário pelo CONTRATADO."
+        f"Parágrafo Primeiro: O pagamento da mensalidade de R$ 80,00 terá vencimento fixo no dia 05 (cinco) de cada mês, mediante emissão e envio de Boleto Bancário pelo CONTRATADO.\n"
+        f"Parágrafo Segundo (Da Mora): Em caso de atraso no pagamento de qualquer parcela ou mensalidade, incidirá sobre o valor devido multa moratória de 2% (dois por cento), acrescida de juros de mora de 1% (um por cento) ao mês, calculados pro rata die, além de correção monetária."
     )
 
     add_clause(
-        "CLÁUSULA TERCEIRA – DAS ALTERAÇÕES E MANUTENÇÃO DO SITE:",
+        "CLÁUSULA TERCEIRA – DAS ALTERAÇÕES E MANUTENÇÃO DO SITE",
         "As alterações e atualizações no conteúdo da Landing Page reger-se-ão pelas seguintes regras:\n"
         "a) Nos primeiros 30 (trinta) dias contados a partir da data de publicação do site, qualquer alteração, ajuste ou correção no texto, imagens ou estrutura do site será realizada de forma inteiramente GRATUITA pelo CONTRATADO;\n"
         "b) Após decorrido o prazo de 30 (trinta) dias de publicação, cada solicitação pontual de alteração no site terá o valor fixo de R$ 25,00 (vinte e cinco reais) por alteração realizada, a ser faturado juntamente com o boleto mensal subsequente."
     )
 
     add_clause(
-        "CLÁUSULA QUARTA – DOS PRAZOS E DA ENTREGA:",
-        "O CONTRATADO compromete-se a apresentar a versão preliminar da Landing Page para validação da CONTRATANTE dentro do prazo estipulado entre as partes, dependendo do envio de todas as informações, textos e imagens necessárias por parte da CONTRATANTE."
+        "CLÁUSULA QUARTA – DOS PRAZOS E DA ENTREGA",
+        "O desenvolvimento do projeto seguirá o cronograma estipulado abaixo:\n"
+        "Parágrafo Primeiro: A CONTRATANTE terá o prazo de 05 (cinco) dias úteis, a contar da assinatura deste contrato, para fornecer todos os materiais necessários (textos, logotipos, imagens e referências) ao CONTRATADO.\n"
+        "Parágrafo Segundo: O CONTRATADO compromete-se a apresentar a versão preliminar da Landing Page para validação dentro do prazo de 15 (quinze) dias úteis, contados a partir do recebimento integral de todas as informações descritas no Parágrafo Primeiro."
     )
 
     add_clause(
-        "CLÁUSULA QUINTA – DA RESCISÃO E CANCELAMENTO:",
-        "O presente contrato poderá ser rescindido por qualquer das partes mediante aviso prévio por escrito de 30 (trinta) dias. Em caso de inadimplemento superior a 15 (quinze) dias no pagamento da mensalidade via boleto bancário, o CONTRATADO reserva-se o direito de suspender a exibição do site até a regularização dos débitos."
+        "CLÁUSULA QUINTA – DA PROPRIEDADE INTELECTUAL",
+        "Todos os direitos de propriedade intelectual referentes ao layout, design final e estrutura da Landing Page desenvolvida pertencerão à CONTRATANTE após a quitação integral dos valores descritos na Cláusula Segunda, alínea 'a'.\n"
+        "Parágrafo Único: O CONTRATADO retém os direitos autorais sobre os códigos proprietários, ferramentas de terceiros e metodologias de desenvolvimento utilizadas para a construção da página."
     )
 
     add_clause(
-        "CLÁUSULA SEXTA – FORO:",
-        "Para dirimir quaisquer controvérsias oriundas do presente instrumento, as partes elegem expressamente o Foro da Comarca de Sorriso/MT, com renúncia prévia a qualquer outro, por mais privilegiado que seja ou venha a ser."
+        "CLÁUSULA SEXTA – DA PROTEÇÃO DE DADOS (LGPD)",
+        "As Partes comprometem-se a cumprir todas as obrigações estipuladas pela Lei Geral de Proteção de Dados (Lei nº 13.709/18 - LGPD). Qualquer dado pessoal coletado ou tratado em razão deste contrato será utilizado estritamente para a finalidade de execução das atividades aqui previstas, vedado o compartilhamento com terceiros sem autorização prévia por escrito."
+    )
+
+    add_clause(
+        "CLÁUSULA SÉTIMA – DA RESCISÃO E CANCELAMENTO",
+        "O presente contrato poderá ser rescindido por qualquer das partes mediante aviso prévio por escrito de 30 (trinta) dias.\n"
+        "Parágrafo Único: Em caso de inadimplemento superior a 15 (quinze) dias no pagamento da mensalidade, o CONTRATADO reserva-se o direito de suspender temporariamente a exibição do site até a total regularização dos débitos, sem prejuízo da aplicação dos juros e multas cabíveis."
+    )
+
+    add_clause(
+        "CLÁUSULA OITAVA – FORO",
+        f"Para dirimir quaisquer controvérsias oriundas deste instrumento, as partes elegem o foro da Comarca de {cidade_contratante.upper()}/{uf_contratante.upper()}, renunciando a qualquer outro, por mais privileged que seja."
     )
 
     doc.add_paragraph()
@@ -197,25 +212,34 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
 
     # Data e Assinaturas
     data_str = datetime.now().strftime("%d de %B de %Y")
-    p_data = doc.add_paragraph(f"{cidade_contratante}/{uf_contratante}, {data_str}.")
+    p_data = doc.add_paragraph(f"{cidade_contratante.upper()}/{uf_contratante.upper()}, {data_str}.")
     p_data.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
     doc.add_paragraph()
     doc.add_paragraph()
 
-    table = doc.add_table(rows=1, cols=2)
-    table.autofit = False
-    
-    cell_l = table.cell(0, 0)
-    cell_r = table.cell(0, 1)
-    
-    p_l = cell_l.paragraphs[0]
-    p_l.add_run(f"___________________________________\nKRITECH - SOLUÇÕES DIGITAIS\n{nome_contratado}\nCPF: {cpf_contratado}")
-    p_l.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_ass1 = doc.add_paragraph()
+    p_ass1.paragraph_format.space_after = Pt(12)
+    p_ass1.add_run(f"____________________________________________________\n")
+    r_k = p_ass1.add_run("KRITECH - SOLUÇÕES DIGITAIS\n")
+    r_k.bold = True
+    p_ass1.add_run(f"{nome_contratado}\nCONTRATADO")
 
-    p_r = cell_r.paragraphs[0]
-    p_r.add_run(f"___________________________________\n{razao_contratante.upper()}\nCNPJ: {format_cnpj(cnpj_contratante)}")
-    p_r.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph()
+
+    p_ass2 = doc.add_paragraph()
+    p_ass2.paragraph_format.space_after = Pt(12)
+    p_ass2.add_run(f"____________________________________________________\n")
+    r_c = p_ass2.add_run(f"{razao_contratante.upper()}\n")
+    r_c.bold = True
+    p_ass2.add_run("Representante Legal: [Inserir Nome Completo]\nCPF: [Inserir CPF]\nCONTRATANTE")
+
+    doc.add_paragraph()
+
+    p_test = doc.add_paragraph()
+    p_test.add_run("TESTEMUNHAS:\n\n")
+    p_test.add_run("____________________________________________________\n1. TESTEMUNHA\nNome:\nCPF:\n\n")
+    p_test.add_run("____________________________________________________\n2. TESTEMUNHA\nNome:\nCPF:")
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -888,7 +912,7 @@ try:
         my_name = st.text_input("Seu Nome Completo:", value="Wesley Alexsandro Oliveira Kriger")
         my_cpf = st.text_input("Seu CPF:", value="045.109.781-54")
         my_rg = st.text_input("Seu RG:", value="2639745-0 SSP/MT")
-        my_address = st.text_input("Seu Endereço Residencial:", value="Sorriso - MT")
+        my_address = st.text_input("Seu Endereço Residencial:", value="Travessa São Timóteo, nº 41, Bairro São Mateus, Sorriso - MT, CEP: 78.898-040")
 
         st.divider()
         st.markdown("#### 📅 Filtros por Período")
