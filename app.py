@@ -371,13 +371,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão Flutuante de Salvar/Imprimir PDF devidamente configurado -->
-  <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-      📥 Baixar PDF
-    </button>
-  </div>
-
   <div id="conteudo-lp" class="w-full bg-white">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
@@ -576,27 +569,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
-
-    function gerarPDF() {{
-      const btnContainer = document.getElementById('btn-pdf-container');
-      if (btnContainer) btnContainer.style.display = 'none';
-
-      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
-      const url = URL.createObjectURL(blob);
-      const novaAba = window.open(url, '_blank');
-      
-      if (novaAba) {{
-        novaAba.onload = function() {{
-          setTimeout(() => {{
-            novaAba.print();
-            if (btnContainer) btnContainer.style.display = 'block';
-          }}, 800);
-        }};
-      }} else {{
-        if (btnContainer) btnContainer.style.display = 'block';
-        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
-      }}
-    }}
   </script>
 </body>
 </html>"""
@@ -621,7 +593,7 @@ def save_persistent_store(file_path, data_dict):
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data_dict, f, ensure_ascii=False, indent=2)
-    except Exception as e:
+    except Exception:
         pass
 
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
