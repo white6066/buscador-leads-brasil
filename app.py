@@ -620,7 +620,7 @@ def save_persistent_store(file_path, data_dict):
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data_dict, f, ensure_ascii=False, indent=2)
-    except Exception as e:
+    except Exception:
         pass
 
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
@@ -932,10 +932,11 @@ try:
                 if input_val_key not in st.session_state:
                     st.session_state[input_val_key] = ""
 
+                # Carregamento persistente inicial caso ainda não esteja na memória da sessão
                 if f"lp_data_{idx}" not in st.session_state and str(cnpj) in saved_lps_store:
                     st.session_state[f"lp_data_{idx}"] = saved_lps_store[str(cnpj)]
 
-                # NOVA SEÇÃO: Importar LP HTML já alterada externamente
+                # IMPORTAR E SOBRESCREVER ARQUIVO HTML MODIFICADO
                 up_html_file = st.file_uploader(
                     "📥 Importar arquivo HTML alterado externamente (.html)",
                     type=["html"],
@@ -944,10 +945,13 @@ try:
                 if up_html_file is not None:
                     html_bytes = up_html_file.getvalue()
                     html_content_imported = html_bytes.decode('utf-8')
+                    
+                    # Força a atualização imediata da variável de sessão e grava na persistência
                     st.session_state[f"lp_data_{idx}"] = html_content_imported
                     sync_lp_content_save(cnpj, html_content_imported)
                     sync_status_change(cnpj, "LP Gerada", st.session_state.df_status)
-                    st.success("LP alterada importada e salva com sucesso!")
+                    
+                    st.success("LP alterada importada, sobrescrita e salva com sucesso!")
                     st.rerun()
 
                 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
