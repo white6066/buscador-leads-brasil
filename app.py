@@ -371,6 +371,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
+  <!-- Botão flutuante restaurado para abrir em nova aba e imprimir PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -620,7 +621,7 @@ def save_persistent_store(file_path, data_dict):
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data_dict, f, ensure_ascii=False, indent=2)
-    except Exception as e:
+    except Exception:
         pass
 
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
@@ -919,6 +920,7 @@ try:
                 logo_key = f"saved_logo_{idx}"
                 hist_key = f"instructions_history_{idx}"
                 input_val_key = f"cust_val_{idx}"
+                import_file_key = f"imported_html_{idx}"
 
                 if img1_key not in st.session_state:
                     st.session_state[img1_key] = search_real_photo_by_query("", segmento, 0)
@@ -933,6 +935,24 @@ try:
 
                 if f"lp_data_{idx}" not in st.session_state and str(cnpj) in saved_lps_store:
                     st.session_state[f"lp_data_{idx}"] = saved_lps_store[str(cnpj)]
+
+                up_html_file = st.file_uploader(
+                    "📥 Importar arquivo HTML alterado externamente (.html)",
+                    type=["html"],
+                    key=import_file_key
+                )
+                if up_html_file is not None:
+                    html_bytes = up_html_file.getvalue()
+                    html_content_imported = html_bytes.decode('utf-8')
+                    
+                    st.session_state[f"lp_data_{idx}"] = html_content_imported
+                    sync_lp_content_save(cnpj, html_content_imported)
+                    sync_status_change(cnpj, "LP Gerada", st.session_state.df_status)
+                    
+                    st.success("LP alterada importada, sobrescrita e salva com sucesso!")
+                    st.rerun()
+
+                st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
                 up_col1, up_col2 = st.columns([2, 2])
                 with up_col1:
