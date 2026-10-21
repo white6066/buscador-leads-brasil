@@ -189,7 +189,7 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
 
     add_clause(
         "CLÁUSULA SEXTA – FORO:",
-        f"Para dirimir quaisquer controvérsias oriundas deste instrumento, as partes elegem o foro da Comarca de {cidade_contratante}/{uf_contratante}, renunciando a qualquer outro, por mais privilegiado que seja."
+        "Para dirimir quaisquer controvérsias oriundas do presente instrumento, as partes elegem expressamente o Foro da Comarca de Sorriso/MT, com renúncia prévia a qualquer outro, por mais privilegiado que seja ou venha a ser."
     )
 
     doc.add_paragraph()
