@@ -86,7 +86,7 @@ def format_cep(cep_str):
         return f"{nums[:5]}-{nums[5:]}"
     return cep_str
 
-# --- GERADOR DE CONTRATO EM WORD (.DOCX) ---
+# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM LOGO ---
 def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_contratado, 
                             razao_contratante, cnpj_contratante, end_contratante, cidade_contratante, uf_contratante,
                             dominio_site=""):
@@ -99,12 +99,29 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     font.name = 'Calibri'
     font.size = Pt(11)
     
+    # Inserção do Logo no Cabeçalho (se existir no diretório do projeto)
+    logo_path = None
+    for candidate in ["kritech_logo.png", "kritech_logo.jpg", "logo.png", "logo.jpg"]:
+        if os.path.exists(candidate):
+            logo_path = candidate
+            break
+            
+    if logo_path:
+        try:
+            p_logo = doc.add_paragraph()
+            p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run_logo = p_logo.add_run()
+            run_logo.add_picture(logo_path, width=Inches(2.2))
+            doc.add_paragraph()
+        except Exception:
+            pass
+
     # Título do Contrato
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_title = p_title.add_run("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE DESENVOLVIMENTO, HOSPEDAGEM E MANUTENÇÃO DE LANDING PAGE")
     run_title.bold = True
-    run_title.font.size = Pt(13)
+    run_title.font.size = Pt(12)
     
     doc.add_paragraph() # Espaçamento
     
@@ -869,8 +886,8 @@ try:
 
         st.markdown("#### 👤 Dados do Contratado (Você / Kritech)")
         my_name = st.text_input("Seu Nome Completo:", value="Wesley Alexsandro Oliveira Kriger")
-        my_cpf = st.text_input("Seu CPF:", value="000.000.000-00")
-        my_rg = st.text_input("Seu RG:", value="0000000-0 SSP/MT")
+        my_cpf = st.text_input("Seu CPF:", value="045.109.781-54")
+        my_rg = st.text_input("Seu RG:", value="2639745-0 SSP/MT")
         my_address = st.text_input("Seu Endereço Residencial:", value="Sorriso - MT")
 
         st.divider()
@@ -897,7 +914,7 @@ try:
     st.markdown("""
         <div class="banner-box">
             <div class="banner-title">🚀 Novas Empresas - Gerador LP & Gerador de Contratos Kritech</div>
-            <div class="banner-subtitle">Gerencie leads, crie e edite Landing Pages e gere Contratos Formais (.DOCX) preenchidos automaticamente.</div>
+            <div class="banner-subtitle">Gerencie leads, crie e edite Landing Pages e gere Contratos Formais (.DOCX) preenchidos automaticamente com logo oficial.</div>
         </div>
     """, unsafe_allow_html=True)
 
