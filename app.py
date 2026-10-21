@@ -108,7 +108,6 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
             digits = match.group(1)
             return f"CEP: {digits[:5]}-{digits[5:]}"
         
-        # Remove parênteses em CEPs como (CEP: 69918093) e formata com hífen
         addr_clean = re.sub(r'\(\s*CEP:\s*(\d{8})\s*\)', r'CEP: \1', addr, flags=re.IGNORECASE)
         addr_clean = re.sub(r'CEP:\s*(\d{8})', replace_cep, addr_clean, flags=re.IGNORECASE)
         
@@ -116,7 +115,6 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
 
     clean_end_contratante = format_address_clean(end_contratante)
     
-    # Inserção do Logo no Cabeçalho (se existir no diretório do projeto)
     logo_path = None
     for candidate in ["kritech_logo.png", "kritech_logo.jpg", "logo.png", "logo.jpg"]:
         if os.path.exists(candidate):
@@ -133,7 +131,6 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
         except Exception:
             pass
 
-    # Título do Contrato
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_title = p_title.add_run("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE DESENVOLVIMENTO, HOSPEDAGEM E MANUTENÇÃO DE LANDING PAGE")
@@ -142,7 +139,6 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     
     doc.add_paragraph()
 
-    # Preâmbulo - Partes
     p_partes = doc.add_paragraph()
     p_partes.paragraph_format.line_spacing = 1.15
     p_partes.paragraph_format.space_after = Pt(8)
@@ -227,7 +223,6 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     doc.add_paragraph()
     doc.add_paragraph()
 
-    # Data e Assinaturas
     data_str = datetime.now().strftime("%d de %B de %Y")
     p_data = doc.add_paragraph(f"{cidade_contratante.upper()}/{uf_contratante.upper()}, {data_str}.")
     p_data.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -551,12 +546,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-      📥 Baixar PDF
-    </button>
-  </div>
-
   <div id="conteudo-lp" class="w-full bg-white">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
@@ -747,36 +736,11 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
         <div class="text-xs sm:text-right">
           <p>CNPJ: {formatted_cnpj}</p>
-          <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
+          <p class="mt-1 text-white/50">&copy; 2026 {display_name}. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
   </div>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    function gerarPDF() {{
-      const btnContainer = document.getElementById('btn-pdf-container');
-      if (btnContainer) btnContainer.style.display = 'none';
-
-      const blob = new Blob([document.documentElement.outerHTML], {{ type: 'text/html' }});
-      const url = URL.createObjectURL(blob);
-      const novaAba = window.open(url, '_blank');
-      
-      if (novaAba) {{
-        novaAba.onload = function() {{
-          setTimeout(() => {{
-            novaAba.print();
-            if (btnContainer) btnContainer.style.display = 'block';
-          }}, 800);
-        }};
-      }} else {{
-        if (btnContainer) btnContainer.style.display = 'block';
-        alert('Permita pop-ups no navegador para gerar o PDF automaticamente.');
-      }}
-    }}
-  </script>
 </body>
 </html>"""
     
@@ -1263,6 +1227,15 @@ try:
                 if f"lp_data_{idx}" in st.session_state:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
                     st.markdown("#### ⚡ Pré-visualização da Landing Page")
+                    
+                    b64_html = base64.b64encode(lp_html_content.encode('utf-8')).decode('utf-8')
+                    print_script = f"""
+                    <a href="data:text/html;base64,{b64_html}" target="_blank" onclick="setTimeout(function(){{ window.open('data:text/html;base64,{b64_html}').print(); }}, 300);" 
+                       style="display: inline-block; background-color: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.82rem; margin-bottom: 10px;">
+                        📄 Gerar / Imprimir PDF da LP (Apenas para Você)
+                    </a>
+                    """
+                    st.markdown(print_script, unsafe_allow_html=True)
                     
                     st.components.v1.html(lp_html_content, height=520, scrolling=True)
                     
