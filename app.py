@@ -11,10 +11,13 @@ import os
 from datetime import datetime
 from PIL import Image
 import base64
+from docx import Document
+from docx.shared import Inches, Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 # 1. Configuração da página
 st.set_page_config(
-    page_title="Novas Empresas - Gerador LP com Comando IA Total",
+    page_title="Novas Empresas - Gerador LP & Contratos Kritech",
     page_icon="🚀",
     layout="wide"
 )
@@ -82,6 +85,125 @@ def format_cep(cep_str):
     if len(nums) == 8:
         return f"{nums[:5]}-{nums[5:]}"
     return cep_str
+
+# --- GERADOR DE CONTRATO EM WORD (.DOCX) ---
+def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_contratado, 
+                            razao_contratante, cnpj_contratante, end_contratante, cidade_contratante, uf_contratante,
+                            dominio_site=""):
+    
+    doc = Document()
+    
+    # Estilo dos parágrafos
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Calibri'
+    font.size = Pt(11)
+    
+    # Título do Contrato
+    p_title = doc.add_paragraph()
+    p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run_title = p_title.add_run("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE DESENVOLVIMENTO, HOSPEDAGEM E MANUTENÇÃO DE LANDING PAGE")
+    run_title.bold = True
+    run_title.font.size = Pt(13)
+    
+    doc.add_paragraph() # Espaçamento
+    
+    # Preâmbulo - Partes
+    p_partes = doc.add_paragraph()
+    p_partes.paragraph_format.line_spacing = 1.15
+    p_partes.paragraph_format.space_after = Pt(8)
+    
+    run_p1 = p_partes.add_run("CONTRATADO: ")
+    run_p1.bold = True
+    p_partes.add_run(
+        f"{nome_contratado.upper()}, pessoa física, inscrito(a) no CPF/MF sob o nº {cpf_contratado}, "
+        f"portador(a) do RG nº {rg_contratado}, residente e domiciliado(a) em {end_contratado}, "
+        f"atuando sob o nome fantasia KRITECH - SOLUÇÕES DIGITAIS.\n\n"
+    )
+    
+    run_p2 = p_partes.add_run("CONTRATANTE: ")
+    run_p2.bold = True
+    p_partes.add_run(
+        f"{razao_contratante.upper()}, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº {format_cnpj(cnpj_contratante)}, "
+        f"com sede em {end_contratante}, no município de {cidade_contratante}/{uf_contratante}.\n\n"
+        f"As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas a seguir expostas:"
+    )
+    
+    def add_clause(title, text):
+        p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt(8)
+        p.paragraph_format.space_after = Pt(4)
+        r_t = p.add_run(title)
+        r_t.bold = True
+        r_txt = p.add_run(f" {text}")
+
+    add_clause(
+        "CLÁUSULA PRIMEIRA – DO OBJETO:",
+        "O presente instrumento tem como objeto a prestação de serviços de desenvolvimento, configuração, publicação, hospedagem e manutenção de uma Landing Page (página de vendas/apresentação institucional) personalizada para a CONTRATANTE."
+    )
+
+    dom_text = f" no domínio {dominio_site}" if dominio_site else " no domínio a ser definido conjuntamente pelas partes."
+    add_clause(
+        "CLÁUSULA SEGUNDA – DOS VALORES E FORMA DE PAGAMENTO:",
+        f"Pela prestação dos serviços contratados, a CONTRATANTE pagará ao CONTRATADO os seguintes valores:\n"
+        f"a) R$ 700,00 (setecentos reais), a título de taxa única de criação e desenvolvimento do site, pagos da seguinte forma:\n"
+        f"   - Entrada de 50% (R$ 350,00) no ato da assinatura deste contrato;\n"
+        f"   - Saldo remanescente de 50% (R$ 350,00) imediatamente após a publicação oficial da Landing Page na internet{dom_text};\n"
+        f"b) R$ 80,00 (oitenta reais) mensais, a título de manutenção, suporte contínuo e hospedagem do site no ar.\n"
+        f"Parágrafo Único: O pagamento da mensalidade de R$ 80,00 terá vencimento fixo no dia 05 (cinco) de cada mês, mediante emissão e envio de Boleto Bancário pelo CONTRATADO."
+    )
+
+    add_clause(
+        "CLÁUSULA TERCEIRA – DAS ALTERAÇÕES E MANUTENÇÃO DO SITE:",
+        "As alterações e atualizações no conteúdo da Landing Page reger-se-ão pelas seguintes regras:\n"
+        "a) Nos primeiros 30 (trinta) dias contados a partir da data de publicação do site, qualquer alteração, ajuste ou correção no texto, imagens ou estrutura do site será realizada de forma inteiramente GRATUITA pelo CONTRATADO;\n"
+        "b) Após decorrido o prazo de 30 (trinta) dias de publicação, cada solicitação pontual de alteração no site terá o valor fixo de R$ 25,00 (vinte e cinco reais) por alteração realizada, a ser faturado juntamente com o boleto mensal subsequente."
+    )
+
+    add_clause(
+        "CLÁUSULA QUARTA – DOS PRAZOS E DA ENTREGA:",
+        "O CONTRATADO compromete-se a apresentar a versão preliminar da Landing Page para validação da CONTRATANTE dentro do prazo estipulado entre as partes, dependendo do envio de todas as informações, textos e imagens necessárias por parte da CONTRATANTE."
+    )
+
+    add_clause(
+        "CLÁUSULA QUINTA – DA RESCISÃO E CANCELAMENTO:",
+        "O presente contrato poderá ser rescindido por qualquer das partes mediante aviso prévio por escrito de 30 (trinta) dias. Em caso de inadimplemento superior a 15 (quinze) dias no pagamento da mensalidade via boleto bancário, o CONTRATADO reserva-se o direito de suspender a exibição do site até a regularização dos débitos."
+    )
+
+    add_clause(
+        "CLÁUSULA SEXTA – FORO:",
+        f"Para dirimir quaisquer controvérsias oriundas deste instrumento, as partes elegem o foro da Comarca de {cidade_contratante}/{uf_contratante}, renunciando a qualquer outro, por mais privilegiado que seja."
+    )
+
+    doc.add_paragraph()
+    doc.add_paragraph()
+
+    # Data e Assinaturas
+    data_str = datetime.now().strftime("%d de %B de %Y")
+    p_data = doc.add_paragraph(f"{cidade_contratante}/{uf_contratante}, {data_str}.")
+    p_data.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    doc.add_paragraph()
+    doc.add_paragraph()
+
+    table = doc.add_table(rows=1, cols=2)
+    table.autofit = False
+    
+    cell_l = table.cell(0, 0)
+    cell_r = table.cell(0, 1)
+    
+    p_l = cell_l.paragraphs[0]
+    p_l.add_run(f"___________________________________\nKRITECH - SOLUÇÕES DIGITAIS\n{nome_contratado}\nCPF: {cpf_contratado}")
+    p_l.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    p_r = cell_r.paragraphs[0]
+    p_r.add_run(f"___________________________________\n{razao_contratante.upper()}\nCNPJ: {format_cnpj(cnpj_contratante)}")
+    p_r.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer.getvalue()
 
 def extract_colors_from_logo(image_url):
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -371,7 +493,6 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <!-- Botão flutuante restaurado para abrir em nova aba e imprimir PDF -->
   <div id="btn-pdf-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
     <button onclick="gerarPDF()" style="background: {primary_color}; color: #ffffff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       📥 Baixar PDF
@@ -746,6 +867,13 @@ try:
         st.markdown("<p style='font-size: 0.8rem; margin-bottom: 0px;'>Prospecção & Inteligência</p>", unsafe_allow_html=True)
         st.divider()
 
+        st.markdown("#### 👤 Dados do Contratado (Você / Kritech)")
+        my_name = st.text_input("Seu Nome Completo:", value="Wesley Alexsandro Oliveira Kriger")
+        my_cpf = st.text_input("Seu CPF:", value="000.000.000-00")
+        my_rg = st.text_input("Seu RG:", value="0000000-0 SSP/MT")
+        my_address = st.text_input("Seu Endereço Residencial:", value="Sorriso - MT")
+
+        st.divider()
         st.markdown("#### 📅 Filtros por Período")
         
         filtro_data_inicio = st.date_input("Data Abertura (Início):", value=None, format="DD/MM/YYYY")
@@ -768,8 +896,8 @@ try:
 
     st.markdown("""
         <div class="banner-box">
-            <div class="banner-title">🚀 Novas Empresas - Gerador LP com Comando IA Total</div>
-            <div class="banner-subtitle">Gerencie leads, aplique alterações de imagens, redimensionamentos, cores e textos mantendo o padrão visual original.</div>
+            <div class="banner-title">🚀 Novas Empresas - Gerador LP & Gerador de Contratos Kritech</div>
+            <div class="banner-subtitle">Gerencie leads, crie e edite Landing Pages e gere Contratos Formais (.DOCX) preenchidos automaticamente.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -895,7 +1023,7 @@ try:
                 
             r_cols[6].markdown(f"🟢 `{current_status}`")
 
-            with st.expander(f"⚙️ Gerenciar & Criar LP Masterpiece: {razao}"):
+            with st.expander(f"⚙️ Gerenciar & Criar LP / Contrato: {razao}"):
                 c1, c2, c3 = st.columns([2, 2, 1.5])
                 with c1:
                     st.markdown(f"**Segmento:** {segmento}")
@@ -914,7 +1042,41 @@ try:
                         st.rerun()
                 
                 st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
+
+                # --- SEÇÃO DE GERADOR DE CONTRATO ---
+                st.markdown("#### 📄 Gerador de Contrato Formal (Kritech)")
+                col_dom, col_docx_btn = st.columns([3, 2])
                 
+                with col_dom:
+                    dom_input = st.text_input("Domínio do Site (Opcional):", placeholder="ex: www.empresa.com.br", key=f"dom_in_{idx}")
+                
+                with col_docx_btn:
+                    st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
+                    docx_bytes = generate_contract_docx(
+                        nome_contratado=my_name,
+                        cpf_contratado=my_cpf,
+                        rg_contratado=my_rg,
+                        end_contratado=my_address,
+                        razao_contratante=razao,
+                        cnpj_contratante=cnpj,
+                        end_contratante=endereco if endereco else f"{cidade}/{uf}",
+                        cidade_contratante=cidade,
+                        uf_contratante=uf,
+                        dominio_site=dom_input
+                    )
+                    
+                    st.download_button(
+                        label="📄 Baixar Contrato Word (.DOCX)",
+                        data=docx_bytes,
+                        file_name=f"Contrato_Kritech_{cnpj}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key=f"btn_docx_{idx}",
+                        use_container_width=True
+                    )
+
+                st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
+
+                # --- SEÇÃO DE CRIAÇÃO E EDIÇÃO DA LP ---
                 img1_key = f"saved_img1_{idx}"
                 img2_key = f"saved_img2_{idx}"
                 logo_key = f"saved_logo_{idx}"
