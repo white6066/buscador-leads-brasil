@@ -93,13 +93,11 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     
     doc = Document()
     
-    # Estilo dos parágrafos
     style = doc.styles['Normal']
     font = style.font
     font.name = 'Calibri'
     font.size = Pt(11)
     
-    # Trata e limpa o formato do CEP no endereço da CONTRATANTE
     def format_address_clean(addr):
         if not addr:
             return ""
@@ -546,7 +544,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
   </style>
 </head>
 <body class="bg-[#fafbf9] antialiased">
-  <div id="conteudo-lp" class="w-full bg-white">
+  <div class="w-full bg-white">
     <div class="brand-bg px-4 py-2.5 text-center text-xs font-semibold tracking-wider text-white shadow-inner">
       <span class="inline-flex items-center justify-center gap-2">
         ⭐ EXCELÊNCIA E CONFIABILIDADE EM {segmento.upper()} · {cidade.upper()} / {uf.upper()}
@@ -736,11 +734,15 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
         </div>
         <div class="text-xs sm:text-right">
           <p>CNPJ: {formatted_cnpj}</p>
-          <p class="mt-1 text-white/50">&copy; 2026 {display_name}. Todos os direitos reservados.</p>
+          <p class="mt-1 text-white/50">&copy; <span id="year">2026</span> {display_name}. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
   </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>"""
     
