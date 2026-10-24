@@ -1249,14 +1249,19 @@ try:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
                     st.markdown("#### ⚡ Pré-visualização da Landing Page")
                     
-                    b64_html = base64.b64encode(lp_html_content.encode('utf-8')).decode('utf-8')
-                    
-                    # LINK CORRIGIDO PARA ABRIR EM NOVA ABA E DISPARAR A IMPRESSÃO DIRETAMENTE
+                    # BLOB URL SEGURO PARA ABRIR NA NOVA ABA SEM TRAVAMENTOS
                     print_script = f"""
-                    <a href="data:text/html;base64,{b64_html}" target="_blank" onclick="setTimeout(function(){{ window.open('data:text/html;base64,{b64_html}').print(); }}, 300);" 
-                       style="display: inline-block; background-color: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.82rem; margin-bottom: 10px;">
-                        📄 Gerar / Imprimir PDF da LP (Apenas para Você)
-                    </a>
+                    <script>
+                    function abrirParaImpressao_{idx}() {{
+                        const htmlContent = {json.dumps(lp_html_content)};
+                        const blob = new Blob([htmlContent], {{ type: 'text/html;charset=utf-8' }});
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }}
+                    </script>
+                    <button onclick="abrirParaImpressao_{idx}()" style="display: inline-block; background-color: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; border: none; text-decoration: none; font-weight: bold; font-size: 0.82rem; margin-bottom: 10px; cursor: pointer;">
+                        📄 Gerar / Abrir LP em Nova Aba para Imprimir
+                    </button>
                     """
                     st.markdown(print_script, unsafe_allow_html=True)
                     
