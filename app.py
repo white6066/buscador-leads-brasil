@@ -61,116 +61,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- DICIONÁRIO DE CONVERSÃO DE CNAES ---
-CNAE_DESCRIPTIONS = {
-    # Saúde, Clínicas e Bem-Estar
-    "8630503": "Atividade médica ambulatorial restrita a consultas",
-    "8630-5/03": "Atividade médica ambulatorial restrita a consultas",
-    "8630501": "Atividade médica ambulatorial com procedimentos cirúrgicos",
-    "8630-5/01": "Atividade médica ambulatorial com procedimentos cirúrgicos",
-    "8630502": "Atividade médica ambulatorial com exames complementares",
-    "8630-5/02": "Atividade médica ambulatorial com exames complementares",
-    "8650003": "Atividades de psicologia e psicanálise",
-    "8650-0/03": "Atividades de psicologia e psicanálise",
-    "8650004": "Atividades de fisioterapia",
-    "8650-0/04": "Atividades de fisioterapia",
-    "8650005": "Atividades de terapia ocupacional",
-    "8650-0/05": "Atividades de terapia ocupacional",
-    "8650006": "Atividades de fonoaudiologia",
-    "8650-0/06": "Atividades de fonoaudiologia",
-    "8690901": "Práticas integrativas e complementares em saúde humana",
-    "8690-9/01": "Práticas integrativas e complementares em saúde humana",
-    "8640202": "Laboratórios clínicos",
-    "8640-2/02": "Laboratórios clínicos",
-    
-    # Serviços Profissionais e Escritórios
-    "6911701": "Serviços advocatícios",
-    "6911-7/01": "Serviços advocatícios",
-    "6920601": "Atividades de contabilidade",
-    "6920-6/01": "Atividades de contabilidade",
-    "7020400": "Consultoria em gestão empresarial",
-    "7020-4/00": "Consultoria em gestão empresarial",
-    "7319004": "Consultoria em publicidade e marketing",
-    "7319-0/04": "Consultoria em publicidade e marketing",
-    "7111100": "Serviços de arquitetura",
-    "7111-1/00": "Serviços de arquitetura",
-    "7112000": "Serviços de engenharia",
-    "7112-0/00": "Serviços de engenharia",
-    "6821801": "Corretagem na compra e venda e avaliação de imóveis",
-    "6821-8/01": "Corretagem na compra e venda e avaliação de imóveis",
-    "6920602": "Consultoria e auditoria contábil e tributária",
-    "6920-6/02": "Consultoria e auditoria contábil e tributária",
-
-    # Construção, Reformas e Prestadores
-    "4321500": "Instalação e manutenção elétrica",
-    "4321-5/00": "Instalação e manutenção elétrica",
-    "4322301": "Instalações hidráulicas, sanitárias e de gás",
-    "4322-3/01": "Instalações hidráulicas, sanitárias e de gás",
-    "4120400": "Construção de edifícios",
-    "4120-4/00": "Construção de edifícios",
-    "4330404": "Serviços de pintura em geral",
-    "4330-4/04": "Serviços de pintura em geral",
-    "4330405": "Aplicação de revestimentos e de resinas em pisos e paredes",
-    "4330-4/05": "Aplicação de revestimentos e de resinas em pisos e paredes",
-    "4399103": "Obras de alvenaria",
-    "4399-1/03": "Obras de alvenaria",
-    "4399199": "Serviços especializados para construção",
-    "4399-1/99": "Serviços especializados para construção",
-
-    # Beleza, Estética e Condicionamento Físico
-    "9602502": "Atividades de estética e cuidados com a beleza",
-    "9602-5/02": "Atividades de estética e cuidados com a beleza",
-    "9602501": "Cabeleireiros, manicure e pedicure",
-    "9602-5/01": "Cabeleireiros, manicure e pedicure",
-    "9313100": "Atividades de condicionamento físico",
-    "9313-1/00": "Atividades de condicionamento físico",
-
-    # Educação, Cursos e Infoprodutos
-    "8599699": "Outras atividades de ensino",
-    "8599-6/99": "Outras atividades de ensino",
-    "8599604": "Cursos de idiomas",
-    "8599-6/04": "Cursos de idiomas",
-    "8592999": "Ensino de arte e cultura",
-    "8592-9/99": "Ensino de arte e cultura",
-
-    # Alimentação, Eventos e Entretenimento
-    "5611201": "Restaurantes e similares",
-    "5611-2/01": "Restaurantes e similares",
-    "5611203": "Lanchonetes, casas de chá e sucos",
-    "5611-2/03": "Lanchonetes, casas de chá e sucos",
-    "8230001": "Organização de feiras, congressos e festas",
-    "8230-0/01": "Organização de feiras, congressos e festas",
-    "7420001": "Atividades de produção de fotografias",
-    "7420-0/01": "Atividades de produção de fotografias",
-    "5620102": "Serviços de catering e bufê",
-    "5620-1/02": "Serviços de catering e bufê",
-
-    # Setor Automotivo
-    "4520001": "Manutenção e reparação mecânica de veículos",
-    "4520-0/01": "Manutenção e reparação mecânica de veículos",
-    "4520007": "Lanternagem ou funilaria e pintura de veículos",
-    "4520-0/07": "Lanternagem ou funilaria e pintura de veículos",
-    "4520008": "Lavagem, lubrificação e polimento de veículos",
-    "4520-0/08": "Lavagem, lubrificação e polimento de veículos",
-
-    # Varejo e Pet
-    "4781400": "Comércio varejista de artigos do vestuário",
-    "4781-4/00": "Comércio varejista de artigos do vestuário",
-    "4789004": "Comércio varejista de animais e artigos para animais (Pet shop)",
-    "4789-0/04": "Comércio varejista de animais e artigos para animais (Pet shop)",
-    "4771701": "Comércio varejista de produtos farmacêuticos",
-    "4771-7/01": "Comércio varejista de produtos farmacêuticos"
-}
-
-def convert_cnae_to_segment(val):
-    raw = str(val).strip()
-    clean_digits = "".join(filter(str.isdigit, raw))
-    if raw in CNAE_DESCRIPTIONS:
-        return CNAE_DESCRIPTIONS[raw]
-    elif clean_digits in CNAE_DESCRIPTIONS:
-        return CNAE_DESCRIPTIONS[clean_digits]
-    return raw
-
 def fix_encoding(text):
     if not text:
         return ""
@@ -277,7 +167,7 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
 
     add_clause(
         "CLÁUSULA PRIMEIRA – DO OBJETO",
-        "O presente instrumento tiene como objeto a prestação de serviços de desenvolvimento, configuração, publicação, hospedagem e manutenção de uma Landing Page (página de vendas/apresentação institucional) personalizada para a CONTRATANTE."
+        "O presente instrumento tem como objeto a prestação de serviços de desenvolvimento, configuração, publicação, hospedagem e manutenção de uma Landing Page (página de vendas/apresentação institucional) personalizada para a CONTRATANTE."
     )
 
     dom_text = f" no domínio {dominio_site}." if dominio_site else " no domínio definido conjuntamente pelas partes."
@@ -878,6 +768,7 @@ def save_persistent_store(file_path, data_dict):
         pass
 
 def update_status_in_google_sheet(cnpj, new_status):
+    """Grava o novo status diretamente na planilha do Google Sheets na nuvem."""
     try:
         if "gcp_service_account" in st.secrets:
             scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -886,8 +777,10 @@ def update_status_in_google_sheet(cnpj, new_status):
             sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
             sheet = client.open_by_key(sheet_id).sheet1
             
+            # Localiza a célula correspondente ao CNPJ
             cell = sheet.find(str(cnpj))
             if cell:
+                # O status está na coluna 11 (K)
                 sheet.update_cell(cell.row, 11, new_status)
     except Exception as e:
         print(f"Aviso de sincronização com Google Sheets: {e}")
@@ -931,8 +824,7 @@ def load_data_from_sheet():
                         parsed_dt_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
             except Exception: data_abert = raw_date
 
-        raw_seg = str(r[3]).strip()
-        segmento = convert_cnae_to_segment(raw_seg) if raw_seg else "N/A"
+        segmento = fix_encoding(str(r[3]).strip()) if str(r[3]).strip() != "" else "N/A"
         uf = str(r[4]).strip().upper() if str(r[4]).strip() != "" else "N/A"
         cidade = fix_encoding(str(r[5]).strip().upper()) if str(r[5]).strip() != "" else "N/A"
         
@@ -969,6 +861,7 @@ def sync_status_change(cnpj, new_status, df_target):
     saved_status_map[str(cnpj)] = new_status
     save_persistent_store(STATUS_FILE, saved_status_map)
 
+    # Atualiza na planilha do Google Sheets na nuvem
     update_status_in_google_sheet(cnpj, new_status)
 
     for i, row in df_target.iterrows():
