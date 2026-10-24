@@ -1249,12 +1249,17 @@ try:
                     lp_html_content = st.session_state[f"lp_data_{idx}"]
                     st.markdown("#### ⚡ Pré-visualização da Landing Page")
                     
-                    # BLOB URL SEGURO PARA ABRIR NA NOVA ABA SEM TRAVAMENTOS
+                    # CORREÇÃO COM BASE64 SEGURO PARA EVITAR CONFLITO DE CHAVETAS NAS F-STRINGS
+                    b64_print = base64.b64encode(lp_html_content.encode('utf-8')).decode('utf-8')
+                    
                     print_script = f"""
                     <script>
                     function abrirParaImpressao_{idx}() {{
-                        const htmlContent = {json.dumps(lp_html_content)};
-                        const blob = new Blob([htmlContent], {{ type: 'text/html;charset=utf-8' }});
+                        const b64 = "{b64_print}";
+                        const binString = atob(b64);
+                        const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+                        const decodedHtml = new TextDecoder().decode(bytes);
+                        const blob = new Blob([decodedHtml], {{ type: 'text/html;charset=utf-8' }});
                         const url = URL.createObjectURL(blob);
                         window.open(url, '_blank');
                     }}
