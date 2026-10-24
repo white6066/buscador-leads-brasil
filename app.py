@@ -15,6 +15,9 @@ from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+import gspread
+from google.oauth2.service_account import Credentials
+
 # 1. Configuração da página
 st.set_page_config(
     page_title="Novas Empresas - Gerador LP & Contratos Kritech",
@@ -86,7 +89,7 @@ def format_cep(cep_str):
         return f"{nums[:5]}-{nums[5:]}"
     return cep_str
 
-# --- GERADOR DE CONTRATO EM WORD (.DOCX) COM REDAÇÃO COMPLETA E TRATAMENTO DE CEP ---
+# --- GERADOR DE CONTRATO EM WORD (.DOCX) ---
 def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_contratado, 
                             razao_contratante, cnpj_contratante, end_contratante, cidade_contratante, uf_contratante,
                             dominio_site=""):
@@ -101,14 +104,11 @@ def generate_contract_docx(nome_contratado, cpf_contratado, rg_contratado, end_c
     def format_address_clean(addr):
         if not addr:
             return ""
-        
         def replace_cep(match):
             digits = match.group(1)
             return f"CEP: {digits[:5]}-{digits[5:]}"
-        
         addr_clean = re.sub(r'\(\s*CEP:\s*(\d{8})\s*\)', r'CEP: \1', addr, flags=re.IGNORECASE)
         addr_clean = re.sub(r'CEP:\s*(\d{8})', replace_cep, addr_clean, flags=re.IGNORECASE)
-        
         return addr_clean
 
     clean_end_contratante = format_address_clean(end_contratante)
@@ -273,7 +273,7 @@ def extract_colors_from_logo(image_url):
         pass
     return None
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     queries = [f"{razao} {cidade} {uf}", f"CNPJ {cnpj} business profile"]
@@ -346,7 +346,6 @@ def deep_osint_company_analysis(razao, cnpj, cidade, uf, segmento):
 
 def search_real_photo_by_query(query_text, segmento, index_offset=0):
     query_lower = query_text.lower()
-    
     if any(w in query_lower for w in ['esportivo', 'esporte', 'luxo', 'mercedes', 'bmw', 'audi', 'porsche', 'ranger']):
         cars = [
             "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200&auto=format&fit=crop",
@@ -393,7 +392,6 @@ def determine_harmonious_palette(razao, segmento, logo_url):
 
 def apply_accumulated_modifications(html_content, instructions_list):
     custom_primary_color = None
-    
     color_map = {
         "azul bebe": "#89cff0", "azul bebê": "#89cff0", "azul claro": "#38bdf8",
         "azul celeste": "#0ea5e9", "azul": "#2563eb", "azul royal": "#1d4ed8",
@@ -749,7 +747,7 @@ def generate_masterpiece_landing_page(razao, segmento, cidade, uf, endereco, tel
     html_code = apply_accumulated_modifications(html_code, instructions_list)
     return html_code
 
-# --- GERENCIAMENTO DE PERSISTÊNCIA DUPLA (SESSÃO + DISCO) ---
+# --- GERENCIAMENTO DE PERSISTÊNCIA DUPLA (GOOGLE SHEETS + DISCO) ---
 STATUS_FILE = "status_leads.json"
 LPS_FILE = "saved_lps_data.json"
 
@@ -769,6 +767,24 @@ def save_persistent_store(file_path, data_dict):
     except Exception:
         pass
 
+def update_status_in_google_sheet(cnpj, new_status):
+    """Grava o novo status diretamente na planilha do Google Sheets na nuvem."""
+    try:
+        if "gcp_service_account" in st.secrets:
+            scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+            creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
+            client = gspread.authorize(creds)
+            sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
+            sheet = client.open_by_key(sheet_id).sheet1
+            
+            # Localiza a célula correspondente ao CNPJ
+            cell = sheet.find(str(cnpj))
+            if cell:
+                # O status está na coluna 11 (K)
+                sheet.update_cell(cell.row, 11, new_status)
+    except Exception as e:
+        print(f"Aviso de sincronização com Google Sheets: {e}")
+
 @st.cache_data(ttl=300, show_spinner="A carregar leads...")
 def load_data_from_sheet():
     sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
@@ -783,7 +799,7 @@ def load_data_from_sheet():
             
     processed = []
     for r in rows:
-        while len(r) < 10: r.append("")
+        while len(r) < 11: r.append("")
         cnpj = str(r[0]).strip()
         razao = fix_encoding(str(r[1]).strip()) if str(r[1]).strip() != "" else "Empresa"
         
@@ -825,7 +841,9 @@ def load_data_from_sheet():
         addr_parts = [fix_encoding(p.strip()) for p in r[6:-1] if p.strip() and "google.com/maps" not in p and not (p.strip().isdigit() and 8 <= len(p.strip()) <= 12)]
         endereco = ", ".join(addr_parts) if addr_parts else fix_encoding(str(r[6]).strip())
         
-        processed.append([cnpj, razao, data_abert, parsed_dt_str, segmento, uf, cidade, endereco, telefone, maps_url, "Pendente"])
+        sheet_status = str(r[10]).strip() if len(r) > 10 and str(r[10]).strip() else "Pendente"
+        
+        processed.append([cnpj, razao, data_abert, parsed_dt_str, segmento, uf, cidade, endereco, telefone, maps_url, sheet_status])
         
     cols = ["CNPJ", "Razao Social", "Data Abertura", "DataAberturaParsed", "Segmento", "UF", "Cidade", "Endereco", "Telefone", "Maps", "Status"]
     df_base = pd.DataFrame(processed, columns=cols)
@@ -833,7 +851,7 @@ def load_data_from_sheet():
     saved_status_map = load_persistent_store(STATUS_FILE)
     for i, row in df_base.iterrows():
         c_key = str(row["CNPJ"])
-        if c_key in saved_status_map:
+        if c_key in saved_status_map and row["Status"] == "Pendente":
             df_base.at[i, "Status"] = saved_status_map[c_key]
 
     return df_base
@@ -842,6 +860,9 @@ def sync_status_change(cnpj, new_status, df_target):
     saved_status_map = load_persistent_store(STATUS_FILE)
     saved_status_map[str(cnpj)] = new_status
     save_persistent_store(STATUS_FILE, saved_status_map)
+
+    # Atualiza na planilha do Google Sheets na nuvem
+    update_status_in_google_sheet(cnpj, new_status)
 
     for i, row in df_target.iterrows():
         if str(row["CNPJ"]) == str(cnpj):
@@ -1063,6 +1084,7 @@ try:
                     novo_status = st.selectbox("Status:", status_list, index=c_idx, key=f"status_exp_{idx}")
                     if novo_status != current_status:
                         sync_status_change(cnpj, novo_status, st.session_state.df_status)
+                        st.success("Status atualizado e sincronizado com o Google Sheets!")
                         st.rerun()
                 
                 st.markdown("<hr style='margin: 10px 0px;'>", unsafe_allow_html=True)
