@@ -777,10 +777,8 @@ def update_status_in_google_sheet(cnpj, new_status):
             sheet_id = "14dpXXJyMKBoAXqEPVPrnQyACGI2wSa4-X8frGxHCJXo"
             sheet = client.open_by_key(sheet_id).sheet1
             
-            # Localiza a célula correspondente ao CNPJ
             cell = sheet.find(str(cnpj))
             if cell:
-                # O status está na coluna 11 (K)
                 sheet.update_cell(cell.row, 11, new_status)
     except Exception as e:
         print(f"Aviso de sincronização com Google Sheets: {e}")
@@ -861,7 +859,6 @@ def sync_status_change(cnpj, new_status, df_target):
     saved_status_map[str(cnpj)] = new_status
     save_persistent_store(STATUS_FILE, saved_status_map)
 
-    # Atualiza na planilha do Google Sheets na nuvem
     update_status_in_google_sheet(cnpj, new_status)
 
     for i, row in df_target.iterrows():
@@ -1253,6 +1250,8 @@ try:
                     st.markdown("#### ⚡ Pré-visualização da Landing Page")
                     
                     b64_html = base64.b64encode(lp_html_content.encode('utf-8')).decode('utf-8')
+                    
+                    # LINK CORRIGIDO PARA ABRIR EM NOVA ABA E DISPARAR A IMPRESSÃO DIRETAMENTE
                     print_script = f"""
                     <a href="data:text/html;base64,{b64_html}" target="_blank" onclick="setTimeout(function(){{ window.open('data:text/html;base64,{b64_html}').print(); }}, 300);" 
                        style="display: inline-block; background-color: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.82rem; margin-bottom: 10px;">
