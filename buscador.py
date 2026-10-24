@@ -3,90 +3,59 @@ import datetime
 import urllib.parse
 import aiohttp
 
-# --- DICIONÁRIO COMPLETO E EXPANDIDO DE CNAES (ORIGINAIS + NOVOS ESTRATÉGICOS) ---
+# --- DICIONÁRIO COMPLETO COM CÓDIGOS ISOLADOS DE TODOS OS GRUPOS ESTRATÉGICOS ---
 CNAE_DESCRIPTIONS = {
-    # --- AUTOMOTIVO E PEÇAS ---
-    "4511101": "Comércio a varejo de veículos automotores novos",
-    "4511102": "Comércio a varejo de veículos automotores usados",
-    "4520001": "Serviços de manutenção e reparação mecânica de veículos automotores",
-    "4520007": "Serviços de lanternagem ou funilaria e pintura de veículos automotores",
-    "4520008": "Serviços de lavagem, lubrificação e polimento de veículos automotores",
-    "4530703": "Comércio a varejo de peças e acessórios para veículos",
-
-    # --- COMÉRCIO ESPECIALIZADO E VAREJO ---
-    "4637199": "Comércio atacadista especializado em outros produtos alimentícios",
-    "4642701": "Comércio atacadista de artigos de vestuário e acessórios",
-    "4711302": "Comércio varejista em supermercados",
-    "4771701": "Comércio varejista de produtos farmacêuticos, sem manipulação",
-    "4781400": "Comércio varejista de artigos do vestuário e acessórios",
-    "4789004": "Comércio varejista de animais vivos e de artigos e alimentos para animais de estimação (Pet shop)",
-
-    # --- FINANCEIRO, SEGUROS E HOLDINGS ---
-    "6420300": "Holdings de instituições não financeiras",
-    "6462000": "Holdings de instituições financeiras",
-    "6511101": "Seguros de vida",
-    "6612600": "Atividades de intermediação em operações financeira",
-    "6622300": "Corretores e agentes de seguros, de previdência complementar e de saúde",
-
-    # --- IMOBILIÁRIO ---
-    "6810201": "Compra e venda de imóveis próprios",
-    "6810202": "Aluguel de imóveis próprios",
-    "6821801": "Corretagem na compra e venda e avaliação de imóveis",
-    "6821802": "Corretagem no aluguel de imóveis",
-    "6822600": "Gestão e administração da propriedade imobiliária",
-
-    # --- SERVIÇOS PROFISSIONAIS, JURÍDICOS, CONTÁBEIS E CONSULTORIA ---
-    "6911701": "Serviços advocatícios",
-    "6920601": "Atividades de contabilidade",
-    "6920602": "Atividades de consultoria e auditoria contábil e tributária",
-    "7020400": "Atividades de consultoria em gestão empresarial",
-    "7111100": "Serviços de arquitetura",
-    "7112000": "Serviços de engenharia",
+    # --- GRUPO 1: TECNOLOGIA, SOFTWARE, WEB E MARKETING ---
+    "6201501": "Desenvolvimento de programas de computador sob encomenda",
+    "6202300": "Licenciamento e customização de programas de computador",
+    "6203100": "Desenvolvimento e licenciamento de programas de computador customizáveis",
+    "6204000": "Consultoria em tecnologia da informação",
+    "6209100": "Suporte técnico, manutenção e outros serviços em tecnologia da informação",
+    "6311900": "Tratamento de dados, servidores e serviços de hospedagem na internet",
+    "6319400": "Portais, provedores de conteúdo e outros serviços de informação na internet",
     "7311400": "Agências de publicidade",
     "7319002": "Promoção de vendas",
     "7319003": "Marketing direto",
     "7319004": "Consultoria em publicidade e marketing",
-    "7410202": "Design de interiores",
-    "7420001": "Atividades de produção de fotografias, exceto aérea e submarina",
-    "7500100": "Atividades veterinárias",
 
-    # --- OUTROS SERVIÇOS ADMINISTRATIVOS E APOIO ---
+    # --- GRUPO 2: TRANSPORTE, LOGÍSTICA E ENTREGAS ---
+    "4930201": "Transporte rodoviário de carga, exceto produtos perigosos, municipal",
+    "4930202": "Transporte rodoviário de carga, intermunicipal, interestadual e internacional",
+    "5250803": "Organização logística do transporte de carga",
+    "5320202": "Serviços de entrega rápida (Motoboy e delivery urbano)",
     "7711000": "Locação de automóveis sem condutor",
-    "7810800": "Seleção e agenciamento de mão-de-obra",
-    "7911200": "Agências de viagens",
-    "8011101": "Atividades de vigilância e segurança privada",
-    "8121400": "Limpeza em prédios e em domicílios",
-    "8130300": "Atividades paisagísticas",
-    "8211000": "Serviços combinados de escritório e apoio administrativo",
-    "8230001": "Serviços de organização de feiras, congressos, exposições e festas",
 
-    # --- CONSTRUÇÃO, REFORMAS E PRESTADORES ---
+    # --- GRUPO 3: COMÉRCIO VAREJISTA E ALIMENTAÇÃO ---
+    "4711302": "Comércio varejista em supermercados",
+    "4712100": "Comércio varejista de mercadorias em geral (Minimercados e mercearias)",
+    "4771701": "Comércio varejista de produtos farmacêuticos, sem manipulação",
+    "4772500": "Comércio varejista de cosméticos, produtos de perfumaria e higiene pessoal",
+    "4781400": "Comércio varejista de artigos do vestuário e acessórios",
+    "4782201": "Comércio varejista de calçados",
+    "4789004": "Comércio varejista de animais vivos e artigos para animais (Pet shop)",
+    "5611201": "Restaurantes e similares",
+    "5611203": "Lanchonetes, casas de chá, de sucos e similares",
+    "5620101": "Fornecimento de alimentos preparados preponderantemente para empresas",
+    "5620102": "Serviços de catering, bufê e outros serviços de comida preparada",
+
+    # --- GRUPO 4: CONSTRUÇÃO, MATERIAIS E REFORMAS ---
     "4120400": "Construção de edifícios",
+    "4313400": "Obras de terraplanagem",
     "4321500": "Instalação e manutenção elétrica",
     "4322301": "Instalações hidráulicas, sanitárias e de gás",
+    "4330402": "Instalação de portas, janelas, tetos, divisórias e armários embutidos",
     "4330404": "Serviços de pintura em geral",
     "4330405": "Aplicação de revestimentos e de resinas em pisos e paredes",
+    "4330499": "Outras obras de acabamento da construção",
     "4399103": "Obras de alvenaria",
     "4399199": "Serviços especializados para construção não especificados anteriormente",
+    "4744003": "Comércio varejista de materiais hidráulicos",
+    "4744099": "Comércio varejista de materiais de construção em geral",
 
-    # --- EDUCAÇÃO, CURSOS E INFOPRODUTOS ---
-    "8511000": "Educação infantil - creche",
-    "8512100": "Educação infantil - pré-escola",
-    "8513900": "Ensino fundamental",
-    "8520100": "Ensino médio",
-    "8531700": "Educação superior - graduação",
-    "8592901": "Ensino de dança",
-    "8592902": "Ensino de artes cênicas, exceto dança",
-    "8592999": "Ensino de arte e cultura não especificado anteriormente",
-    "8593700": "Ensino de idiomas",
-    "8599603": "Treinamento em informática",
-    "8599604": "Cursos de idiomas e treinamento em desenvolvimento profissional",
-    "8599699": "Outras atividades de ensino não especificadas anteriormente",
-
-    # --- SAÚDE, CLÍNICAS E BEM-ESTAR ---
+    # --- GRUPO 5: SAÚDE, CLÍNICAS E BEM-ESTAR ---
     "8610101": "Atividades de atendimento hospitalar",
-    "8630501": "Atividade médica ambulatorial com recursos para procedimentos cirúrgicos",
-    "8630502": "Atividade médica ambulatorial com recursos para exames complementares",
+    "8630501": "Atividade médica ambulatorial com procedimentos cirúrgicos",
+    "8630502": "Atividade médica ambulatorial com exames complementares",
     "8630503": "Atividade médica ambulatorial restrita a consultas",
     "8630504": "Atividade odontológica",
     "8640202": "Laboratórios clínicos",
@@ -99,24 +68,46 @@ CNAE_DESCRIPTIONS = {
     "8711501": "Clinicas e residências geriátricas",
     "8800600": "Serviços de assistência social sem alojamento",
 
-    # --- ALIMENTAÇÃO, EVENTOS E ENTRETENIMENTO ---
-    "5611201": "Restaurantes e similares",
-    "5611203": "Lanchonetes, casas de chá, de sucos e similares",
-    "5620102": "Serviços de catering, bufê e outros serviços de comida preparada",
+    # --- GRUPO 6: SERVIÇOS PROFISSIONAIS, JURÍDICOS E CONTÁBEIS ---
+    "6420300": "Holdings de instituições não financeiras",
+    "6462000": "Holdings de instituições financeiras",
+    "6810201": "Compra e venda de imóveis próprios",
+    "6810202": "Aluguel de imóveis próprios",
+    "6821801": "Corretagem na compra e venda e avaliação de imóveis",
+    "6821802": "Corretagem no aluguel de imóveis",
+    "6822600": "Gestão e administração da propriedade imobiliária",
+    "6911701": "Serviços advocatícios",
+    "6920601": "Atividades de contabilidade",
+    "6920602": "Atividades de consultoria e auditoria contábil e tributária",
+    "7020400": "Atividades de consultoria em gestão empresarial",
+    "7111100": "Serviços de arquitetura",
+    "7112000": "Serviços de engenharia",
+    "7410202": "Design de interiores",
+    "7420001": "Atividades de produção de fotografias",
+    "7500100": "Atividades veterinárias",
 
-    # --- TECNOLOGIA E MANUTENÇÃO DE EQUIPAMENTOS ---
-    "9511800": "Reparação e manutenção de computadores e de equipamentos periféricos",
-    "9512600": "Reparação e manutenção de equipamentos de comunicação",
-
-    # --- BELEZA, ESTÉTICA E OUTROS SERVIÇOS PESSOAIS ---
+    # --- GRUPO 7: BELEZA, ESTÉTICA E CONDICIONAMENTO FÍSICO ---
     "9313100": "Atividades de condicionamento físico (Academias e Estúdios)",
     "9602501": "Cabeleireiros, manicure e pedicure",
     "9602502": "Atividades de estética e outros serviços de cuidados com a beleza",
-    "9609201": "Clichês, fotolagos e serviços de pré-impressão",
-    "9609208": "Serviços de pigmentação de pele (tatuagem e piercing)"
+    "9609208": "Serviços de pigmentação de pele (tatuagem e piercing)",
+
+    # --- GRUPO 8: AUTOMOTIVO E OFICINAS ---
+    "4511101": "Comércio a varejo de veículos automotores novos",
+    "4511102": "Comércio a varejo de veículos automotores usados",
+    "4520001": "Serviços de manutenção e reparação mecânica de veículos",
+    "4520007": "Lanternagem ou funilaria e pintura de veículos",
+    "4520008": "Lavagem, lubrificação e polimento de veículos",
+    "4530703": "Comércio a varejo de peças e acessórios para veículos",
+
+    # --- GRUPO 9: EDUCAÇÃO E TREINAMENTOS ---
+    "8593700": "Ensino de idiomas",
+    "8599603": "Treinamento em informática",
+    "8599604": "Treinamento em desenvolvimento profissional e gerencial",
+    "8599699": "Outras atividades de ensino não especificadas anteriormente"
 }
 
-# A lista de alvos passa a ser gerada automaticamente a partir de todas as chaves do dicionário
+# Lista 100% isolada gerada a partir das chaves do dicionário abrangente
 CNAES_ALVO = list(CNAE_DESCRIPTIONS.keys())
 
 UFS_ALVO = [
@@ -179,14 +170,14 @@ async def buscar_uf_cnae(session, uf, cnae_codigo, limite_data, sem):
                       or ""
                   )
 
-                  # Transcrição automática do CNAE para texto legível antes de gravar
+                  # Transcrição automática do CNAE para texto legível
                   segmento_transcrito = obter_descricao_cnae(cnae_codigo)
 
                   resultados.append({
                       "cnpj": dados.get("cnpj", ""),
                       "razao_social": razao_social,
                       "data_abertura": data_abertura_str,
-                      "cnae": segmento_transcrito,  # Exporta diretamente transcrito
+                      "cnae": segmento_transcrito,
                       "uf": uf_emp,
                       "municipio": municipio,
                       "endereco": endereco_completo,
@@ -204,13 +195,15 @@ async def buscar_uf_cnae(session, uf, cnae_codigo, limite_data, sem):
 
 async def main_async():
   print(
-      f"A iniciar busca nacional em paralelo para {len(CNAES_ALVO)} CNAEs e"
+      f"A iniciar busca nacional abrangente para {len(CNAES_ALVO)} CNAEs isolados e"
       f" {len(UFS_ALVO)} UFs..."
   )
   hoje = datetime.date.today()
-  limite_data = hoje - datetime.timedelta(days=60)
+  
+  # Alargado para 90 dias para garantir grande volume de captação
+  limite_data = hoje - datetime.timedelta(days=90)
 
-  sem = asyncio.Semaphore(25)
+  sem = asyncio.Semaphore(30)
 
   async with aiohttp.ClientSession() as session:
     tarefas = []
