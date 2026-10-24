@@ -3,7 +3,7 @@ import datetime
 import urllib.parse
 import aiohttp
 
-# --- DICIONÁRIO HIPER-ABRANGENTE (CENTENAS DE CÓDIGOS CNAE ISOLADOS POR GRUPO) ---
+# --- DICIONÁRIO HIPER-ABRANGENTE (ÁREAS DE ALTA RENTABILIDADE E VOLUME) ---
 CNAE_DESCRIPTIONS = {
     # --- GRUPO 1: TECNOLOGIA, SOFTWARE, WEB, DESIGN E MARKETING ---
     "6201501": "Desenvolvimento de programas de computador sob encomenda",
@@ -25,6 +25,7 @@ CNAE_DESCRIPTIONS = {
     # --- GRUPO 2: TRANSPORTE, LOGÍSTICA, ENTREGAS E MUDANÇAS ---
     "4930201": "Transporte rodoviário de carga, exceto produtos perigosos, municipal",
     "4930202": "Transporte rodoviário de carga, intermunicipal, interestadual e internacional",
+    "4930203": "Transporte rodoviário de mudança",
     "5250803": "Organização logística do transporte de carga",
     "5320201": "Serviços de malote nacional",
     "5320202": "Serviços de entrega rápida (Motoboy e delivery urbano)",
@@ -144,10 +145,37 @@ CNAE_DESCRIPTIONS = {
     "8593700": "Ensino de idiomas",
     "8599603": "Treinamento em informática",
     "8599604": "Treinamento em desenvolvimento profissional e gerencial",
-    "8599699": "Outras atividades de ensino não especificadas anteriormente"
+    "8599699": "Outras atividades de ensino não especificadas anteriormente",
+
+    # --- GRUPO 11: ENERGIA SOLAR, SUSTENTABILIDADE E ELÉTRICA AVANÇADA (ALTA RENTABILIDADE) ---
+    "3511501": "Geração de energia elétrica",
+    "3513300": "Comércio atacadista de energia elétrica",
+    "3530100": "Produção e distribuição de vapor, água quente e ar condicionado",
+    "4321500": "Instalação e manutenção elétrica (inclui sistemas de energia solar fotovoltaica)",
+
+    # --- GRUPO 12: SEGURANÇA ELETRÔNICA, MONITORAMENTO E CFTV ---
+    "8011101": "Atividades de vigilância e segurança privada",
+    "8020001": "Atividades de monitoramento de sistemas de segurança eletrônica",
+    "8030700": "Atividades de investigação particular",
+
+    # --- GRUPO 13: DEDETIZAÇÃO, CONTROLE DE PRAGAS E LIMPEZA ESPECIALIZADA ---
+    "8121400": "Limpeza em prédios e em domicílios",
+    "8122200": "Imunização e controle de pragas urbanas (Dedetização)",
+    "8129000": "Atividades de limpeza não especificadas anteriormente",
+
+    # --- GRUPO 14: ALUGUEL E LOCAÇÃO DE MÁQUINAS, EQUIPAMENTOS E ANDAIMES (B2B) ---
+    "7732201": "Aluguel de máquinas e equipamentos para construção sem operador",
+    "7739299": "Aluguel de outras máquinas e equipamentos comerciais e industriais não especificados",
+    "7729202": "Aluguel de móveis, utensílios e aparelhos de uso doméstico e pessoal",
+
+    # --- GRUPO 15: GESTÃO AMBIENTAL, RESÍDUOS E ENGENHARIA CONSULTIVA ---
+    "3811400": "Coleta de resíduos não perigosos",
+    "3812200": "Coleta de resíduos perigosos",
+    "3821100": "Tratamento e disposição de resíduos não perigosos",
+    "7112000": "Serviços de engenharia e projetos técnicos"
 }
 
-# Lista 100% isolada gerada automaticamente a partir das chaves do dicionário abrangente
+# Lista 100% isolada gerada automaticamente a partir das chaves do dicionário expandido
 CNAES_ALVO = list(CNAE_DESCRIPTIONS.keys())
 
 UFS_ALVO = [
@@ -235,12 +263,12 @@ async def buscar_uf_cnae(session, uf, cnae_codigo, limite_data, sem):
 
 async def main_async():
   print(
-      f"A iniciar busca nacional massiva para {len(CNAES_ALVO)} CNAEs isolados e"
+      f"A iniciar busca nacional massiva e rentável para {len(CNAES_ALVO)} CNAEs isolados e"
       f" {len(UFS_ALVO)} UFs..."
   )
   hoje = datetime.date.today()
   
-  # Janela de 90 dias mantida para maximizar o volume recolhido
+  # Janela de 90 dias mantida para capturar o maior volume de novos negócios
   limite_data = hoje - datetime.timedelta(days=90)
 
   sem = asyncio.Semaphore(30)
